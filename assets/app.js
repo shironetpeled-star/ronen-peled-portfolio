@@ -15,7 +15,7 @@ if(current==='contact.html'||current==='contact-en.html'){const section=document
 function splitSkillItems(text){
   return text.split(/\.\s+(?=[^—.]{1,80}\s—\s)|\.\s*(?=[A-Z][A-Za-z0-9 &/+.-]{2,70}\s·\s)|\.\s*(?=[\u0590-\u05FF][^—.]{1,80}\s—\s)/).map(s=>s.trim()).filter(Boolean).map(s=>s.replace(/\.$/,''));
 }
-function renderCollapsibleList(target,text){
+function renderCollapsibleList(target,text,type){
   if(!target||!text)return;
   const items=splitSkillItems(text);
   target.innerHTML='';
@@ -27,16 +27,18 @@ function renderCollapsibleList(target,text){
   if(items.length>2){
     const btn=document.createElement('button');
     btn.type='button';
-    btn.textContent=lang==='en'?'Read more':'קרא עוד';
+    const moreLabel=type==='workplaces'?(lang==='en'?'More workplaces':'מקומות נוספים'):(lang==='en'?'More projects':'עבודות נוספות');
+    const lessLabel=lang==='en'?'Show less':'הצג פחות';
+    btn.textContent=moreLabel;
     btn.style.cssText='margin-top:12px;padding:8px 14px;border:1px solid #cfd5df;border-radius:10px;background:#fff;font-weight:700;cursor:pointer';
     let expanded=false;
-    btn.addEventListener('click',()=>{expanded=!expanded;[...list.children].forEach((li,i)=>{if(i>=2)li.hidden=!expanded});btn.textContent=expanded?(lang==='en'?'Show less':'הצג פחות'):(lang==='en'?'Read more':'קרא עוד')});
+    btn.addEventListener('click',()=>{expanded=!expanded;[...list.children].forEach((li,i)=>{if(i>=2)li.hidden=!expanded});btn.textContent=expanded?lessLabel:moreLabel});
     target.appendChild(btn);
   }
 }
 if(current==='skills.html'||current==='skills-en.html'){
   const used=document.getElementById('sliderUsed');
   const projects=document.getElementById('sliderProjects');
-  if(used){const observer=new MutationObserver(()=>{const text=used.textContent.trim();if(text&&!used.querySelector('ol'))renderCollapsibleList(used,text)});observer.observe(used,{childList:true,characterData:true,subtree:true});}
-  if(projects){const observer=new MutationObserver(()=>{const text=projects.textContent.trim();if(text&&!projects.querySelector('ol'))renderCollapsibleList(projects,text)});observer.observe(projects,{childList:true,characterData:true,subtree:true});}
+  if(used){const observer=new MutationObserver(()=>{const text=used.textContent.trim();if(text&&!used.querySelector('ol'))renderCollapsibleList(used,text,'workplaces')});observer.observe(used,{childList:true,characterData:true,subtree:true});}
+  if(projects){const observer=new MutationObserver(()=>{const text=projects.textContent.trim();if(text&&!projects.querySelector('ol'))renderCollapsibleList(projects,text,'projects')});observer.observe(projects,{childList:true,characterData:true,subtree:true});}
 }
