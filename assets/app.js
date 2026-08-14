@@ -23,3 +23,19 @@ const pageIconMap={
 'index.html':'🏠','index-en.html':'🏠','skills.html':'🧠','skills-en.html':'🧠','product.html':'📦','product-en.html':'📦','project.html':'📋','project-en.html':'📋','system.html':'🧩','system-en.html':'🧩','magic.html':'💻','en-05.html':'💻','customer.html':'🤝','en-06.html':'🤝','experience.html':'💼','history-en.html':'💼','projects.html':'🛠️','role-magic-en.html':'🛠️','service.html':'🎖️','service-page-en.html':'🎖️','contact.html':'✉️','contact-en.html':'✉️'};
 const pageIcon=pageIconMap[current];
 if(pageIcon){const h=document.querySelector('main h1');if(h&&!h.textContent.trim().startsWith(pageIcon)){const s=document.createElement('span');s.textContent=pageIcon+' ';s.setAttribute('aria-hidden','true');h.prepend(s);}}
+
+// Keep company identification visually consistent anywhere company names appear.
+const companyIconRules=[
+ {names:['SMARTi','Smarti','דור אלי שני'],icon:'👥',title:'SMARTi'},
+ {names:['Shlomo SIXT','Shlomo Sixt','שלמה SIXT','קבוצת שלמה','שלמה'],icon:'🚗',title:'Shlomo SIXT'},
+ {names:['SYSNET','Sysnet','סיסנת'],icon:'🖥️',title:'SYSNET'},
+ {names:['Magnolia','מגנוליה'],icon:'💎',title:'Magnolia'},
+ {names:['SecuLife','Seculife','SECULIFE','Secuitech','סקיוטק'],icon:'❤️',title:'SecuLife / Natali'},
+ {names:['Natali','נטלי'],icon:'❤️',title:'Natali'},
+ {names:['Verifone','א.ח. יישומים'],icon:'🧾',title:'Verifone'},
+ {names:['Aman Group','אמן'],icon:'💼',title:'Aman Group'},
+ {names:['Anirim','אנירים'],icon:'🧾',title:'Anirim'},
+ {names:['Beta Soft','BetaSoft'],icon:'💻',title:'Beta Soft'}
+];
+function addCompanyIconsEverywhere(){const root=document.querySelector('main');if(!root)return;const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(node=>{const parent=node.parentElement;if(!parent||parent.closest('.companyMark,.roleIcon,.sectionIcon,.companyIcon,script,style,button'))return;const text=node.nodeValue;if(!text||!text.trim())return;let matches=[];companyIconRules.forEach(rule=>rule.names.forEach(name=>{let pos=text.indexOf(name);while(pos!==-1){matches.push({pos,len:name.length,rule,name});pos=text.indexOf(name,pos+name.length)}}));if(!matches.length)return;matches.sort((a,b)=>a.pos-b.pos||b.len-a.len);const chosen=[];let end=-1;matches.forEach(m=>{if(m.pos>=end){chosen.push(m);end=m.pos+m.len}});const frag=document.createDocumentFragment();let cursor=0;chosen.forEach(m=>{if(m.pos>cursor)frag.appendChild(document.createTextNode(text.slice(cursor,m.pos)));const mark=document.createElement('span');mark.className='companyMark';mark.title=m.rule.title;mark.style.cssText='display:inline-flex;align-items:center;gap:5px;white-space:nowrap';const icon=document.createElement('span');icon.className='companyIcon';icon.setAttribute('aria-hidden','true');icon.textContent=m.rule.icon;icon.style.cssText='display:inline-grid;place-items:center;width:1.45em;height:1.45em;border-radius:.38em;background:#f3f7fb;border:1px solid #d9e4ef;font-size:.9em;line-height:1;vertical-align:middle';mark.append(icon,document.createTextNode(m.name));frag.appendChild(mark);cursor=m.pos+m.len});if(cursor<text.length)frag.appendChild(document.createTextNode(text.slice(cursor)));node.replaceWith(frag)})}
+window.addEventListener('DOMContentLoaded',addCompanyIconsEverywhere);
