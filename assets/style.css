@@ -15,3 +15,27 @@ footer{min-height:120px;background:#07121d;color:#fff;display:flex;justify-conte
 .skillHint{position:sticky;top:160px;z-index:9;margin:0 0 18px;padding:8px 12px;background:rgba(245,247,250,.96);backdrop-filter:blur(10px);border-radius:10px;font-weight:700;line-height:1.6;box-shadow:0 5px 14px rgba(13,34,54,.06)}
 @media(max-width:950px){.menu{display:block;margin-right:auto}.top nav{display:none;position:absolute;top:72px;right:14px;left:14px;background:#fff;padding:12px;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:14px}.top nav.open{display:grid}.hero{grid-template-columns:1fr;padding:70px 0}.hero:before{height:850px}.four{grid-template-columns:repeat(2,1fr)}.four a,.four a:nth-child(4),.four a:nth-child(5){grid-column:auto}.why{grid-template-columns:repeat(2,1fr)}.roleLinks{grid-template-columns:repeat(2,1fr)}.caps{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:620px){.section{padding:60px 0}.four,.why,.roleLinks,.skillGrid,.caps,.edu,.miniGrid{grid-template-columns:1fr}.edu article:first-child{grid-column:auto}.two{grid-template-columns:1fr}.timeline article{grid-template-columns:1fr;gap:5px}.projectList article{grid-template-columns:1fr}.projectList article>b{font-size:18px}footer{flex-direction:column;align-items:flex-start}h1{letter-spacing:-1px}.skillHint{top:158px;font-size:14px}}
+
+/* Page-title icons only — no layout or design changes */
+body:has(.top nav a.active[href="index.html"]) main h1::before,
+body:has(.top nav a.active[href="index-en.html"]) main h1::before{content:"🏠 ";}
+body:has(.top nav a.active[href="skills.html"]) main h1::before,
+body:has(.top nav a.active[href="skills-en.html"]) main h1::before{content:"🧠 ";}
+body:has(.top nav a.active[href="product.html"]) main h1::before,
+body:has(.top nav a.active[href="product-en.html"]) main h1::before{content:"📦 ";}
+body:has(.top nav a.active[href="project.html"]) main h1::before,
+body:has(.top nav a.active[href="project-en.html"]) main h1::before{content:"📋 ";}
+body:has(.top nav a.active[href="system.html"]) main h1::before,
+body:has(.top nav a.active[href="system-en.html"]) main h1::before{content:"🧩 ";}
+body:has(.top nav a.active[href="magic.html"]) main h1::before,
+body:has(.top nav a.active[href="en-05.html"]) main h1::before{content:"💻 ";}
+body:has(.top nav a.active[href="customer.html"]) main h1::before,
+body:has(.top nav a.active[href="en-06.html"]) main h1::before{content:"🤝 ";}
+body:has(.top nav a.active[href="experience.html"]) main h1::before,
+body:has(.top nav a.active[href="history-en.html"]) main h1::before{content:"💼 ";}
+body:has(.top nav a.active[href="projects.html"]) main h1::before,
+body:has(.top nav a.active[href="role-magic-en.html"]) main h1::before{content:"🛠️ ";}
+body:has(.top nav a.active[href="service.html"]) main h1::before,
+body:has(.top nav a.active[href="service-page-en.html"]) main h1::before{content:"🎖️ ";}
+body:has(.top nav a.active[href="contact.html"]) main h1::before,
+body:has(.top nav a.active[href="contact-en.html"]) main h1::before{content:"✉️ ";}
