@@ -11,3 +11,32 @@ header.querySelector('.menu').addEventListener('click',()=>nav.classList.toggle(
 const input=document.getElementById('skillSearch');
 if(input){const cards=[...document.querySelectorAll('.searchable')],count=document.getElementById('count'),empty=document.getElementById('noResults');const run=()=>{const q=input.value.trim().toLowerCase();let n=0;cards.forEach(c=>{const ok=!q||c.innerText.toLowerCase().includes(q);c.style.display=ok?'block':'none';if(ok)n++});if(count)count.textContent=lang==='en'?n+' categories':n+' קטגוריות';if(empty)empty.style.display=n?'none':'block'};input.addEventListener('input',run);run();}
 if(current==='contact.html'||current==='contact-en.html'){const section=document.querySelector('main .section');if(section&&!document.getElementById('socialActions')){const box=document.createElement('div');box.id='socialActions';box.style.cssText='max-width:760px;margin:28px auto 0;display:flex;gap:14px;flex-wrap:wrap';const li=document.createElement('a');li.href='https://il.linkedin.com/in/%D7%A8%D7%95%D7%A0%D7%9F-%D7%A4%D7%9C%D7%93-a27a771a';li.target='_blank';li.rel='noopener noreferrer';li.textContent=lang==='en'?'My LinkedIn':'LinkedIn שלי';li.style.cssText='display:inline-flex;padding:14px 22px;border:1px solid #cfd5df;border-radius:12px;text-decoration:none;font-weight:700';const wa=document.createElement('a');wa.href='https://wa.me/972546546288';wa.target='_blank';wa.rel='noopener noreferrer';wa.textContent=lang==='en'?'Chat with me on WhatsApp':'שוחח איתי ב‑WhatsApp';wa.style.cssText=li.style.cssText;box.append(li,wa);section.appendChild(box);}}
+
+function splitSkillItems(text){
+  return text.split(/\.\s+(?=[^—.]{1,80}\s—\s)|\.\s*(?=[A-Z][A-Za-z0-9 &/+.-]{2,70}\s·\s)|\.\s*(?=[\u0590-\u05FF][^—.]{1,80}\s—\s)/).map(s=>s.trim()).filter(Boolean).map(s=>s.replace(/\.$/,''));
+}
+function renderCollapsibleList(target,text){
+  if(!target||!text)return;
+  const items=splitSkillItems(text);
+  target.innerHTML='';
+  if(!items.length)return;
+  const list=document.createElement('ol');
+  list.style.cssText='margin:8px 0 0;padding-inline-start:24px;display:grid;gap:10px';
+  items.forEach((item,i)=>{const li=document.createElement('li');li.textContent=item;li.style.lineHeight='1.65';if(i>=2)li.hidden=true;list.appendChild(li)});
+  target.appendChild(list);
+  if(items.length>2){
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.textContent=lang==='en'?'Read more':'קרא עוד';
+    btn.style.cssText='margin-top:12px;padding:8px 14px;border:1px solid #cfd5df;border-radius:10px;background:#fff;font-weight:700;cursor:pointer';
+    let expanded=false;
+    btn.addEventListener('click',()=>{expanded=!expanded;[...list.children].forEach((li,i)=>{if(i>=2)li.hidden=!expanded});btn.textContent=expanded?(lang==='en'?'Show less':'הצג פחות'):(lang==='en'?'Read more':'קרא עוד')});
+    target.appendChild(btn);
+  }
+}
+if(current==='skills.html'||current==='skills-en.html'){
+  const used=document.getElementById('sliderUsed');
+  const projects=document.getElementById('sliderProjects');
+  if(used){const observer=new MutationObserver(()=>{const text=used.textContent.trim();if(text&&!used.querySelector('ol'))renderCollapsibleList(used,text)});observer.observe(used,{childList:true,characterData:true,subtree:true});}
+  if(projects){const observer=new MutationObserver(()=>{const text=projects.textContent.trim();if(text&&!projects.querySelector('ol'))renderCollapsibleList(projects,text)});observer.observe(projects,{childList:true,characterData:true,subtree:true});}
+}
