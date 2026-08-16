@@ -1,0 +1,31 @@
+name: Improve mobile homepage profession fonts
+on:
+  push:
+    paths:
+      - '.github/workflows/mobile-home-profession-font.yml'
+permissions:
+  contents: write
+jobs:
+  update-css:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Increase profession fonts on mobile
+        run: |
+          cat >> assets/style.css <<'EOF'
+
+/* Mobile homepage profession readability */
+@media (max-width:620px){
+  .roleLinks h3{font-size:22px;line-height:1.35}
+  .roleLinks p{font-size:17px;line-height:1.65}
+  .four h3{font-size:21px;line-height:1.35}
+  .four p{font-size:17px;line-height:1.65}
+}
+EOF
+      - name: Commit update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/style.css
+          git commit -m "Increase homepage profession fonts on mobile" || exit 0
+          git push
