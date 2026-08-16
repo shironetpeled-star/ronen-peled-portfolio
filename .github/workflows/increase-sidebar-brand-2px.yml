@@ -1,0 +1,33 @@
+name: Increase sidebar name and professions by 2px
+on:
+  push:
+    paths:
+      - '.github/workflows/increase-sidebar-brand-2px.yml'
+permissions:
+  contents: write
+jobs:
+  update-css:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Increase brand name and professions by 2px
+        run: |
+          cat >> assets/style.css <<'EOF'
+
+/* Brand readability: +2px name and professions */
+.brand b{font-size:calc(1em + 2px)!important}
+.brand small{font-size:12px!important}
+html[lang="he"] .brand small::after{font-size:12px!important}
+@media(max-width:950px){
+  .brand b{font-size:calc(1em + 2px)!important}
+  .brand small{font-size:12px!important}
+  html[lang="he"] .brand small::after{font-size:12px!important}
+}
+EOF
+      - name: Commit update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/style.css
+          git commit -m "Increase sidebar name and professions by 2px" || exit 0
+          git push
