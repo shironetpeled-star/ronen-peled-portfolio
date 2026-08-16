@@ -1,0 +1,31 @@
+name: Increase homepage profile name and professions by 2px
+on:
+  push:
+    paths:
+      - '.github/workflows/increase-home-profile-2px.yml'
+permissions:
+  contents: write
+jobs:
+  update-home-css:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Increase right profile card typography
+        run: |
+          cat >> assets/home-redesign.css <<'EOF'
+
+/* Right-side homepage profile readability */
+.rdProfile h2{font-size:34px!important}
+.rdProfile p{font-size:20px!important;line-height:1.6!important}
+@media(max-width:760px){
+  .rdProfile h2{font-size:34px!important}
+  .rdProfile p{font-size:19px!important;line-height:1.6!important}
+}
+EOF
+      - name: Commit update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/home-redesign.css
+          git commit -m "Increase homepage profile name and professions by 2px" || exit 0
+          git push
