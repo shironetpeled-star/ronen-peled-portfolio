@@ -1,0 +1,36 @@
+name: Place experience icons after years
+on:
+  push:
+    paths:
+      - '.github/workflows/experience-icon-after-years.yml'
+permissions:
+  contents: write
+jobs:
+  update-experience:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Move company icons after years in Hebrew experience
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('experience.html')
+          s=p.read_text()
+          # Move the first image in each experience h3 from before the year to immediately after the year/date segment.
+          pat=re.compile(r'<h3>(<img\b[^>]*>)(\s*)([^<]*?\b(?:19|20)\d{2}(?:\s*[–-]\s*(?:19|20)\d{2})?)(\s*·\s*)([^<]*?)</h3>')
+          def repl(m):
+              return '<h3>'+m.group(3)+m.group(1)+m.group(4)+m.group(5)+'</h3>'
+          s2,n=pat.subn(repl,s)
+          if n==0:
+              raise SystemExit('No experience headings matched')
+          p.write_text(s2)
+          print('Updated headings:', n)
+          PY
+      - name: Commit update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experience.html
+          git commit -m "Place company icons after years in experience" || exit 0
+          git push
