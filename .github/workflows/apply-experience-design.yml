@@ -1,0 +1,42 @@
+name: Apply experience visual design
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add experience worlds background styling
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('experience.html')
+          s=p.read_text(encoding='utf-8')
+          marker='experience-worlds-visual-v1'
+          if marker in s:
+              print('Already applied')
+              raise SystemExit(0)
+          css='''<style id="experience-worlds-visual-v1">
+          .domainsSection{position:relative;isolation:isolate;margin-top:36px;padding:58px 46px 48px;border-radius:28px;overflow:hidden;background:linear-gradient(rgba(247,252,255,.88),rgba(255,255,255,.94)),url("assets/images/experience-worlds-bg.svg") center/cover no-repeat;border:1px solid #d9e9f7;box-shadow:0 22px 60px rgba(13,54,92,.10)}
+          .domainsSection:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 78% 18%,rgba(40,168,225,.14),transparent 30%),radial-gradient(circle at 18% 78%,rgba(25,94,216,.10),transparent 28%);z-index:-1;pointer-events:none}
+          .domainsTitle{text-align:center;max-width:850px;margin:0 auto 34px}.domainsTitle span{color:#1684c5}.domainsTitle h2{font-size:clamp(2.2rem,4vw,3.4rem);color:#10284a;margin:10px 0 12px}.domainsTitle h2:after{content:"";display:block;width:78px;height:4px;border-radius:999px;background:#1ba9df;margin:18px auto 0}.domainsTitle p{font-size:1.08rem;line-height:1.8;color:#4f6073}
+          .domainsGrid{grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;align-items:stretch}.domainCard{position:relative;background:rgba(255,255,255,.93);border:1px solid rgba(190,211,229,.9);border-radius:20px;padding:24px 18px;box-shadow:0 14px 34px rgba(12,48,80,.10);backdrop-filter:blur(4px);transition:transform .22s ease,box-shadow .22s ease}.domainCard:hover{transform:translateY(-5px);box-shadow:0 20px 42px rgba(12,48,80,.15)}.domainCard h3{justify-content:center;flex-direction:column;text-align:center;gap:12px;color:#123b78;font-size:1.16rem}.domainIcon{width:58px;height:58px;border-radius:50%;font-size:28px;background:linear-gradient(145deg,#eef7ff,#dfeaf7);border-color:#d1e2f0}.domainCard ul{font-size:.94rem;line-height:1.75;color:#34485e;padding-right:18px}
+          @media(max-width:1180px){.domainsGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:760px){.domainsSection{padding:38px 18px}.domainsGrid{grid-template-columns:1fr}.domainsTitle h2{font-size:2.2rem}}
+          </style>'''
+          if '</head>' not in s:
+              raise SystemExit('No </head> found')
+          s=s.replace('</head>',css+'</head>',1)
+          p.write_text(s,encoding='utf-8')
+          print('Applied visual design')
+          PY
+      - name: Commit update
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "portfolio-design-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add experience.html
+          git commit -m "Style experience worlds section with professional background"
+          git push
