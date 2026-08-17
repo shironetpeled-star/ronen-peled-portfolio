@@ -1,3 +1,5 @@
-/* Small visual gap between the lifecycle step number and icon */
-.lifeStep{padding-top:66px!important}
-.lifeStep .lifeIcon{margin-top:8px!important;margin-bottom:8px!important}
+/* Spacing for lifecycle number, icon and text */
+.lifeStep{padding-top:70px!important}
+.lifeStep .lifeIcon{margin-top:8px!important;margin-bottom:10px!important}
+.lifeStep h3{margin-top:28px!important}
+@media(max-width:760px){.lifeStep h3{margin-top:24px!important}}
