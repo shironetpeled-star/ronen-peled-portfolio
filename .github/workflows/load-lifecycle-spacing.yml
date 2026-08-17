@@ -1,0 +1,30 @@
+name: Load lifecycle spacing stylesheet
+on:
+  push:
+    paths:
+      - '.github/workflows/load-lifecycle-spacing.yml'
+permissions:
+  contents: write
+jobs:
+  update-home:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add lifecycle spacing stylesheet link
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          link='<link rel="stylesheet" href="assets/lifecycle-spacing.css?v=1">'
+          if link not in s:
+              s=s.replace('</head>', link+'\n</head>')
+              p.write_text(s)
+          PY
+      - name: Commit update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Load lifecycle spacing stylesheet" || exit 0
+          git push
