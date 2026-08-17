@@ -1,0 +1,45 @@
+name: Style lifecycle timeline with icons and colors
+on:
+  push:
+    paths:
+      - '.github/workflows/lifecycle-icons-colors.yml'
+permissions:
+  contents: write
+jobs:
+  update-homepage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add icons and colors to lifecycle timeline
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          replacements={
+            '<article class="lifeStep"><h3>הגדרה וניתוח דרישות</h3>':'<article class="lifeStep step1"><div class="lifeIcon">📝</div><h3>הגדרה וניתוח דרישות</h3>',
+            '<article class="lifeStep"><h3>PRD</h3>':'<article class="lifeStep step2"><div class="lifeIcon">📄</div><h3>PRD</h3>',
+            '<article class="lifeStep"><h3>ניתוח מערכות</h3>':'<article class="lifeStep step3"><div class="lifeIcon">📊</div><h3>ניתוח מערכות</h3>',
+            '<article class="lifeStep"><h3>תכנות MAGIC</h3>':'<article class="lifeStep step4"><div class="lifeIcon">💻</div><h3>תכנות MAGIC</h3>',
+            '<article class="lifeStep"><h3>QA</h3>':'<article class="lifeStep step5"><div class="lifeIcon">🛡️</div><h3>QA</h3>',
+            '<article class="lifeStep"><h3>Prototype & A/B Testing</h3>':'<article class="lifeStep step6"><div class="lifeIcon">🧪</div><h3>Prototype & A/B Testing</h3>',
+            '<article class="lifeStep"><h3>מכירת מוצר / פיצ\'ר</h3>':'<article class="lifeStep step7"><div class="lifeIcon">📣</div><h3>מכירת מוצר / פיצ\'ר</h3>',
+            '<article class="lifeStep"><h3>Go To Market</h3>':'<article class="lifeStep step8"><div class="lifeIcon">🚀</div><h3>Go To Market</h3>',
+            '<article class="lifeStep"><h3>הטמעה והדרכה</h3>':'<article class="lifeStep step9"><div class="lifeIcon">🎓</div><h3>הטמעה והדרכה</h3>',
+            '<article class="lifeStep"><h3>Help Desk</h3>':'<article class="lifeStep step10"><div class="lifeIcon">🎧</div><h3>Help Desk</h3>',
+            '<article class="lifeStep"><h3>שירות לקוחות</h3>':'<article class="lifeStep step11"><div class="lifeIcon">👥</div><h3>שירות לקוחות</h3>',
+            '<article class="lifeStep"><h3>שימור לקוחות</h3>':'<article class="lifeStep step12"><div class="lifeIcon">📈</div><h3>שימור לקוחות</h3>'
+          }
+          for a,b in replacements.items(): s=s.replace(a,b)
+          css='''\n<style id="product-lifecycle-icons-colors-v2">\n.lifecycleSection{background:linear-gradient(180deg,#f7fbff 0%,#edf4fb 100%)}\n.lifecycleTrack{gap:14px}\n.lifeStep{overflow:hidden;border-top:5px solid var(--step,#195ed8);padding-top:76px;transition:.2s;background:linear-gradient(180deg,#fff 0%,#fbfdff 100%)}\n.lifeStep:hover{transform:translateY(-5px);box-shadow:0 18px 38px rgba(13,34,54,.12)}\n.lifeStep:before{background:var(--step,#195ed8)!important;box-shadow:0 5px 16px color-mix(in srgb,var(--step,#195ed8) 35%,transparent)}\n.lifeIcon{position:absolute;top:50px;right:50%;transform:translateX(50%);font-size:34px;line-height:1;filter:saturate(1.15)}\n.lifeStep h3{margin-top:18px;font-weight:900}\n.step1{--step:#1677d2}.step2{--step:#1aa6c9}.step3{--step:#14b8a6}.step4{--step:#22b573}.step5{--step:#67bf62}.step6{--step:#d7b716}.step7{--step:#f3a51f}.step8{--step:#f47b20}.step9{--step:#f05a47}.step10{--step:#df4b83}.step11{--step:#8c55d9}.step12{--step:#6c46c8}\n.lifecycleTrack:before{background:linear-gradient(90deg,#1677d2,#1aa6c9,#14b8a6,#22b573,#67bf62,#d7b716,#f3a51f,#f47b20,#f05a47,#df4b83,#8c55d9,#6c46c8)!important}\n@media(max-width:760px){.lifeIcon{font-size:30px;top:48px}.lifeStep{padding-top:72px}}\n</style>\n'''
+          if 'product-lifecycle-icons-colors-v2' not in s:
+              s=s.replace('</head>',css+'</head>')
+          p.write_text(s)
+          PY
+      - name: Commit update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add lifecycle icons and colorful step styling" || exit 0
+          git push
