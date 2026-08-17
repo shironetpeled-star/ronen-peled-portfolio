@@ -1,0 +1,37 @@
+name: Add product lifecycle timeline
+on:
+  push:
+    paths:
+      - '.github/workflows/add-product-lifecycle-timeline.yml'
+permissions:
+  contents: write
+jobs:
+  update-homepage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add lifecycle timeline to homepage
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          if 'PRODUCT LIFECYCLE · END TO END' in s:
+              print('Timeline already exists')
+              raise SystemExit(0)
+          css='''\n<style id="product-lifecycle-timeline-v1">\n.lifecycleSection{padding:86px 0;background:linear-gradient(180deg,#f7fbff,#eef4fa)}\n.lifecycleHead{text-align:center;max-width:860px;margin:0 auto 42px}.lifecycleHead span{font-size:12px;letter-spacing:2px;font-weight:900;color:#195ed8}.lifecycleHead h2{font-size:clamp(2.2rem,4vw,3.5rem);line-height:1.08;margin:9px 0 12px}.lifecycleHead p{color:#637386;font-size:1.05rem}\n.lifecycleTrack{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:18px;counter-reset:step}.lifecycleTrack:before{content:"";position:absolute;top:31px;right:4%;left:4%;height:4px;border-radius:999px;background:linear-gradient(90deg,#0aa99a,#195ed8);z-index:0}.lifeStep{position:relative;z-index:1;background:#fff;border:1px solid #d8e3ee;border-radius:18px;padding:54px 16px 20px;min-height:150px;box-shadow:0 12px 30px rgba(13,34,54,.07);text-align:center}.lifeStep:before{counter-increment:step;content:counter(step);position:absolute;top:10px;right:50%;transform:translateX(50%);width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#0aa99a,#195ed8);color:#fff;font-weight:900;border:4px solid #f5f9fd;box-shadow:0 5px 14px rgba(25,94,216,.18)}.lifeStep h3{font-size:1rem;line-height:1.4;margin:0;color:#183b63}.lifeStep small{display:block;margin-top:7px;color:#6c7d8f;font-weight:700}.lifeStep:nth-child(7),.lifeStep:nth-child(8),.lifeStep:nth-child(9),.lifeStep:nth-child(10),.lifeStep:nth-child(11),.lifeStep:nth-child(12){margin-top:18px}\n@media(max-width:1100px){.lifecycleTrack{grid-template-columns:repeat(4,1fr)}.lifecycleTrack:before{display:none}}@media(max-width:760px){.lifecycleSection{padding:62px 0}.lifecycleTrack{grid-template-columns:repeat(2,1fr);gap:12px}.lifeStep{min-height:135px;padding:52px 12px 16px}.lifeStep h3{font-size:.96rem}}@media(max-width:430px){.lifecycleTrack{grid-template-columns:1fr}}\n</style>\n'''
+          s=s.replace('</head>',css+'</head>')
+          marker='<section class="page rdSection"><div class="rdSectionHead"><span>MY PROFESSIONAL WORLDS</span>'
+          section='''<section class="lifecycleSection"><div class="page"><div class="lifecycleHead"><span>PRODUCT LIFECYCLE · END TO END</span><h2>ביצוע כל שלבי המוצר</h2><p>מהגדרת הצורך והאפיון ועד השקה, הטמעה, שירות ושימור לקוחות.</p></div><div class="lifecycleTrack"><article class="lifeStep"><h3>הגדרה וניתוח דרישות</h3><small>Discovery & Requirements</small></article><article class="lifeStep"><h3>PRD</h3><small>Product Requirements Document</small></article><article class="lifeStep"><h3>ניתוח מערכות</h3><small>System Analysis</small></article><article class="lifeStep"><h3>תכנות MAGIC</h3><small>Development</small></article><article class="lifeStep"><h3>QA</h3><small>Testing & Validation</small></article><article class="lifeStep"><h3>Prototype & A/B Testing</h3><small>Experimentation</small></article><article class="lifeStep"><h3>מכירת פיצ'ר</h3><small>Feature Sales</small></article><article class="lifeStep"><h3>Go To Market</h3><small>Launch</small></article><article class="lifeStep"><h3>הטמעה והדרכה</h3><small>Implementation & Training</small></article><article class="lifeStep"><h3>Help Desk</h3><small>Technical Support</small></article><article class="lifeStep"><h3>שירות לקוחות</h3><small>Customer Service</small></article><article class="lifeStep"><h3>שימור לקוחות</h3><small>Retention</small></article></div></div></section>\n'''
+          if marker not in s:
+              raise SystemExit('Insertion marker not found')
+          s=s.replace(marker,section+marker,1)
+          p.write_text(s)
+          PY
+      - name: Commit update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add end-to-end product lifecycle timeline to homepage" || exit 0
+          git push
