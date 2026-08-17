@@ -3,3 +3,7 @@
 .lifeStep .lifeIcon{margin-top:8px!important;margin-bottom:10px!important}
 .lifeStep h3{margin-top:28px!important}
 @media(max-width:760px){.lifeStep h3{margin-top:24px!important}}
+
+/* Group related lifecycle steps with the same color */
+.step5,.step6{--step:#67bf62!important}
+.step10,.step11,.step12{--step:#8c55d9!important}
