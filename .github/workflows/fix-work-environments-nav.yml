@@ -1,0 +1,42 @@
+name: Fix work environments nav
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-work-environments-nav.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-nav:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add Work Environments to generated Hebrew nav
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('assets/app.js')
+          s = p.read_text(encoding='utf-8')
+          old = "['projects.html','עבודות'],['education.html','השכלה']"
+          new = "['projects.html','עבודות'],['work-environments.html','סביבות עבודה'],['education.html','השכלה']"
+          if new in s:
+              print('Navigation already fixed')
+          elif old in s:
+              p.write_text(s.replace(old, new, 1), encoding='utf-8')
+              print('Navigation fixed')
+          else:
+              raise SystemExit('Expected Hebrew navigation pattern not found')
+          PY
+      - name: Commit fix
+        run: |
+          if git diff --quiet -- assets/app.js; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/app.js
+          git commit -m "Add Work Environments to generated navigation"
+          git push
