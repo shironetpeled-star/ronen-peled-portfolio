@@ -1,0 +1,54 @@
+name: Restore professional worlds to homepage
+on:
+  push:
+    paths:
+      - '.github/workflows/restore-professional-worlds-home.yml'
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Move professional worlds section back to homepage
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          section = '''<section class="page rdSection"><div class="rdSectionHead"><span>MY PROFESSIONAL WORLDS</span><h2>חמישה עולמות מקצועיים שמתחברים לתמונה אחת</h2><p>השילוב בין התחומים מאפשר לי לראות גם את התמונה העסקית וגם את הפרטים הטכנולוגיים — ולחבר ביניהם לביצוע.</p></div><div class="rdRoles">
+          <a href="product.html"><i>01</i><div class="rdRoleIcon">📦</div><h3>מנהל מוצר</h3><p>Discovery, Strategy, Requirements, Roadmap, Prioritization, Adoption ושיפור מתמשך.</p><b>לפרטים ←</b></a>
+          <a href="project.html"><i>02</i><div class="rdRoleIcon">📋</div><h3>מנהל פרויקט</h3><p>Scope, תכנון, סיכונים, תלויות, תיאום צוותים, Delivery ו‑Rollout.</p><b>לפרטים ←</b></a>
+          <a href="system.html"><i>03</i><div class="rdRoleIcon">🧩</div><h3>מנתח מערכות</h3><p>Business, Functional & Technical Analysis, נתונים, ממשקים ואינטגרציות.</p><b>לפרטים ←</b></a>
+          <a href="magic.html"><i>04</i><div class="rdRoleIcon">💻</div><h3>מתכנת MAGIC</h3><p>פיתוח מערכות עסקיות, Legacy, לוגיקה עסקית, תחזוקה, התאמות ואינטגרציות.</p><b>לפרטים ←</b></a>
+          <a href="customer.html"><i>05</i><div class="rdRoleIcon">🤝</div><h3>Customer Success</h3><p>Enterprise Customers, Escalations, Support, Feedback, Adoption ושימור לקוחות.</p><b>לפרטים ←</b></a>
+          </div></section>'''
+          # Normalize the indentation used only inside this workflow string.
+          section = '\n'.join(line.strip() for line in section.splitlines())
+
+          index_path = Path('index.html')
+          index = index_path.read_text(encoding='utf-8')
+          anchor = '<section class="page rdSection"><div class="rdSplit">'
+          if 'MY PROFESSIONAL WORLDS' not in index:
+              if anchor not in index:
+                  raise SystemExit('Homepage insertion anchor not found')
+              index = index.replace(anchor, section + '\n' + anchor, 1)
+              index_path.write_text(index, encoding='utf-8')
+
+          work_path = Path('work-environments.html')
+          work = work_path.read_text(encoding='utf-8')
+          start = work.find('<section class="page rdSection"><div class="rdSectionHead"><span>MY PROFESSIONAL WORLDS</span>')
+          if start != -1:
+              end = work.find('</section>', start)
+              if end == -1:
+                  raise SystemExit('Professional worlds section end not found')
+              end += len('</section>')
+              work = work[:start] + work[end:]
+              work_path.write_text(work, encoding='utf-8')
+          PY
+      - name: Commit restored section
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html work-environments.html
+          git diff --cached --quiet || git commit -m "Restore professional worlds section to homepage"
+          git push
