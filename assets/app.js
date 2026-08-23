@@ -42,3 +42,30 @@ function applyProjectCompanyHistory(){if(current!=='projects.html')return;docume
 function addCompanyIconsEverywhere(){const root=document.querySelector('main');if(!root)return;const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(node=>{const parent=node.parentElement;if(!parent||parent.closest('.companyMark,.roleIcon,.sectionIcon,.companyIcon,script,style,button'))return;const text=node.nodeValue;if(!text||!text.trim())return;let matches=[];companyIconRules.forEach(rule=>rule.names.forEach(name=>{let pos=text.indexOf(name);while(pos!==-1){matches.push({pos,len:name.length,rule,name});pos=text.indexOf(name,pos+name.length)}}));if(!matches.length)return;matches.sort((a,b)=>a.pos-b.pos||b.len-a.len);const chosen=[];let end=-1;matches.forEach(m=>{if(m.pos>=end){chosen.push(m);end=m.pos+m.len}});const frag=document.createDocumentFragment();let cursor=0;chosen.forEach(m=>{if(m.pos>cursor)frag.appendChild(document.createTextNode(text.slice(cursor,m.pos)));const mark=document.createElement('span');mark.className='companyMark';mark.title=m.rule.title;mark.style.cssText='display:inline-flex;align-items:center;gap:5px;white-space:nowrap';mark.append(makeCompanyIcon(m.rule),document.createTextNode(m.name));frag.appendChild(mark);cursor=m.pos+m.len});if(cursor<text.length)frag.appendChild(document.createTextNode(text.slice(cursor)));node.replaceWith(frag)})}
 window.addEventListener('DOMContentLoaded',applyProjectCompanyHistory);
 window.addEventListener('DOMContentLoaded',addCompanyIconsEverywhere);
+
+function addProfessionQuickLinks(){
+  const professionPages=['product.html','project.html','system.html','magic.html','customer.html'];
+  if(!professionPages.includes(current))return;
+  const style=document.createElement('style');
+  style.textContent='.roleQuickLinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.roleQuickLinks a,.educationDetailLink{display:inline-flex;align-items:center;justify-content:center;padding:9px 14px;border:1px solid #195ed8;border-radius:10px;background:#edf3ff;color:#195ed8;text-decoration:none;font-weight:900;font-size:13px}.roleQuickLinks a:hover,.educationDetailLink:hover{background:#195ed8;color:#fff}.educationDetailLink{margin-top:14px}';
+  document.head.appendChild(style);
+  const exp=document.querySelector('.highlight');
+  if(exp&&!exp.querySelector('.roleQuickLinks')){
+    const links=document.createElement('div');links.className='roleQuickLinks';
+    const experience=document.createElement('a');experience.href='experience.html';experience.textContent='עבור לפירוט ניסיון';
+    const projects=document.createElement('a');projects.href='projects.html';projects.textContent='עבודות ופרויקטים';
+    links.append(experience,projects);exp.appendChild(links);
+  }
+  const course=document.querySelector('.productCourse,.systemCourse');
+  if(course&&!course.querySelector('.educationDetailLink')){
+    const education=document.createElement('a');education.className='educationDetailLink';education.href='education.html';education.textContent='פירוט השכלה';course.appendChild(education);
+  }
+  if(current==='magic.html'){
+    const educationSection=[...document.querySelectorAll('section')].find(s=>s.textContent.includes('MAGIC TRAINING & CERTIFICATIONS'));
+    if(educationSection&&!educationSection.querySelector('.educationDetailLink')){
+      const education=document.createElement('a');education.className='educationDetailLink';education.href='education.html';education.textContent='פירוט השכלה';
+      const page=educationSection.querySelector('.page')||educationSection;page.appendChild(education);
+    }
+  }
+}
+window.addEventListener('DOMContentLoaded',addProfessionQuickLinks);
