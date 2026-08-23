@@ -25,7 +25,6 @@ if(current==='index.html'){const professionLine=document.querySelector('.rdProfi
 const pageIconMap={'index.html':'🏠','index-en.html':'🏠','skills.html':'🧠','skills-en.html':'🧠','product.html':'📦','product-en.html':'📦','project.html':'📋','project-en.html':'📋','system.html':'🧩','system-en.html':'🧩','magic.html':'💻','en-05.html':'💻','customer.html':'🤝','en-06.html':'🤝','experience.html':'💼','history-en.html':'💼','projects.html':'🛠️','role-magic-en.html':'🛠️','service.html':'🎖️','service-page-en.html':'🎖️','contact.html':'✉️','contact-en.html':'✉️'};
 const pageIcon=pageIconMap[current];if(pageIcon){const h=document.querySelector('main h1');if(h&&!h.textContent.trim().startsWith(pageIcon)){const s=document.createElement('span');s.textContent=pageIcon+' ';s.setAttribute('aria-hidden','true');h.prepend(s)}}
 
-// Company marks: supplied/local logos are used where available.
 const companyIconRules=[
  {names:['SMARTi','Smarti','דור אלי שני'],src:'https://www.smarti.co.il/favicon.ico',fallback:'👥',title:'SMARTi'},
  {names:['Shlomo SIXT','Shlomo Sixt','שלמה SIXT','קבוצת שלמה','שלמה'],src:'https://www.shlomo.co.il/favicon.ico',fallback:'🚗',title:'Shlomo SIXT'},
@@ -47,7 +46,7 @@ function addProfessionQuickLinks(){
   const professionPages=['product.html','project.html','system.html','magic.html','customer.html'];
   if(!professionPages.includes(current))return;
   const style=document.createElement('style');
-  style.textContent='.roleQuickLinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.roleQuickLinks a,.educationDetailLink{display:inline-flex;align-items:center;justify-content:center;padding:9px 14px;border:1px solid #195ed8;border-radius:10px;background:#edf3ff;color:#195ed8;text-decoration:none;font-weight:900;font-size:13px}.roleQuickLinks a:hover,.educationDetailLink:hover{background:#195ed8;color:#fff}.educationDetailLink{margin-top:14px}';
+  style.textContent='.roleQuickLinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.roleQuickLinks a,.educationDetailLink,.skillsDetailLink{display:inline-flex;align-items:center;justify-content:center;padding:9px 14px;border:1px solid #195ed8;border-radius:10px;background:#edf3ff;color:#195ed8;text-decoration:none;font-weight:900;font-size:13px}.roleQuickLinks a:hover,.educationDetailLink:hover,.skillsDetailLink:hover{background:#195ed8;color:#fff}.educationDetailLink{margin-top:14px}.skillsDetailLink{margin-top:18px}';
   document.head.appendChild(style);
   const exp=document.querySelector('.highlight');
   if(exp&&!exp.querySelector('.roleQuickLinks')){
@@ -66,6 +65,11 @@ function addProfessionQuickLinks(){
       const education=document.createElement('a');education.className='educationDetailLink';education.href='education.html';education.textContent='פירוט השכלה';
       const page=educationSection.querySelector('.page')||educationSection;page.appendChild(education);
     }
+  }
+  const abilitiesSection=document.querySelector('section.soft');
+  if(abilitiesSection&&!abilitiesSection.querySelector('.skillsDetailLink')){
+    const abilities=document.createElement('a');abilities.className='skillsDetailLink';abilities.href='skills.html';abilities.textContent='עבור ליכולות';
+    const target=abilitiesSection.querySelector('.page')||abilitiesSection;target.appendChild(abilities);
   }
 }
 window.addEventListener('DOMContentLoaded',addProfessionQuickLinks);
