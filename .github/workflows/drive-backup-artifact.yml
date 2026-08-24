@@ -1,0 +1,19 @@
+name: Drive Backup Artifact
+on:
+  push:
+    branches:
+      - drive-backup-2026-08-24
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create site backup zip
+        run: |
+          zip -r ronen-peled-portfolio-backup-2026-08-24.zip . -x '.git/*' 'ronen-peled-portfolio-backup-2026-08-24.zip'
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ronen-peled-portfolio-backup-2026-08-24
+          path: ronen-peled-portfolio-backup-2026-08-24.zip
+          retention-days: 30
