@@ -1,0 +1,51 @@
+name: Apply digital marketing updates
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-digital-marketing-update.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Update education and product pages
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          edu = Path('education.html')
+          s = edu.read_text(encoding='utf-8')
+          marker = '<article class="skill"><div class="titleWithIcon"><span class="sectionIcon">🏫</span><h3>תיכון — בגרות מלאה, מגמת שיווק</h3>'
+          card = '<article class="skill"><div class="titleWithIcon"><span class="sectionIcon">📣</span><h3>שיווק דיגיטלי</h3></div><span class="credentialType">סוג התעודה: קורס מקצועי</span><p><strong>מקום לימודים:</strong> מערך מעו״ף – הסוכנות לעסקים קטנים ובינוניים</p><p><strong>תחום:</strong> שיווק דיגיטלי לעסקים</p><ul class="credentialList"><li><strong>תעודה:</strong> תעודת סיום קורס בשיווק דיגיטלי</li></ul></article>'
+          if 'שיווק דיגיטלי</h3>' not in s:
+              if marker not in s:
+                  raise SystemExit('Education insertion marker not found')
+              s = s.replace(marker, card + marker, 1)
+              edu.write_text(s, encoding='utf-8')
+
+          product = Path('product.html')
+          p = product.read_text(encoding='utf-8')
+          anchor = '<li><strong>ראייה מקצה לקצה</strong> — Product + Technology + System Analysis + Customer Success.</li>'
+          advantage = '<li><strong>ראייה שיווקית ועסקית</strong> — שילוב הכשרה בשיווק דיגיטלי עם ניסיון בעבודה מול לקוחות, להבנת השוק, צורכי הלקוח, הצעת הערך ו־Go-to-Market.</li>'
+          if 'ראייה שיווקית ועסקית' not in p:
+              if anchor not in p:
+                  raise SystemExit('Product advantage insertion marker not found')
+              p = p.replace(anchor, anchor + advantage, 1)
+              product.write_text(p, encoding='utf-8')
+          PY
+      - name: Commit changes and remove one-time workflow
+        run: |
+          rm -f .github/workflows/apply-digital-marketing-update.yml
+          git config user.name "shironetpeled-star"
+          git config user.email "shironetpeled@gmail.com"
+          git add education.html product.html .github/workflows/apply-digital-marketing-update.yml
+          git commit -m "Add digital marketing education and product advantage"
+          git push origin main
