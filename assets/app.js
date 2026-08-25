@@ -20,6 +20,28 @@
     });
     more.addEventListener('toggle',function(){more.style.flexBasis=more.open?'100%':'auto';});
   }
+  function restoreHomeExperienceButtons(){
+    const page=(location.pathname.split('/').pop()||'index.html');
+    if(page!=='index.html' || document.getElementById('homeExperienceQuickButtons')) return;
+    const all=[...document.querySelectorAll('section,div')];
+    let target=null;
+    for(const el of all){
+      const txt=(el.textContent||'').trim();
+      if(/MY\s*EXPERIENCE/i.test(txt) || /הניסיון שלי/.test(txt)){target=el;break;}
+    }
+    if(!target) return;
+    const row=document.createElement('div');
+    row.id='homeExperienceQuickButtons';
+    row.style.cssText='display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center;margin:22px auto 0;direction:rtl';
+    const common='display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 18px;border-radius:11px;background:#edf3ff;border:1px solid #c9d9f5;color:#195ed8;text-decoration:none;font-weight:900;font-size:14px;line-height:1.2;transition:.15s ease';
+    [['experience.html','ניסיון'],['projects.html','רשימת פרויקטים'],['work-environments.html','סוגי מערכות'],['education.html','השכלה']].forEach(function(item){
+      const a=document.createElement('a');a.href=item[0];a.textContent=item[1];a.style.cssText=common;
+      a.addEventListener('mouseenter',function(){a.style.background='#195ed8';a.style.color='#fff'});
+      a.addEventListener('mouseleave',function(){a.style.background='#edf3ff';a.style.color='#195ed8'});
+      row.appendChild(a);
+    });
+    target.appendChild(row);
+  }
   function addBottomNavigation(){
     const page=(location.pathname.split('/').pop()||'index.html');
     if(!['education.html','work-environments.html','military.html'].includes(page) || document.getElementById('sharedBottomNavigation')) return;
@@ -31,7 +53,7 @@
   }
   const core=document.createElement('script');
   core.src='assets/app-core.js';
-  core.onload=function(){enhanceExperience();addBottomNavigation();};
-  core.onerror=function(){enhanceExperience();addBottomNavigation();};
+  core.onload=function(){enhanceExperience();restoreHomeExperienceButtons();addBottomNavigation();};
+  core.onerror=function(){enhanceExperience();restoreHomeExperienceButtons();addBottomNavigation();};
   document.head.appendChild(core);
 })();
