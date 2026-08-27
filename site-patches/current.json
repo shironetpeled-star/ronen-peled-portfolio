@@ -1,0 +1,18 @@
+{
+  "operations": [
+    {
+      "file": "experience.html",
+      "type": "regex_replace",
+      "pattern": "<script\\s+src=\\\"assets/app\\.js(?:\\?[^\\\"]*)?\\\"></script>",
+      "replacement": "<script src=\"assets/app.js?v=20260827-central-1\"></script><script src=\"assets/quick-nav.js?v=20260827-central-1\"></script>",
+      "expected": 1
+    },
+    {
+      "file": "military.html",
+      "type": "regex_replace",
+      "pattern": "<script\\s+src=\\\"assets/app\\.js(?:\\?[^\\\"]*)?\\\"></script>",
+      "replacement": "<script src=\"assets/app.js?v=20260827-central-1\"></script><script src=\"assets/quick-nav.js?v=20260827-central-1\"></script>",
+      "expected": 1
+    }
+  ]
+}
