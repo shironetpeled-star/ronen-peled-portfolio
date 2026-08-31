@@ -17,6 +17,7 @@
         .roleBringCard{display:flex;flex-direction:column;justify-content:flex-start}
         .roleBringCard>.sectionTitle{margin-bottom:14px}
         .roleBringCard>.bigtext{margin-top:0}
+        .roleBringCard .roleTrainingInline{margin-top:34px!important}
         .roleExperience{display:flex!important;flex-direction:column!important;height:470px!important;min-height:470px!important;padding:28px 30px!important;border-radius:20px!important;box-shadow:0 14px 34px rgba(13,34,54,.14)!important;overflow:visible!important}
         .roleExperience>span:first-child{display:block;margin-bottom:8px}
         .roleExperience .expQuick{margin-top:auto!important;padding-top:16px!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important;width:100%!important;flex-wrap:nowrap!important}
@@ -27,7 +28,7 @@
         .magicOverview.magicTrainingOnly{grid-template-columns:1fr!important;padding-top:0!important}
         .magicOverview.magicTrainingOnly .trainingPanel{height:auto!important}
         .experienceMore{display:none!important}
-        @media(max-width:900px){.roleOverview{grid-template-columns:1fr!important}.roleEducation .educationBlock{max-width:none}.roleExperience{height:auto!important;min-height:470px!important}}
+        @media(max-width:900px){.roleOverview{grid-template-columns:1fr!important}.roleEducation .educationBlock{max-width:none}.roleExperience{height:auto!important;min-height:470px!important}.roleBringCard .roleTrainingInline{margin-top:28px!important}}
         @media(max-width:520px){.roleExperience{padding:24px 18px!important}.roleExperience .expQuick{gap:4px!important}.roleExperience .expQuick a{font-size:11px!important;padding:8px 3px!important}}
       `;document.head.appendChild(style)
     }
@@ -49,8 +50,12 @@
         const bring=overview.children[0];const exp=overview.querySelector('.highlight');
         if(bring)bring.classList.add('roleBringCard');if(exp)exp.classList.add('roleExperience');
         const education=bring&&bring.querySelector('.educationBlock');
-        if(education&&!education.closest('.roleEducation')){
-          const wrap=document.createElement('section');wrap.className='page section roleEducation';wrap.appendChild(education);overview.parentNode.insertBefore(wrap,overview.nextSibling);
+        if(education){
+          if(page==='product.html'||page==='system.html'){
+            education.classList.add('roleTrainingInline');
+          }else if(!education.closest('.roleEducation')){
+            const wrap=document.createElement('section');wrap.className='page section roleEducation';wrap.appendChild(education);overview.parentNode.insertBefore(wrap,overview.nextSibling);
+          }
         }
       }
     }
