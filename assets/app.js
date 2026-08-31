@@ -20,14 +20,15 @@
         .roleExperience{display:flex!important;flex-direction:column!important;height:470px!important;min-height:470px!important;padding:28px 30px!important;border-radius:20px!important;box-shadow:0 14px 34px rgba(13,34,54,.14)!important;overflow:visible!important}
         .roleExperience>span:first-child{display:block;margin-bottom:8px}
         .roleExperience .expQuick{margin-top:auto!important;padding-top:16px!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important;width:100%!important;flex-wrap:nowrap!important}
-        .roleExperience .expQuick a{width:100%!important;min-width:0!important;white-space:nowrap!important;text-align:center!important;font-size:11.5px!important;padding:8px 5px!important;line-height:1.15!important}
+        .roleExperience .expQuick a{width:100%!important;min-width:0!important;white-space:nowrap!important;text-align:center!important;font-size:13px!important;font-weight:1000!important;color:#0b3f9c!important;background:#ffffff!important;border:2px solid #b8cff3!important;padding:9px 5px!important;line-height:1.15!important;box-shadow:0 4px 10px rgba(13,34,54,.12)!important}
+        .roleExperience .expQuick a:hover{background:#195ed8!important;color:#fff!important;border-color:#195ed8!important;transform:translateY(-1px)}
         .roleEducation{padding-top:0!important}
         .roleEducation .educationBlock{margin-top:0!important;max-width:calc(50% - 14px)}
         .magicOverview.magicTrainingOnly{grid-template-columns:1fr!important;padding-top:0!important}
         .magicOverview.magicTrainingOnly .trainingPanel{height:auto!important}
         .experienceMore{display:none!important}
         @media(max-width:900px){.roleOverview{grid-template-columns:1fr!important}.roleEducation .educationBlock{max-width:none}.roleExperience{height:auto!important;min-height:470px!important}}
-        @media(max-width:520px){.roleExperience{padding:24px 18px!important}.roleExperience .expQuick{gap:4px!important}.roleExperience .expQuick a{font-size:10px!important;padding:7px 3px!important}}
+        @media(max-width:520px){.roleExperience{padding:24px 18px!important}.roleExperience .expQuick{gap:4px!important}.roleExperience .expQuick a{font-size:11px!important;padding:8px 3px!important}}
       `;document.head.appendChild(style)
     }
     const main=document.querySelector('main');if(!main)return;
