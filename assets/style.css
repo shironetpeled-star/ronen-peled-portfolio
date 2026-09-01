@@ -37,6 +37,9 @@ body:has(details.moreJobs) .experienceMoreJobsRow,body:has(details.moreJobs) #ex
 
 /* Neutralize the legacy central experience row, including cached quick-nav.js */
 body:has(details.moreJobs) #centralExperienceQuickNav{display:block!important;margin:0!important}body:has(details.moreJobs) #centralExperienceQuickNav>a,body:has(details.moreJobs) #centralExperienceQuickNav>details>summary{display:none!important}body:has(details.moreJobs) #centralExperienceQuickNav>details{margin:0!important;display:block!important}
+
+/* Link from every profession's MY ADVANTAGE box to the full advantages page */
+.adv{position:relative}.allAdvantagesLink{position:absolute;top:0;left:0;display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;border-radius:10px;background:#195ed8;color:#fff!important;text-decoration:none!important;font-size:12.5px;font-weight:950;box-shadow:0 7px 16px rgba(25,94,216,.18);transition:transform .15s ease,background .15s ease}.allAdvantagesLink:hover{background:#0e2945;transform:translateY(-1px)}@media(max-width:600px){.allAdvantagesLink{position:static;margin-bottom:12px}.adv>span{display:block}}
 /* brand-size-sitewide-v1 */
 .brand b{font-size:22px;font-weight:900;line-height:1.05!important;letter-spacing:1.2px!important}
 .brand small{font-size:12px!important;line-height:1.25!important;font-weight:700}
