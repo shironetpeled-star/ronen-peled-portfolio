@@ -31,6 +31,9 @@ footer::after{font-size:18px!important;font-weight:700!important;line-height:1.6
 
 /* Pin Advantages and Skills to the left side of the Experience quick-nav box */
 @media(min-width:901px){#sharedBottomNavigation .sbnGroup:first-child .sbnLinks a[href="advantages.html"]{order:98!important;margin-right:auto!important}#sharedBottomNavigation .sbnGroup:first-child .sbnLinks a[href="skills.html"]{order:99!important}}
+
+/* Experience page: the old action row is replaced by sharedBottomNavigation */
+body:has(details.moreJobs) .experienceMoreJobsRow,body:has(details.moreJobs) #experienceQuickButtons,body:has(details.moreJobs) main>.professionBottomNav,body:has(details.moreJobs) main>.nextStep{display:none!important}
 /* brand-size-sitewide-v1 */
 .brand b{font-size:22px;font-weight:900;line-height:1.05!important;letter-spacing:1.2px!important}
 .brand small{font-size:12px!important;line-height:1.25!important;font-weight:700}
