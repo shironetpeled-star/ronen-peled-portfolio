@@ -34,6 +34,9 @@ footer::after{font-size:18px!important;font-weight:700!important;line-height:1.6
 
 /* Experience page: the old action row is replaced by sharedBottomNavigation */
 body:has(details.moreJobs) .experienceMoreJobsRow,body:has(details.moreJobs) #experienceQuickButtons,body:has(details.moreJobs) main>.professionBottomNav,body:has(details.moreJobs) main>.nextStep{display:none!important}
+
+/* Neutralize the legacy central experience row, including cached quick-nav.js */
+body:has(details.moreJobs) #centralExperienceQuickNav{display:block!important;margin:0!important}body:has(details.moreJobs) #centralExperienceQuickNav>a,body:has(details.moreJobs) #centralExperienceQuickNav>details>summary{display:none!important}body:has(details.moreJobs) #centralExperienceQuickNav>details{margin:0!important;display:block!important}
 /* brand-size-sitewide-v1 */
 .brand b{font-size:22px;font-weight:900;line-height:1.05!important;letter-spacing:1.2px!important}
 .brand small{font-size:12px!important;line-height:1.25!important;font-weight:700}
