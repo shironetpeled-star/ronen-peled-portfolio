@@ -43,6 +43,9 @@ body:has(details.moreJobs) #centralExperienceQuickNav{display:block!important;ma
 
 /* Homepage organization-value card and link to all advantages */
 .homeAdvantagesPanel{position:relative;background:#fff;border:1px solid #dce6f2;border-radius:20px;padding:28px 30px;box-shadow:0 14px 34px rgba(13,34,54,.10)}.homeAdvantagesPanel .homeAllAdvantagesLink{top:24px;left:26px}@media(max-width:600px){.homeAdvantagesPanel{padding:24px 20px}.homeAdvantagesPanel .homeAllAdvantagesLink{position:static;margin-bottom:14px}}
+
+/* Shared title row above capabilities on every profession page */
+.professionSkillsHeaderRow{display:flex;align-items:center;justify-content:space-between;gap:16px;width:min(1160px,calc(100% - 40px));margin:0 auto 20px;direction:rtl}.professionSkillsHeading{display:flex;align-items:center;gap:12px;margin:0;font-size:25px;font-weight:900;color:#0e2945}.professionSkillsHeading .sectionIcon{width:42px;height:42px;border-radius:12px;display:inline-grid;place-items:center;background:#195ed8;color:#fff;font-size:22px;flex:0 0 auto}.professionSkillsHeaderRow .skillsDetailLink{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:44px;margin:0 0 0 auto;padding:11px 14px;border:0;border-radius:11px;background:#195ed8;color:#fff!important;text-decoration:none;font-weight:900;font-size:12px;line-height:1.25;box-shadow:0 7px 16px rgba(25,94,216,.18);transition:transform .15s ease,background .15s ease}.professionSkillsHeaderRow .skillsDetailLink:hover{background:#0e2945;transform:translateY(-1px)}@media(max-width:760px){.professionSkillsHeaderRow{align-items:flex-start;flex-wrap:wrap}}
 /* brand-size-sitewide-v1 */
 .brand b{font-size:22px;font-weight:900;line-height:1.05!important;letter-spacing:1.2px!important}
 .brand small{font-size:12px!important;line-height:1.25!important;font-weight:700}
