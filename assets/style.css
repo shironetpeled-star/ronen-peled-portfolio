@@ -40,6 +40,9 @@ body:has(details.moreJobs) #centralExperienceQuickNav{display:block!important;ma
 
 /* Link from every profession's MY ADVANTAGE box to the full advantages page */
 .adv{position:relative}.allAdvantagesLink{position:absolute;top:0;left:0;display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;border-radius:10px;background:#195ed8;color:#fff!important;text-decoration:none!important;font-size:12.5px;font-weight:950;box-shadow:0 7px 16px rgba(25,94,216,.18);transition:transform .15s ease,background .15s ease}.allAdvantagesLink:hover{background:#0e2945;transform:translateY(-1px)}@media(max-width:600px){.allAdvantagesLink{position:static;margin-bottom:12px}.adv>span{display:block}}
+
+/* Homepage organization-value card and link to all advantages */
+.homeAdvantagesPanel{position:relative;background:#fff;border:1px solid #dce6f2;border-radius:20px;padding:28px 30px;box-shadow:0 14px 34px rgba(13,34,54,.10)}.homeAdvantagesPanel .homeAllAdvantagesLink{top:24px;left:26px}@media(max-width:600px){.homeAdvantagesPanel{padding:24px 20px}.homeAdvantagesPanel .homeAllAdvantagesLink{position:static;margin-bottom:14px}}
 /* brand-size-sitewide-v1 */
 .brand b{font-size:22px;font-weight:900;line-height:1.05!important;letter-spacing:1.2px!important}
 .brand small{font-size:12px!important;line-height:1.25!important;font-weight:700}
