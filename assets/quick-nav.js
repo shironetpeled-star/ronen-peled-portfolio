@@ -3,7 +3,7 @@
   const btn='display:inline-flex;align-items:center;justify-content:center;min-height:42px;box-sizing:border-box;padding:10px 14px;border-radius:11px;background:#edf3ff;border:1px solid #c9d9f5;color:#195ed8;text-decoration:none;font-weight:900;font-size:13px;line-height:1.2;white-space:nowrap';
   function link(href,text){const a=document.createElement('a');a.href=href;a.textContent=text;a.style.cssText=btn;return a}
   function ensureExperience(){
-    if(page!=='experience.html')return;
+    if(page==='experience.html')return;
     const more=document.querySelector('details.moreJobs');
     if(!more)return;
     const legacy=document.getElementById('experienceQuickButtons');
