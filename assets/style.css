@@ -28,6 +28,9 @@ footer::after{font-size:18px!important;font-weight:700!important;line-height:1.6
 
 /* Shared bottom navigation: keep all Experience links on one desktop row */
 @media(min-width:901px){#sharedBottomNavigation .sbnRow{grid-template-columns:1fr!important}#sharedBottomNavigation .sbnGroup .sbnLinks,#sharedBottomNavigation .sbnProfessional .sbnLinks{display:flex!important;flex-wrap:nowrap!important;justify-content:flex-start!important;gap:7px!important}#sharedBottomNavigation .sbnGroup .sbnLinks a,#sharedBottomNavigation .sbnProfessional .sbnLinks a{flex:0 1 auto!important;width:auto!important;min-width:0!important;min-height:36px!important;padding:7px 11px!important;font-size:11.5px!important;line-height:1.15!important;font-weight:1000!important;letter-spacing:0!important;white-space:nowrap!important;overflow:visible!important}}
+
+/* Pin Advantages and Skills to the left side of the Experience quick-nav box */
+@media(min-width:901px){#sharedBottomNavigation .sbnGroup:first-child .sbnLinks a[href="advantages.html"]{order:98!important;margin-right:auto!important}#sharedBottomNavigation .sbnGroup:first-child .sbnLinks a[href="skills.html"]{order:99!important}}
 /* brand-size-sitewide-v1 */
 .brand b{font-size:22px;font-weight:900;line-height:1.05!important;letter-spacing:1.2px!important}
 .brand small{font-size:12px!important;line-height:1.25!important;font-weight:700}
