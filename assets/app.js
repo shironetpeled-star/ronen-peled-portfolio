@@ -69,6 +69,6 @@
   function repairAll(){ensureExperienceSkills();addRoleNavigation();standardizeRoleOverview();addBottomNavigation();addExperienceBottomNavigation()}
   const run=()=>{repairAll();setTimeout(repairAll,150);setTimeout(repairAll,700)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
-  const core=document.createElement('script');core.src='assets/app-core.js?v=20260826-8';core.onload=run;core.onerror=run;document.head.appendChild(core);
+  const core=document.createElement('script');core.src='assets/app-core.js?v=20260901-advantages-1';core.onload=run;core.onerror=run;document.head.appendChild(core);
   if(current()==='experience.html'){const obs=new MutationObserver(()=>ensureExperienceSkills());obs.observe(document.documentElement,{subtree:true,childList:true});setTimeout(()=>obs.disconnect(),5000)}
 })();
