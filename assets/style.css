@@ -77,3 +77,14 @@ html[lang="he"] .top .brandBlock .brand small::after{color:#355e43!important}
 html[lang="he"] .top nav a[href="advantages.html"]{color:#c51f2d!important}
 html[lang="he"] .top nav a[href="advantages.html"]:hover,html[lang="he"] .top nav a[href="advantages.html"].active{color:#b51220!important;background:#fff0f1!important}
 @media(max-width:950px){.top nav{background:#dff3e5!important;border-color:#a9d4b5!important}.menu{color:#173d25!important}}
+
+/* compact-uniform-green-nav-tabs-v1 */
+@media(min-width:951px){
+.top nav a{justify-self:center!important;width:max-content!important;min-height:34px!important;padding:7px 11px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important}
+.top nav a:not([href="index.html"]):not([href="index-en.html"]){background:#cbe9d4!important;border:1px solid #b0d9bd!important}
+.top nav a:not([href="index.html"]):not([href="index-en.html"]):hover{background:#bfe2c9!important;color:#0b5b2b!important}
+.top nav a:not([href="index.html"]):not([href="index-en.html"]).active{background:#b4ddc0!important;color:#0b5b2b!important;box-shadow:0 2px 8px rgba(22,82,44,.14)!important}
+.top nav a[href="index.html"],.top nav a[href="index-en.html"]{background:transparent!important;border-color:transparent!important;box-shadow:none!important}
+html[lang="he"] .top nav a[href="advantages.html"]{color:#c51f2d!important}
+html[lang="he"] .top nav a[href="advantages.html"].active{background:#b4ddc0!important;color:#b51220!important}
+}
