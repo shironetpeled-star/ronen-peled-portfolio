@@ -25,7 +25,9 @@
 .home-redesign .top nav>a:nth-child(n+3):nth-child(-n+7){width:100%!important;min-width:0!important;box-sizing:border-box!important;justify-self:stretch!important;padding-left:9px!important;padding-right:9px!important}
 }
 
-/* Homepage navigation: strong blue buttons with high-contrast labels */
-.home-redesign .top nav a{background:#1f5fbf!important;color:#fff!important;border:1px solid #174d9c!important;box-shadow:0 2px 7px rgba(23,77,156,.18)!important;font-weight:900!important}
-.home-redesign .top nav a:hover,.home-redesign .top nav a.active{background:#0f3f82!important;color:#fff!important;border-color:#0f3f82!important}
-.home-redesign .top nav a[href="advantages.html"],.home-redesign .top nav a[href="advantages.html"]:hover,.home-redesign .top nav a[href="advantages.html"].active{color:#fff!important;background:#1f5fbf!important}
+/* Homepage navigation: every button uses exactly the same blue */
+html[lang="he"] .home-redesign .top nav a,
+html[lang="he"] .home-redesign .top nav a.active,
+html[lang="he"] .home-redesign .top nav a[href="advantages.html"],
+html[lang="he"] .home-redesign .top nav>a:nth-child(15){background:#1f5fbf!important;color:#fff!important;border:1px solid #174d9c!important;box-shadow:0 2px 7px rgba(23,77,156,.18)!important;font-weight:900!important}
+html[lang="he"] .home-redesign .top nav a:hover{background:#174f9f!important;color:#fff!important;border-color:#174f9f!important}
