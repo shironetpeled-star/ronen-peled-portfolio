@@ -27,12 +27,12 @@
 .home-redesign .top nav>a:nth-child(n+3):nth-child(-n+7){width:max-content!important;min-width:0!important;box-sizing:border-box!important;justify-self:center!important;padding-left:12px!important;padding-right:12px!important}
 }
 
-/* Homepage navigation: every button uses exactly the same blue */
+/* Homepage navigation: swapped button background and text colors */
 html[lang="he"] .home-redesign .top nav a,
 html[lang="he"] .home-redesign .top nav a.active,
 html[lang="he"] .home-redesign .top nav a[href="advantages.html"],
-html[lang="he"] .home-redesign .top nav>a:nth-child(15){background:#1f5fbf!important;color:#74e8dd!important;border:1px solid #4c7fc8!important;box-shadow:0 2px 7px rgba(0,0,0,.18)!important;font-weight:900!important}
-html[lang="he"] .home-redesign .top nav a:hover{background:#2b6dcc!important;color:#74e8dd!important;border-color:#6b96d5!important}
+html[lang="he"] .home-redesign .top nav>a:nth-child(15){background:#74e8dd!important;color:#1f5fbf!important;border:1px solid #4fcfc3!important;box-shadow:0 2px 7px rgba(0,0,0,.18)!important;font-weight:900!important}
+html[lang="he"] .home-redesign .top nav a:hover{background:#63e0d3!important;color:#1f5fbf!important;border-color:#4fcfc3!important}
 .home-redesign .top .brand b,.home-redesign .top .brandPhone{color:#fff!important}
 html[lang="he"] .home-redesign .top .brandBlock .brand small::after{color:#d6e3ef!important}
 @media(max-width:950px){.home-redesign .top nav{background:#0d2946!important;border-color:#143c64!important}}
