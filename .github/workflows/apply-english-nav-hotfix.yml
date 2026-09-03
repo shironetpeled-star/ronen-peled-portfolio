@@ -1,0 +1,37 @@
+name: Apply English Nav Hotfix
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/apply-english-nav-hotfix.yml'
+      - 'assets/english-nav-hotfix.js'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Append nav hotfix to shared English script
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          sync = Path('assets/english-sync.js')
+          hot = Path('assets/english-nav-hotfix.js').read_text(encoding='utf-8')
+          text = sync.read_text(encoding='utf-8')
+          marker = 'englishNavEdgeHotfix'
+          if marker not in text:
+              sync.write_text(text.rstrip() + '\n' + hot + '\n', encoding='utf-8')
+          PY
+      - name: Commit shared English navigation fix
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/english-sync.js
+          git commit -m "Apply English nav edge alignment hotfix"
+          git pull --rebase origin main
+          git push
