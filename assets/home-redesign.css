@@ -67,3 +67,24 @@ html[lang="he"] body.home-redesign:has(#skillSearch) header.top nav>a:nth-child(
 html[lang="he"] body.home-redesign:has(#skillSearch) header.top nav>a[href="customer.html"]{white-space:nowrap!important}
 html[lang="he"] body.home-redesign:has(#skillSearch) header.top nav>a[href="contact.html"]{white-space:nowrap!important}
 }
+
+/* Homepage only: match shared top-nav alignment, sizing and spacing. Other tabs untouched. */
+@media(min-width:951px){
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top .navwrap{min-height:116px!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav{grid-template-columns:repeat(45,minmax(0,1fr))!important;grid-template-rows:35px 35px!important;row-gap:20px!important;column-gap:0!important;padding-left:48px!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a{position:static!important;transform:none!important;min-width:0!important;min-height:34px!important;box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(1){grid-row:1!important;grid-column:1/span 5!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(2){grid-row:1!important;grid-column:6/span 5!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(8){grid-row:1!important;grid-column:11/span 5!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(9){grid-row:1!important;grid-column:16/span 5!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(10){grid-row:1!important;grid-column:21/span 5!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(11){grid-row:1!important;grid-column:26/span 5!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(12){grid-row:1!important;grid-column:31/span 5!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(13){grid-row:1!important;grid-column:36/span 5!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(14){grid-row:1!important;grid-column:41/span 5!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(3){grid-row:2!important;grid-column:1/span 9!important;width:100%!important;justify-self:stretch!important;padding-left:12px!important;padding-right:12px!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(4){grid-row:2!important;grid-column:10/span 9!important;width:100%!important;justify-self:stretch!important;padding-left:12px!important;padding-right:12px!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(5){grid-row:2!important;grid-column:19/span 9!important;width:100%!important;justify-self:stretch!important;padding-left:12px!important;padding-right:12px!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(6){grid-row:2!important;grid-column:28/span 9!important;width:100%!important;justify-self:stretch!important;padding-left:12px!important;padding-right:12px!important}
+html[lang="he"] body.home-redesign:not(:has(#skillSearch)) header.top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 9!important;width:100%!important;justify-self:stretch!important;padding-left:12px!important;padding-right:12px!important}
+}
