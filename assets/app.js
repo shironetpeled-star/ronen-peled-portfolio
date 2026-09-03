@@ -38,6 +38,7 @@
         html[lang="he"] .top nav>a:nth-child(6){grid-row:2!important;grid-column:28/span 9!important}
         html[lang="he"] .top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 9!important}
         html[lang="he"] body .top nav>a:nth-child(n+3):nth-child(-n+7){width:100%!important;min-width:0!important;box-sizing:border-box!important;justify-self:stretch!important;padding-left:12px!important;padding-right:12px!important}
+        html[lang="he"] body.home-redesign:not(:has(#skillSearch)) .top nav>a{width:calc(100% - 10px)!important;justify-self:center!important;padding-left:7px!important;padding-right:7px!important;white-space:nowrap!important}
       }
       @media(max-width:950px){html[lang="he"] .top nav{background:#0d2946!important;border-color:#143c64!important}.menu{color:#fff!important}}
     `;document.head.appendChild(s)}
