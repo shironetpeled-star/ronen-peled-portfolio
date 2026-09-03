@@ -1,42 +1,43 @@
 (function(){
   const current=()=>location.pathname.split('/').pop()||'index.html';
-  const unifiedHeNav=[['index.html','בית'],['skills.html','יכולות'],['advantages.html','היתרונות שלי'],['experience.html','ניסיון'],['projects.html','עבודות'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['service.html','שירות צבאי'],['contact.html','צור איתי קשר'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html',"מתכנת מג'יק"],['customer.html','Customer Success'],['index-en.html','EN']];
+  const unifiedHeNav=[['index.html','בית'],['skills.html','יכולות'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html',"מתכנת מג'יק"],['customer.html','Customer Success'],['experience.html','ניסיון'],['projects.html','עבודות'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['military.html','שירות צבאי'],['contact.html','צור איתי קשר'],['index-en.html','EN']];
   function normalizeHebrewTopbar(){
     if(document.documentElement.lang!=='he')return;
     let header=document.querySelector('header.top');if(!header)return;
-    if(current()==='skills.html'&&!header.dataset.unifiedDetached){const clone=header.cloneNode(true);clone.dataset.unifiedDetached='1';header.replaceWith(clone);header=clone}
-    header.innerHTML='<div class="navwrap"><div class="brandBlock"><a class="brand" href="index.html"><b>רונן פלד</b><small>מנהל מוצר • מנהל פרויקט • מנתח מערכות • מתכנת MAGIC • Customer Success</small></a><a class="brandPhone" href="tel:+972546546288">☎ 054-6546288</a></div><button class="menu" aria-label="תפריט">☰</button><nav></nav></div>';
+    header.innerHTML='<div class="navwrap"><div class="brandBlock"><a class="brand" href="index.html"><b>רונן פלד</b><small>Product • Systems • Projects • MAGIC • Customer Success</small></a><span class="brandPhone">054-6546288</span></div><button class="menu" aria-label="תפריט">☰</button><nav></nav></div>';
     const nav=header.querySelector('nav');
-    unifiedHeNav.forEach(([href,label])=>{const a=document.createElement('a');a.href=href;a.textContent=label;if(current()===href||(current()==='military.html'&&href==='service.html'))a.classList.add('active');nav.appendChild(a)});
+    unifiedHeNav.forEach(([href,label])=>{const a=document.createElement('a');a.href=href;a.textContent=label;if(current()===href||(current()==='service.html'&&href==='military.html'))a.classList.add('active');nav.appendChild(a)});
     const menu=header.querySelector('.menu');if(menu)menu.addEventListener('click',()=>nav.classList.toggle('open'));
-    if(!document.getElementById('unifiedHebrewTopbarStyle')){const s=document.createElement('style');s.id='unifiedHebrewTopbarStyle';s.textContent=`
-      html[lang="he"] .top{background:#0d2946!important;border-bottom-color:#143c64!important;color:#fff!important}
+    if(!document.getElementById('exactSkillsTopbarStyle')){const s=document.createElement('style');s.id='exactSkillsTopbarStyle';s.textContent=`
+      .top .brandBlock .brand b{font-size:24px!important;line-height:1.15!important;font-weight:900!important}
+      .top .brandBlock .brand small::after{content:"מנהל מוצר • מנהל פרויקט • מנתח מערכות\\Aמתכנת מג'יק • Customer Success"!important;white-space:pre-line!important;font-size:15px!important;line-height:1.3!important;font-weight:700!important;color:#4f6073!important}
+      .top .brandBlock .brandPhone{font-size:13px!important;font-weight:800!important}
+      .top .brandBlock{min-width:260px!important}
+      html[lang="he"] .top nav a,html[lang="he"] .top nav a.active{background:#74e8dd!important;color:#1f5fbf!important;border:1px solid #4c7fc8!important;box-shadow:0 2px 7px rgba(0,0,0,.18)!important;font-weight:900!important}
+      html[lang="he"] .top nav a:hover{background:#8cece3!important;color:#174f9f!important}
       html[lang="he"] .top .brand b,html[lang="he"] .top .brandPhone{color:#fff!important}
-      html[lang="he"] .top .brandBlock .brand small::after{color:#d6e3ef!important}
-      html[lang="he"] .top nav a{background:#74e8dd!important;color:#1f5fbf!important;border:1px solid #4c7fc8!important;box-shadow:0 2px 7px rgba(0,0,0,.18)!important;font-weight:900!important;font-size:13px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important}
-      html[lang="he"] .top nav a:hover,html[lang="he"] .top nav a.active{background:#8cece3!important;color:#174f9f!important;border-color:#6b96d5!important}
-      html[lang="he"] .top nav a[href="advantages.html"],html[lang="he"] .top nav a[href="advantages.html"].active{color:#c51f2d!important}
-      html[lang="he"] .top nav a[href="magic.html"]{font-size:0!important}
-      html[lang="he"] .top nav a[href="magic.html"]::after{content:"מתכנת מגי'ק"!important;font-size:13px!important;font-weight:900!important}
+      html[lang="he"] .top nav a[href="magic.html"]{font-size:13px!important}
+      html[lang="he"] .top nav a[href="magic.html"]::after{content:none!important}
       @media(min-width:951px){
-        html[lang="he"] .top .navwrap{width:min(1240px,calc(100% - 28px))!important;grid-template-columns:260px minmax(0,900px)!important;min-height:116px!important;gap:24px!important;padding:5px 0!important}
-        html[lang="he"] .top nav{display:grid!important;grid-template-columns:repeat(72,minmax(0,1fr))!important;grid-template-rows:35px 35px!important;row-gap:20px!important;column-gap:0!important;width:100%!important;padding-left:0!important;margin:0!important;align-items:center!important;position:relative!important}
-        html[lang="he"] .top nav>a{position:static!important;transform:none!important;width:calc(100% - 10px)!important;max-width:none!important;min-width:0!important;min-height:34px!important;box-sizing:border-box!important;justify-self:center!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:7px 6px!important}
-        html[lang="he"] .top nav>a[href="index.html"]{grid-row:1!important;grid-column:1/span 7!important}
-        html[lang="he"] .top nav>a[href="skills.html"]{grid-row:1!important;grid-column:8/span 7!important}
-        html[lang="he"] .top nav>a[href="advantages.html"]{grid-row:1!important;grid-column:15/span 8!important}
-        html[lang="he"] .top nav>a[href="experience.html"]{grid-row:1!important;grid-column:23/span 7!important}
-        html[lang="he"] .top nav>a[href="projects.html"]{grid-row:1!important;grid-column:30/span 7!important}
-        html[lang="he"] .top nav>a[href="work-environments.html"]{grid-row:1!important;grid-column:37/span 8!important}
-        html[lang="he"] .top nav>a[href="education.html"]{grid-row:1!important;grid-column:45/span 8!important}
-        html[lang="he"] .top nav>a[href="service.html"],html[lang="he"] .top nav>a[href="military.html"]{grid-row:1!important;grid-column:53/span 8!important}
-        html[lang="he"] .top nav>a[href="contact.html"]{grid-row:1!important;grid-column:61/span 12!important}
-        html[lang="he"] .top nav>a[href="product.html"]{grid-row:2!important;grid-column:1/span 12!important}
-        html[lang="he"] .top nav>a[href="project.html"]{grid-row:2!important;grid-column:13/span 12!important}
-        html[lang="he"] .top nav>a[href="system.html"]{grid-row:2!important;grid-column:25/span 12!important}
-        html[lang="he"] .top nav>a[href="magic.html"]{grid-row:2!important;grid-column:37/span 12!important}
-        html[lang="he"] .top nav>a[href="customer.html"]{grid-row:2!important;grid-column:49/span 12!important}
-        html[lang="he"] .top nav>a[href="index-en.html"]{grid-row:2!important;grid-column:61/span 12!important}
+        html[lang="he"] .top{background:#0d2946!important;border-bottom-color:#143c64!important}
+        html[lang="he"] .top .navwrap{min-height:112px!important}
+        html[lang="he"] .top nav{grid-template-columns:repeat(45,1fr)!important;grid-template-rows:35px 35px!important;row-gap:20px!important;column-gap:0!important;padding-left:48px!important}
+        html[lang="he"] .top nav>a{position:static!important;transform:none!important}
+        html[lang="he"] .top nav>a:nth-child(1){grid-row:1!important;grid-column:1/span 5!important}
+        html[lang="he"] .top nav>a:nth-child(2){grid-row:1!important;grid-column:6/span 5!important}
+        html[lang="he"] .top nav>a:nth-child(8){grid-row:1!important;grid-column:11/span 5!important}
+        html[lang="he"] .top nav>a:nth-child(9){grid-row:1!important;grid-column:16/span 5!important}
+        html[lang="he"] .top nav>a:nth-child(10){grid-row:1!important;grid-column:21/span 5!important}
+        html[lang="he"] .top nav>a:nth-child(11){grid-row:1!important;grid-column:26/span 5!important}
+        html[lang="he"] .top nav>a:nth-child(12){grid-row:1!important;grid-column:31/span 5!important}
+        html[lang="he"] .top nav>a:nth-child(13){grid-row:1!important;grid-column:36/span 5!important}
+        html[lang="he"] .top nav>a:nth-child(14){grid-row:1!important;grid-column:41/span 5!important}
+        html[lang="he"] .top nav>a:nth-child(3){grid-row:2!important;grid-column:1/span 9!important}
+        html[lang="he"] .top nav>a:nth-child(4){grid-row:2!important;grid-column:10/span 9!important}
+        html[lang="he"] .top nav>a:nth-child(5){grid-row:2!important;grid-column:19/span 9!important}
+        html[lang="he"] .top nav>a:nth-child(6){grid-row:2!important;grid-column:28/span 9!important}
+        html[lang="he"] .top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 9!important}
+        html[lang="he"] .top nav>a:nth-child(n+3):nth-child(-n+7){width:100%!important;min-width:0!important;box-sizing:border-box!important;justify-self:stretch!important;padding-left:12px!important;padding-right:12px!important}
       }
       @media(max-width:950px){html[lang="he"] .top nav{background:#0d2946!important;border-color:#143c64!important}.menu{color:#fff!important}}
     `;document.head.appendChild(s)}
