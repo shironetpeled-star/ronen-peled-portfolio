@@ -1,0 +1,32 @@
+name: Attach Company Icons
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/company-icons.js'
+      - 'scripts/attach_company_icons.py'
+      - '.github/workflows/attach-company-icons.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Attach company icon script
+        run: python scripts/attach_company_icons.py
+      - name: Commit generated HTML changes
+        run: |
+          if git diff --quiet; then
+            echo "No generated HTML changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add projects.html experience.html
+          git commit -m "Restore company icons on Projects and Experience"
+          git push
