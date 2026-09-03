@@ -1,0 +1,29 @@
+name: Attach English Site Sync
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'assets/english-sync.js'
+      - 'work-environments-en.html'
+      - 'advantages-en.html'
+      - 'scripts/attach_english_sync.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Attach shared English sync script
+        run: python scripts/attach_english_sync.py
+      - name: Commit generated HTML updates
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add '*.html'
+          git commit -m "Attach shared English site sync"
+          git push
