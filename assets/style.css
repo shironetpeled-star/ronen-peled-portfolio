@@ -129,3 +129,13 @@ html[lang="he"] body:not(.home-redesign) .top nav>a{
   padding-right:8px!important;
 }
 }
+
+/* wider-customer-contact-and-shift-en-v1 */
+@media(min-width:951px){
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(13){grid-column:43/span 5!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(14){grid-column:48/span 7!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(7){grid-column:37/span 11!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(15){grid-column:48/span 7!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a[href="customer.html"]{font-size:13px!important;white-space:nowrap!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a[href="contact.html"]{white-space:nowrap!important}
+}
