@@ -1,4 +1,5 @@
 (()=>{
+  // Historical company-logo mapping restored for the Hebrew Projects and Experience pages.
   const page=location.pathname.split('/').pop()||'index.html';
   if(!['projects.html','experience.html'].includes(page))return;
   const rules=[
