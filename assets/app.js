@@ -1,46 +1,45 @@
 (function(){
   const current=()=>location.pathname.split('/').pop()||'index.html';
-  if(document.documentElement.lang==='he'&&current()!=='index.html'){
-    const topNavStyle=document.createElement('style');
-    topNavStyle.id='topNavAlignmentRefineV2';
-    topNavStyle.textContent=`
+  const unifiedHeNav=[['index.html','בית'],['skills.html','יכולות'],['advantages.html','היתרונות שלי'],['experience.html','ניסיון'],['projects.html','עבודות'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['service.html','שירות צבאי'],['contact.html','צור איתי קשר'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html',"מתכנת מג'יק"],['customer.html','Customer Success'],['index-en.html','EN']];
+  function normalizeHebrewTopbar(){
+    if(document.documentElement.lang!=='he')return;
+    let header=document.querySelector('header.top');if(!header)return;
+    if(current()==='skills.html'&&!header.dataset.unifiedDetached){const clone=header.cloneNode(true);clone.dataset.unifiedDetached='1';header.replaceWith(clone);header=clone}
+    header.innerHTML='<div class="navwrap"><div class="brandBlock"><a class="brand" href="index.html"><b>רונן פלד</b><small>מנהל מוצר • מנהל פרויקט • מנתח מערכות • מתכנת MAGIC • Customer Success</small></a><a class="brandPhone" href="tel:+972546546288">☎ 054-6546288</a></div><button class="menu" aria-label="תפריט">☰</button><nav></nav></div>';
+    const nav=header.querySelector('nav');
+    unifiedHeNav.forEach(([href,label])=>{const a=document.createElement('a');a.href=href;a.textContent=label;if(current()===href||(current()==='military.html'&&href==='service.html'))a.classList.add('active');nav.appendChild(a)});
+    const menu=header.querySelector('.menu');if(menu)menu.addEventListener('click',()=>nav.classList.toggle('open'));
+    if(!document.getElementById('unifiedHebrewTopbarStyle')){const s=document.createElement('style');s.id='unifiedHebrewTopbarStyle';s.textContent=`
+      html[lang="he"] .top{background:#0d2946!important;border-bottom-color:#143c64!important;color:#fff!important}
+      html[lang="he"] .top .brand b,html[lang="he"] .top .brandPhone{color:#fff!important}
+      html[lang="he"] .top .brandBlock .brand small::after{color:#d6e3ef!important}
+      html[lang="he"] .top nav a{background:#74e8dd!important;color:#1f5fbf!important;border:1px solid #4c7fc8!important;box-shadow:0 2px 7px rgba(0,0,0,.18)!important;font-weight:900!important;font-size:13px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important}
+      html[lang="he"] .top nav a:hover,html[lang="he"] .top nav a.active{background:#8cece3!important;color:#174f9f!important;border-color:#6b96d5!important}
+      html[lang="he"] .top nav a[href="advantages.html"],html[lang="he"] .top nav a[href="advantages.html"].active{color:#c51f2d!important}
+      html[lang="he"] .top nav a[href="magic.html"]{font-size:0!important}
+      html[lang="he"] .top nav a[href="magic.html"]::after{content:"מתכנת מגי'ק"!important;font-size:13px!important;font-weight:900!important}
       @media(min-width:951px){
-        html[lang="he"] .top .navwrap{min-height:116px!important}
-        html[lang="he"] .top nav{grid-template-columns:repeat(60,minmax(0,1fr))!important;grid-template-rows:35px 35px!important;row-gap:20px!important;column-gap:0!important;padding-left:48px!important}
-        html[lang="he"] .top nav>a{position:static!important;transform:none!important;width:calc(100% - 10px)!important;max-width:none!important;min-width:0!important;min-height:34px!important;box-sizing:border-box!important;justify-self:center!important;padding-left:8px!important;padding-right:8px!important;white-space:nowrap!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(1){grid-row:1!important;grid-column:1/span 6!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(2){grid-row:1!important;grid-column:7/span 6!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(8){grid-row:1!important;grid-column:13/span 6!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(9){grid-row:1!important;grid-column:19/span 6!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(10){grid-row:1!important;grid-column:25/span 6!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(11){grid-row:1!important;grid-column:31/span 6!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(12){grid-row:1!important;grid-column:37/span 6!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(13){grid-row:1!important;grid-column:43/span 8!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(14){grid-row:1!important;grid-column:51/span 10!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(3){grid-row:2!important;grid-column:1/span 9!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(4){grid-row:2!important;grid-column:10/span 9!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(5){grid-row:2!important;grid-column:19/span 9!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(6){grid-row:2!important;grid-column:28/span 9!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 14!important}
-        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(15){grid-row:2!important;grid-column:51/span 10!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(1){grid-row:1!important;grid-column:1/span 7!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(2){grid-row:1!important;grid-column:8/span 7!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(8){grid-row:1!important;grid-column:15/span 7!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(9){grid-row:1!important;grid-column:22/span 7!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(10){grid-row:1!important;grid-column:29/span 7!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(11){grid-row:1!important;grid-column:36/span 7!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(12){grid-row:1!important;grid-column:43/span 8!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(13){grid-row:1!important;grid-column:51/span 10!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(3){grid-row:2!important;grid-column:1/span 9!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(4){grid-row:2!important;grid-column:10/span 9!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(5){grid-row:2!important;grid-column:19/span 9!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(6){grid-row:2!important;grid-column:28/span 9!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 14!important}
-        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(14){grid-row:2!important;grid-column:51/span 10!important}
-        html[lang="he"] .top nav>a[href="customer.html"],html[lang="he"] .top nav>a[href="service.html"],html[lang="he"] .top nav>a[href="military.html"],html[lang="he"] .top nav>a[href="contact.html"]{font-size:13px!important;white-space:nowrap!important}
+        html[lang="he"] .top .navwrap{width:min(1240px,calc(100% - 28px))!important;grid-template-columns:260px minmax(0,900px)!important;min-height:116px!important;gap:24px!important;padding:5px 0!important}
+        html[lang="he"] .top nav{display:grid!important;grid-template-columns:repeat(72,minmax(0,1fr))!important;grid-template-rows:35px 35px!important;row-gap:20px!important;column-gap:0!important;width:100%!important;padding-left:0!important;margin:0!important;align-items:center!important;position:relative!important}
+        html[lang="he"] .top nav>a{position:static!important;transform:none!important;width:calc(100% - 10px)!important;max-width:none!important;min-width:0!important;min-height:34px!important;box-sizing:border-box!important;justify-self:center!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:7px 6px!important}
+        html[lang="he"] .top nav>a[href="index.html"]{grid-row:1!important;grid-column:1/span 7!important}
+        html[lang="he"] .top nav>a[href="skills.html"]{grid-row:1!important;grid-column:8/span 7!important}
+        html[lang="he"] .top nav>a[href="advantages.html"]{grid-row:1!important;grid-column:15/span 8!important}
+        html[lang="he"] .top nav>a[href="experience.html"]{grid-row:1!important;grid-column:23/span 7!important}
+        html[lang="he"] .top nav>a[href="projects.html"]{grid-row:1!important;grid-column:30/span 7!important}
+        html[lang="he"] .top nav>a[href="work-environments.html"]{grid-row:1!important;grid-column:37/span 8!important}
+        html[lang="he"] .top nav>a[href="education.html"]{grid-row:1!important;grid-column:45/span 8!important}
+        html[lang="he"] .top nav>a[href="service.html"],html[lang="he"] .top nav>a[href="military.html"]{grid-row:1!important;grid-column:53/span 8!important}
+        html[lang="he"] .top nav>a[href="contact.html"]{grid-row:1!important;grid-column:61/span 12!important}
+        html[lang="he"] .top nav>a[href="product.html"]{grid-row:2!important;grid-column:1/span 12!important}
+        html[lang="he"] .top nav>a[href="project.html"]{grid-row:2!important;grid-column:13/span 12!important}
+        html[lang="he"] .top nav>a[href="system.html"]{grid-row:2!important;grid-column:25/span 12!important}
+        html[lang="he"] .top nav>a[href="magic.html"]{grid-row:2!important;grid-column:37/span 12!important}
+        html[lang="he"] .top nav>a[href="customer.html"]{grid-row:2!important;grid-column:49/span 12!important}
+        html[lang="he"] .top nav>a[href="index-en.html"]{grid-row:2!important;grid-column:61/span 12!important}
       }
-    `;
-    document.head.appendChild(topNavStyle);
+      @media(max-width:950px){html[lang="he"] .top nav{background:#0d2946!important;border-color:#143c64!important}.menu{color:#fff!important}}
+    `;document.head.appendChild(s)}
   }
   const roles=['product.html','project.html','system.html','magic.html','customer.html'];
   const quick=[['experience.html','פירוט ניסיון'],['projects.html','רשימת פרויקטים'],['work-environments.html','סוגי מערכות'],['education.html','השכלה']];
@@ -109,7 +108,7 @@
   function addBottomNavigation(){const page=current();if(!['education.html','work-environments.html','advantages.html','military.html','skills.html','service.html','contact.html'].includes(page))return;const main=document.querySelector('main');if(!main)return;let section=document.getElementById('sharedBottomNavigation');if(!section){section=document.createElement('section');section.id='sharedBottomNavigation';main.appendChild(section)}section.innerHTML=bottomMarkup(page==='contact.html'?'education.html':page);if(page==='contact.html'){const next=section.querySelector('.sbnNext');if(next)next.remove()}const experienceLinks=section.querySelector('.sbnGroup .sbnLinks');if(experienceLinks&&!experienceLinks.querySelector('a[href="advantages.html"]')){const advantages=document.createElement('a');advantages.href='advantages.html';advantages.textContent='היתרונות שלי';const systems=experienceLinks.querySelector('a[href="work-environments.html"]');if(systems)systems.insertAdjacentElement('afterend',advantages);else experienceLinks.appendChild(advantages)}if(['work-environments.html','advantages.html','military.html','skills.html','service.html'].includes(page)){const links=section.querySelector('.sbnGroup .sbnLinks');if(links&&!links.querySelector('a[href="skills.html"]')){const skills=document.createElement('a');skills.href='skills.html';skills.textContent='יכולות';links.appendChild(skills)}}section.style.marginTop=['work-environments.html','advantages.html'].includes(page)?'42px':'';if(page==='military.html'){const direct=document.querySelector('.milBottom');if(direct&&direct!==section)direct.style.display='none'}}
   function addExperienceBottomNavigation(){if(current()!=='experience.html')return;const main=document.querySelector('main');if(!main)return;let section=document.getElementById('sharedBottomNavigation');if(!section){section=document.createElement('section');section.id='sharedBottomNavigation';main.appendChild(section)}section.innerHTML=bottomMarkup('experience.html');section.style.marginTop='42px';document.querySelectorAll('main>.nextStep,main>.professionBottomNav,.experienceMoreJobsRow,#experienceQuickButtons').forEach(el=>{if(el!==section)el.style.display='none'});const links=section.querySelector('.sbnGroup .sbnLinks');if(!links)return;const self=links.querySelector('a[href="experience.html"]');if(self)self.remove();const advantages=links.querySelector('a[href="advantages.html"]');if(advantages)advantages.remove();const projects=links.querySelector('a[href="projects.html"]');if(projects)projects.textContent='רשימת עבודות ופרויקטים';if(!links.querySelector('a[href="skills.html"]')){const skills=document.createElement('a');skills.href='skills.html';skills.textContent='יכולות';links.appendChild(skills)}let more=links.querySelector('a[href="#additional-work"]');if(!more){more=document.createElement('a');more.href='#additional-work';more.textContent='עבודות נוספות';links.insertBefore(more,links.firstChild);more.addEventListener('click',e=>{e.preventDefault();const details=document.querySelector('details.moreJobs');if(details){details.id='additional-work';details.open=true;details.style.display='block';details.scrollIntoView({behavior:'smooth',block:'start'})}})}}
   if(current()==='experience.html')ensureExperienceSkills=function(){};
-  function repairAll(){ensureExperienceSkills();addRoleNavigation();standardizeRoleOverview();normalizeRoleExperienceButtons();addBottomNavigation();addExperienceBottomNavigation()}
+  function repairAll(){normalizeHebrewTopbar();ensureExperienceSkills();addRoleNavigation();standardizeRoleOverview();normalizeRoleExperienceButtons();addBottomNavigation();addExperienceBottomNavigation()}
   const run=()=>{repairAll();setTimeout(repairAll,150);setTimeout(repairAll,700)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
   const core=document.createElement('script');core.src='assets/app-core.js?v=20260901-profession-skills-header-1';core.onload=run;core.onerror=run;document.head.appendChild(core);
