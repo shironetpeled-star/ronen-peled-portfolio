@@ -22,7 +22,7 @@
         html[lang="he"] .top{background:#0d2946!important;border-bottom-color:#143c64!important}
         html[lang="he"] .top .navwrap{min-height:112px!important}
         html[lang="he"] .top nav{grid-template-columns:repeat(45,1fr)!important;grid-template-rows:35px 35px!important;row-gap:20px!important;column-gap:0!important;padding-left:48px!important}
-        html[lang="he"] .top nav>a{position:static!important;transform:none!important}
+        html[lang="he"] body .top nav>a{position:static!important;transform:none!important;width:max-content!important;max-width:none!important;min-width:0!important;min-height:34px!important;box-sizing:border-box!important;justify-self:center!important;padding:7px 11px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
         html[lang="he"] .top nav>a:nth-child(1){grid-row:1!important;grid-column:1/span 5!important}
         html[lang="he"] .top nav>a:nth-child(2){grid-row:1!important;grid-column:6/span 5!important}
         html[lang="he"] .top nav>a:nth-child(8){grid-row:1!important;grid-column:11/span 5!important}
@@ -37,7 +37,7 @@
         html[lang="he"] .top nav>a:nth-child(5){grid-row:2!important;grid-column:19/span 9!important}
         html[lang="he"] .top nav>a:nth-child(6){grid-row:2!important;grid-column:28/span 9!important}
         html[lang="he"] .top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 9!important}
-        html[lang="he"] .top nav>a:nth-child(n+3):nth-child(-n+7){width:100%!important;min-width:0!important;box-sizing:border-box!important;justify-self:stretch!important;padding-left:12px!important;padding-right:12px!important}
+        html[lang="he"] body .top nav>a:nth-child(n+3):nth-child(-n+7){width:100%!important;min-width:0!important;box-sizing:border-box!important;justify-self:stretch!important;padding-left:12px!important;padding-right:12px!important}
       }
       @media(max-width:950px){html[lang="he"] .top nav{background:#0d2946!important;border-color:#143c64!important}.menu{color:#fff!important}}
     `;document.head.appendChild(s)}
