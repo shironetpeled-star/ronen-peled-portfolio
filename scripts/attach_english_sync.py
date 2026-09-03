@@ -5,16 +5,25 @@ FILES = [
     'en-05.html','en-06.html','history-en.html','role-magic-en.html','role-customer-en.html',
     'service-page-en.html','contact-en.html','work-environments-en.html','advantages-en.html'
 ]
-TAG = '<script src="assets/english-sync.js?v=1"></script>'
+TAGS = [
+    '<script src="assets/english-sync.js?v=1"></script>',
+    '<script src="assets/english-nav-hotfix.js?v=1"></script>'
+]
 for name in FILES:
     p = Path(name)
     if not p.exists():
         continue
     text = p.read_text(encoding='utf-8')
-    if 'assets/english-sync.js' in text:
+    additions = []
+    if 'assets/english-sync.js' not in text:
+        additions.append(TAGS[0])
+    if 'assets/english-nav-hotfix.js' not in text:
+        additions.append(TAGS[1])
+    if not additions:
         continue
+    tag = ''.join(additions)
     if '</body>' in text:
-        text = text.replace('</body>', TAG + '</body>', 1)
+        text = text.replace('</body>', tag + '</body>', 1)
     else:
-        text += TAG
+        text += tag
     p.write_text(text, encoding='utf-8')
