@@ -4,6 +4,7 @@ on:
     branches: [ main ]
     paths:
       - 'assets/english-sync.js'
+      - 'assets/english-nav-hotfix.js'
       - 'work-environments-en.html'
       - 'advantages-en.html'
       - 'scripts/attach_english_sync.py'
