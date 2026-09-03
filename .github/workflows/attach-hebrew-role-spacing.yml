@@ -1,0 +1,32 @@
+name: Attach Hebrew Profession Spacing
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/hebrew-role-spacing.css'
+      - 'scripts/attach_hebrew_role_spacing.py'
+      - '.github/workflows/attach-hebrew-role-spacing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Attach shared spacing stylesheet
+        run: python scripts/attach_hebrew_role_spacing.py
+      - name: Commit generated HTML changes
+        run: |
+          if git diff --quiet; then
+            echo "No generated HTML changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add product.html project.html system.html magic.html customer.html
+          git commit -m "Apply unified Hebrew profession hero spacing"
+          git push
