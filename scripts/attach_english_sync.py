@@ -9,6 +9,7 @@ TAGS = [
     '<script src="assets/english-sync.js?v=1"></script>',
     '<script src="assets/english-nav-hotfix.js?v=1"></script>'
 ]
+# Keep both shared English scripts attached to every English page.
 for name in FILES:
     p = Path(name)
     if not p.exists():
