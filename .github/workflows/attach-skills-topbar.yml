@@ -1,0 +1,24 @@
+name: Attach Skills Topbar Match
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/skills-topbar-match.css'
+      - 'scripts/attach_skills_topbar.py'
+      - '.github/workflows/attach-skills-topbar.yml'
+permissions:
+  contents: write
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/attach_skills_topbar.py
+      - name: Commit generated change
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add skills.html
+          git commit -m "Match Skills topbar to Projects and System Types"
+          git push
