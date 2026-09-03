@@ -1,0 +1,9 @@
+/* Unified spacing between the shared top navigation and the profession-page hero. */
+html[lang="he"] body .innerHero{
+  padding-top:55px!important;
+}
+@media(max-width:720px){
+  html[lang="he"] body .innerHero{
+    padding-top:42px!important;
+  }
+}
