@@ -1,5 +1,47 @@
 (function(){
   const current=()=>location.pathname.split('/').pop()||'index.html';
+  if(document.documentElement.lang==='he'&&current()!=='index.html'){
+    const topNavStyle=document.createElement('style');
+    topNavStyle.id='topNavAlignmentRefineV2';
+    topNavStyle.textContent=`
+      @media(min-width:951px){
+        html[lang="he"] .top .navwrap{min-height:116px!important}
+        html[lang="he"] .top nav{grid-template-columns:repeat(60,minmax(0,1fr))!important;grid-template-rows:35px 35px!important;row-gap:20px!important;column-gap:0!important;padding-left:48px!important}
+        html[lang="he"] .top nav>a{position:static!important;transform:none!important;width:calc(100% - 10px)!important;max-width:none!important;min-width:0!important;min-height:34px!important;box-sizing:border-box!important;justify-self:center!important;padding-left:8px!important;padding-right:8px!important;white-space:nowrap!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(1){grid-row:1!important;grid-column:1/span 6!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(2){grid-row:1!important;grid-column:7/span 6!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(8){grid-row:1!important;grid-column:13/span 6!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(9){grid-row:1!important;grid-column:19/span 6!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(10){grid-row:1!important;grid-column:25/span 6!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(11){grid-row:1!important;grid-column:31/span 6!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(12){grid-row:1!important;grid-column:37/span 6!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(13){grid-row:1!important;grid-column:43/span 8!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(14){grid-row:1!important;grid-column:51/span 10!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(3){grid-row:2!important;grid-column:1/span 9!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(4){grid-row:2!important;grid-column:10/span 9!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(5){grid-row:2!important;grid-column:19/span 9!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(6){grid-row:2!important;grid-column:28/span 9!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 14!important}
+        html[lang="he"] body:not(:has(#skillSearch)) .top nav>a:nth-child(15){grid-row:2!important;grid-column:51/span 10!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(1){grid-row:1!important;grid-column:1/span 7!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(2){grid-row:1!important;grid-column:8/span 7!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(8){grid-row:1!important;grid-column:15/span 7!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(9){grid-row:1!important;grid-column:22/span 7!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(10){grid-row:1!important;grid-column:29/span 7!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(11){grid-row:1!important;grid-column:36/span 7!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(12){grid-row:1!important;grid-column:43/span 8!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(13){grid-row:1!important;grid-column:51/span 10!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(3){grid-row:2!important;grid-column:1/span 9!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(4){grid-row:2!important;grid-column:10/span 9!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(5){grid-row:2!important;grid-column:19/span 9!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(6){grid-row:2!important;grid-column:28/span 9!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 14!important}
+        html[lang="he"] body:has(#skillSearch) .top nav>a:nth-child(14){grid-row:2!important;grid-column:51/span 10!important}
+        html[lang="he"] .top nav>a[href="customer.html"],html[lang="he"] .top nav>a[href="service.html"],html[lang="he"] .top nav>a[href="military.html"],html[lang="he"] .top nav>a[href="contact.html"]{font-size:13px!important;white-space:nowrap!important}
+      }
+    `;
+    document.head.appendChild(topNavStyle);
+  }
   const roles=['product.html','project.html','system.html','magic.html','customer.html'];
   const quick=[['experience.html','פירוט ניסיון'],['projects.html','רשימת פרויקטים'],['work-environments.html','סוגי מערכות'],['education.html','השכלה']];
   const professions=[['index.html','עמוד בית - ראייה 360°'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html','MAGIC'],['customer.html','Customer Success']];
