@@ -139,3 +139,23 @@ html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(15){grid-column:48
 html[lang="he"] body:not(.home-redesign) .top nav>a[href="customer.html"]{font-size:13px!important;white-space:nowrap!important}
 html[lang="he"] body:not(.home-redesign) .top nav>a[href="contact.html"]{white-space:nowrap!important}
 }
+
+/* contact-and-language-only-alignment-v1 */
+@media(min-width:951px){
+html[lang="he"] body:not(.home-redesign) .top nav>a[href="contact.html"],
+html[lang="he"] body:not(.home-redesign) .top nav>a[href="index-en.html"]{
+  grid-column:48/span 7!important;
+  width:calc(100% - 10px)!important;
+  max-width:none!important;
+  justify-self:center!important;
+  min-width:0!important;
+  padding-left:6px!important;
+  padding-right:6px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+  box-sizing:border-box!important;
+}
+html[lang="he"] body:not(.home-redesign) .top nav>a[href="contact.html"]{grid-row:1!important;font-size:12px!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a[href="index-en.html"]{grid-row:2!important;font-size:13px!important}
+}
