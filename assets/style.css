@@ -159,3 +159,66 @@ html[lang="he"] body:not(.home-redesign) .top nav>a[href="index-en.html"]{
 html[lang="he"] body:not(.home-redesign) .top nav>a[href="contact.html"]{grid-row:1!important;font-size:12px!important}
 html[lang="he"] body:not(.home-redesign) .top nav>a[href="index-en.html"]{grid-row:2!important;font-size:13px!important}
 }
+
+
+/* balanced-hebrew-topnav-with-advantages-v1 */
+@media(min-width:951px){
+html[lang="he"] body:not(.home-redesign) .top .navwrap{
+  grid-template-columns:260px minmax(0,900px)!important;
+  gap:24px!important;
+}
+html[lang="he"] body:not(.home-redesign) .top nav{
+  grid-template-columns:repeat(54,minmax(0,1fr))!important;
+  grid-template-rows:35px 35px!important;
+  row-gap:20px!important;
+  column-gap:0!important;
+  padding-left:0!important;
+  padding-right:0!important;
+}
+html[lang="he"] body:not(.home-redesign) .top nav>a{
+  position:static!important;
+  transform:none!important;
+  width:calc(100% - 8px)!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:34px!important;
+  padding:7px 6px!important;
+  justify-self:center!important;
+  font-size:12.5px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(1){grid-row:1!important;grid-column:1/span 6!important;justify-self:start!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(2){grid-row:1!important;grid-column:7/span 6!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(8){grid-row:1!important;grid-column:13/span 6!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(9){grid-row:1!important;grid-column:19/span 6!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(10){grid-row:1!important;grid-column:25/span 6!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(11){grid-row:1!important;grid-column:31/span 6!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(12){grid-row:1!important;grid-column:37/span 6!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(13){grid-row:1!important;grid-column:43/span 6!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(14){grid-row:1!important;grid-column:49/span 6!important;justify-self:end!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(3){grid-row:2!important;grid-column:1/span 9!important;justify-self:start!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(4){grid-row:2!important;grid-column:10/span 9!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(5){grid-row:2!important;grid-column:19/span 9!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(6){grid-row:2!important;grid-column:28/span 9!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 9!important;font-size:12.5px!important}
+html[lang="he"] body:not(.home-redesign) .top nav>a:nth-child(15){grid-row:2!important;grid-column:46/span 9!important;justify-self:end!important;font-size:13px!important}
+}
+@media(max-width:950px){
+html[lang="he"] .top nav.open a[href="index.html"]{order:1}
+html[lang="he"] .top nav.open a[href="skills.html"]{order:2}
+html[lang="he"] .top nav.open a[href="product.html"]{order:3}
+html[lang="he"] .top nav.open a[href="project.html"]{order:4}
+html[lang="he"] .top nav.open a[href="system.html"]{order:5}
+html[lang="he"] .top nav.open a[href="magic.html"]{order:6}
+html[lang="he"] .top nav.open a[href="customer.html"]{order:7}
+html[lang="he"] .top nav.open a[href="experience.html"]{order:8}
+html[lang="he"] .top nav.open a[href="projects.html"]{order:9}
+html[lang="he"] .top nav.open a[href="work-environments.html"]{order:10}
+html[lang="he"] .top nav.open a[href="education.html"]{order:11}
+html[lang="he"] .top nav.open a[href="service.html"]{order:12}
+html[lang="he"] .top nav.open a[href="advantages.html"]{order:13}
+html[lang="he"] .top nav.open a[href="contact.html"]{order:14}
+html[lang="he"] .top nav.open a[href="index-en.html"]{order:15}
+}
