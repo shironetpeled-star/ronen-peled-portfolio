@@ -1,6 +1,6 @@
 (function(){
   const current=()=>location.pathname.split('/').pop()||'index.html';
-  const unifiedHeNav=[['index.html','בית'],['skills.html','יכולות'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html',"מתכנת מג'יק"],['customer.html','Customer Success'],['experience.html','ניסיון'],['projects.html','עבודות'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['military.html','שירות צבאי'],['contact.html','צור איתי קשר'],['index-en.html','EN']];
+  const unifiedHeNav=[['index.html','בית'],['skills.html','יכולות'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html',"מתכנת מג'יק"],['customer.html','Customer Success'],['experience.html','ניסיון'],['projects.html','עבודות'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['military.html','שירות צבאי'],['advantages.html','היתרונות שלי'],['contact.html','צור איתי קשר'],['index-en.html','EN']];
   function normalizeHebrewTopbar(){
     if(document.documentElement.lang!=='he')return;
     let header=document.querySelector('header.top');if(!header)return;
@@ -39,8 +39,44 @@
         html[lang="he"] .top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 9!important}
         html[lang="he"] body .top nav>a:nth-child(n+3):nth-child(-n+7){width:100%!important;min-width:0!important;box-sizing:border-box!important;justify-self:stretch!important;padding-left:12px!important;padding-right:12px!important}
         html[lang="he"] body.home-redesign:not(:has(#skillSearch)) .top nav>a{width:calc(100% - 10px)!important;justify-self:center!important;padding-left:7px!important;padding-right:7px!important;white-space:nowrap!important}
+        html[lang="he"] .top .navwrap{grid-template-columns:260px minmax(0,900px)!important;gap:24px!important}
+        html[lang="he"] .top nav{grid-template-columns:repeat(54,minmax(0,1fr))!important;padding-left:0!important;padding-right:0!important}
+        html[lang="he"] body .top nav>a{width:calc(100% - 8px)!important;padding-left:6px!important;padding-right:6px!important;font-size:12.5px!important;justify-self:center!important}
+        html[lang="he"] .top nav>a:nth-child(1){grid-row:1!important;grid-column:1/span 6!important;justify-self:start!important}
+        html[lang="he"] .top nav>a:nth-child(2){grid-row:1!important;grid-column:7/span 6!important}
+        html[lang="he"] .top nav>a:nth-child(8){grid-row:1!important;grid-column:13/span 6!important}
+        html[lang="he"] .top nav>a:nth-child(9){grid-row:1!important;grid-column:19/span 6!important}
+        html[lang="he"] .top nav>a:nth-child(10){grid-row:1!important;grid-column:25/span 6!important}
+        html[lang="he"] .top nav>a:nth-child(11){grid-row:1!important;grid-column:31/span 6!important}
+        html[lang="he"] .top nav>a:nth-child(12){grid-row:1!important;grid-column:37/span 6!important}
+        html[lang="he"] .top nav>a:nth-child(13){grid-row:1!important;grid-column:43/span 6!important}
+        html[lang="he"] .top nav>a:nth-child(14){grid-row:1!important;grid-column:49/span 6!important;justify-self:end!important}
+        html[lang="he"] .top nav>a:nth-child(3){grid-row:2!important;grid-column:1/span 9!important;justify-self:start!important}
+        html[lang="he"] .top nav>a:nth-child(4){grid-row:2!important;grid-column:10/span 9!important}
+        html[lang="he"] .top nav>a:nth-child(5){grid-row:2!important;grid-column:19/span 9!important}
+        html[lang="he"] .top nav>a:nth-child(6){grid-row:2!important;grid-column:28/span 9!important}
+        html[lang="he"] .top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 9!important}
+        html[lang="he"] .top nav>a:nth-child(15){grid-row:2!important;grid-column:46/span 9!important;justify-self:end!important}
       }
-      @media(max-width:950px){html[lang="he"] .top nav{background:#0d2946!important;border-color:#143c64!important}.menu{color:#fff!important}}
+      @media(max-width:950px){
+        html[lang="he"] .top nav{background:#0d2946!important;border-color:#143c64!important}
+        .menu{color:#fff!important}
+        html[lang="he"] .top nav.open a[href="index.html"]{order:1}
+        html[lang="he"] .top nav.open a[href="skills.html"]{order:2}
+        html[lang="he"] .top nav.open a[href="product.html"]{order:3}
+        html[lang="he"] .top nav.open a[href="project.html"]{order:4}
+        html[lang="he"] .top nav.open a[href="system.html"]{order:5}
+        html[lang="he"] .top nav.open a[href="magic.html"]{order:6}
+        html[lang="he"] .top nav.open a[href="customer.html"]{order:7}
+        html[lang="he"] .top nav.open a[href="experience.html"]{order:8}
+        html[lang="he"] .top nav.open a[href="projects.html"]{order:9}
+        html[lang="he"] .top nav.open a[href="work-environments.html"]{order:10}
+        html[lang="he"] .top nav.open a[href="education.html"]{order:11}
+        html[lang="he"] .top nav.open a[href="military.html"]{order:12}
+        html[lang="he"] .top nav.open a[href="advantages.html"]{order:13}
+        html[lang="he"] .top nav.open a[href="contact.html"]{order:14}
+        html[lang="he"] .top nav.open a[href="index-en.html"]{order:15}
+      }
     `;document.head.appendChild(s)}
   }
   const roles=['product.html','project.html','system.html','magic.html','customer.html'];
