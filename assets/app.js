@@ -162,12 +162,12 @@
   iframe.style.position='fixed';
   iframe.style.bottom='0';
   iframe.style.left='0';
-  iframe.style.width='100%';
-  iframe.style.height='0px';
+  iframe.style.width='96px';
+  iframe.style.height='96px';
   iframe.style.border='none';
   iframe.style.zIndex='99999';
   iframe.style.background='transparent';
-  iframe.style.pointerEvents='none';
+  iframe.style.pointerEvents='auto';
   iframe.setAttribute('allow','microphone; autoplay');
   iframe.setAttribute('scrolling','no');
   iframe.setAttribute('title','הבוט החכם של רונן פלד');
@@ -177,8 +177,9 @@
   window.addEventListener('message',function(e){
     if(e.origin!==botOrigin||e.source!==iframe.contentWindow)return;
     if(e.data&&e.data.type==='ronen-bot-state'){
-      iframe.style.height=e.data.open?'100vh':'0px';
-      iframe.style.pointerEvents=e.data.open?'auto':'none';
+      iframe.style.width=e.data.open?'100%':'96px';
+      iframe.style.height=e.data.open?'100vh':'96px';
+      iframe.style.pointerEvents='auto';
     }
   });
 })();
