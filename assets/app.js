@@ -162,7 +162,7 @@
   document.head.appendChild(style);
   var launcher=document.createElement('a');
   launcher.id='ronen-bot-launcher';
-  launcher.href='https://ronan-hire-flow.base44.app/bot-embed';
+  launcher.href='https://ronan-hire-flow.base44.app/bot-embed?bot=open';
   launcher.target='_blank';
   launcher.rel='noopener noreferrer';
   launcher.setAttribute('aria-label','פתיחת הבוט החכם למגייסים');
