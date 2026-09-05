@@ -167,5 +167,15 @@
   launcher.rel='noopener noreferrer';
   launcher.setAttribute('aria-label','פתיחת הבוט החכם למגייסים');
   launcher.innerHTML='<span>הבוט החכם</span><span class="ronenBotIcon" aria-hidden="true">🤖</span>';
+  launcher.addEventListener('click',function(e){
+    e.preventDefault();
+    var popupWidth=Math.min(500,Math.max(360,screen.availWidth-40));
+    var popupHeight=Math.min(780,Math.max(600,screen.availHeight-80));
+    var popupLeft=Math.max(0,screen.availLeft+20);
+    var popupTop=Math.max(0,screen.availTop+30);
+    var botWindow=window.open(launcher.href,'ronenRecruiterBot','popup=yes,width='+popupWidth+',height='+popupHeight+',left='+popupLeft+',top='+popupTop+',resizable=yes,scrollbars=yes');
+    if(botWindow)botWindow.focus();
+    else window.open(launcher.href,'_blank','noopener,noreferrer');
+  });
   document.body.appendChild(launcher);
 })();
