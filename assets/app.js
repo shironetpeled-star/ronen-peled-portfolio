@@ -152,3 +152,33 @@
   const core=document.createElement('script');core.src='assets/app-core.js?v=20260901-profession-skills-header-1';core.onload=run;core.onerror=run;document.head.appendChild(core);
   if(current()==='experience.html'){const obs=new MutationObserver(()=>ensureExperienceSkills());obs.observe(document.documentElement,{subtree:true,childList:true});setTimeout(()=>obs.disconnect(),5000)}
 })();
+
+// Recruiter assistant embedded across the site.
+(function(){
+  if(document.getElementById('ronen-bot-iframe'))return;
+  var botOrigin='https://ronan-hire-flow.base44.app';
+  var iframe=document.createElement('iframe');
+  iframe.src=botOrigin+'/bot-embed';
+  iframe.style.position='fixed';
+  iframe.style.bottom='0';
+  iframe.style.left='0';
+  iframe.style.width='100%';
+  iframe.style.height='0px';
+  iframe.style.border='none';
+  iframe.style.zIndex='99999';
+  iframe.style.background='transparent';
+  iframe.style.pointerEvents='none';
+  iframe.setAttribute('allow','microphone; autoplay');
+  iframe.setAttribute('scrolling','no');
+  iframe.setAttribute('title','הבוט החכם של רונן פלד');
+  iframe.id='ronen-bot-iframe';
+  document.body.appendChild(iframe);
+
+  window.addEventListener('message',function(e){
+    if(e.origin!==botOrigin||e.source!==iframe.contentWindow)return;
+    if(e.data&&e.data.type==='ronen-bot-state'){
+      iframe.style.height=e.data.open?'100vh':'0px';
+      iframe.style.pointerEvents=e.data.open?'auto':'none';
+    }
+  });
+})();
