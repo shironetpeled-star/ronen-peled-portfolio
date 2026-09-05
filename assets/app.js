@@ -162,8 +162,8 @@
   iframe.style.position='fixed';
   iframe.style.bottom='0';
   iframe.style.left='0';
-  iframe.style.width='96px';
-  iframe.style.height='96px';
+  iframe.style.width='100%';
+  iframe.style.height='100px';
   iframe.style.border='none';
   iframe.style.zIndex='99999';
   iframe.style.background='transparent';
@@ -177,8 +177,8 @@
   window.addEventListener('message',function(e){
     if(e.origin!==botOrigin||e.source!==iframe.contentWindow)return;
     if(e.data&&e.data.type==='ronen-bot-state'){
-      iframe.style.width=e.data.open?'100%':'96px';
-      iframe.style.height=e.data.open?'100vh':'96px';
+      iframe.style.width='100%';
+      iframe.style.height=e.data.open?'100vh':'100px';
       iframe.style.pointerEvents='auto';
     }
   });
