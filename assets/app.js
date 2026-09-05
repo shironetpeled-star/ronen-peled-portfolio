@@ -153,29 +153,53 @@
   if(current()==='experience.html'){const obs=new MutationObserver(()=>ensureExperienceSkills());obs.observe(document.documentElement,{subtree:true,childList:true});setTimeout(()=>obs.disconnect(),5000)}
 })();
 
-// Base44 blocks iframe embedding, so expose the recruiter assistant as a
-// persistent launcher that opens the working bot directly.
+// Recruiter assistant: a persistent launcher opens the Base44 bot as a
+// left-side slide while leaving the rest of the site visible.
 (function(){
   if(document.getElementById('ronen-bot-launcher'))return;
   var style=document.createElement('style');
-  style.textContent='#ronen-bot-launcher{position:fixed;left:20px;top:29px;bottom:auto;z-index:99999;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:999px;background:#0d2946;color:#fff;text-decoration:none;font-weight:900;font-size:15px;box-shadow:0 10px 28px rgba(0,0,0,.28);border:2px solid #74e8dd;direction:rtl;transition:transform .2s ease,box-shadow .2s ease}#ronen-bot-launcher:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.34)}#ronen-bot-launcher:focus-visible{outline:3px solid #195ed8;outline-offset:3px}.ronenBotIcon{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#74e8dd;color:#0d2946;font-size:20px}@media(max-width:1599px) and (min-width:601px){#ronen-bot-launcher{top:124px}}@media(max-width:600px){#ronen-bot-launcher{left:12px;top:auto;bottom:12px;padding:10px 12px;font-size:14px}.ronenBotIcon{width:32px;height:32px}}';
+  style.textContent='#ronen-bot-launcher{position:fixed;left:20px;top:29px;bottom:auto;z-index:99998;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:999px;background:#0d2946;color:#fff;border:2px solid #74e8dd;cursor:pointer;font-family:inherit;font-weight:900;font-size:15px;box-shadow:0 10px 28px rgba(0,0,0,.28);direction:rtl;transition:transform .2s ease,box-shadow .2s ease}#ronen-bot-launcher:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.34)}#ronen-bot-launcher:focus-visible{outline:3px solid #195ed8;outline-offset:3px}.ronenBotIcon{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#74e8dd;color:#0d2946;font-size:20px}@media(max-width:1599px) and (min-width:601px){#ronen-bot-launcher{top:124px}}@media(max-width:600px){#ronen-bot-launcher{left:12px;top:auto;bottom:12px;padding:10px 12px;font-size:14px}.ronenBotIcon{width:32px;height:32px}}';
   document.head.appendChild(style);
-  var launcher=document.createElement('a');
+
+  var iframe=document.createElement('iframe');
+  iframe.src='https://ronan-hire-flow.base44.app/bot-embed';
+  iframe.style.position='fixed';
+  iframe.style.bottom='0';
+  iframe.style.left='0';
+  iframe.style.width='0px';
+  iframe.style.height='0px';
+  iframe.style.border='none';
+  iframe.style.zIndex='99999';
+  iframe.style.background='transparent';
+  iframe.style.pointerEvents='none';
+  iframe.style.transition='width .28s ease';
+  iframe.setAttribute('allow','microphone; autoplay');
+  iframe.setAttribute('scrolling','no');
+  iframe.setAttribute('title','הבוט החכם למגייסים');
+  iframe.id='ronen-bot-iframe';
+  document.body.appendChild(iframe);
+
+  function isMobile(){return window.innerWidth<640}
+  function setBotOpen(open){
+    iframe.style.width=open?(isMobile()?'100%':'420px'):'0px';
+    iframe.style.height=open?'100vh':'0px';
+    iframe.style.pointerEvents=open?'auto':'none';
+  }
+
+  window.addEventListener('message',function(e){
+    if(e.data&&e.data.type==='ronen-bot-state')setBotOpen(Boolean(e.data.open));
+  });
+  window.addEventListener('resize',function(){
+    if(iframe.style.height==='100vh')iframe.style.width=isMobile()?'100%':'420px';
+  });
+
+  var launcher=document.createElement('button');
+  launcher.type='button';
   launcher.id='ronen-bot-launcher';
-  launcher.href='https://ronan-hire-flow.base44.app/bot-embed?bot=open';
-  launcher.target='_blank';
-  launcher.rel='noopener noreferrer';
   launcher.setAttribute('aria-label','פתיחת הבוט החכם למגייסים');
   launcher.innerHTML='<span>שאל והבוט החכם יענה</span><span class="ronenBotIcon" aria-hidden="true">🤖</span>';
-  launcher.addEventListener('click',function(e){
-    e.preventDefault();
-    var popupWidth=Math.min(500,Math.max(360,screen.availWidth-40));
-    var popupHeight=Math.min(780,Math.max(600,screen.availHeight-80));
-    var popupLeft=Math.max(0,screen.availLeft+20);
-    var popupTop=Math.max(0,screen.availTop+30);
-    var botWindow=window.open(launcher.href,'ronenRecruiterBot','popup=yes,width='+popupWidth+',height='+popupHeight+',left='+popupLeft+',top='+popupTop+',resizable=yes,scrollbars=yes');
-    if(botWindow)botWindow.focus();
-    else window.open(launcher.href,'_blank','noopener,noreferrer');
+  launcher.addEventListener('click',function(){
+    iframe.contentWindow.postMessage({type:'open-ronen-bot'},'*');
   });
   document.body.appendChild(launcher);
 })();
