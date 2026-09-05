@@ -166,7 +166,7 @@
   launcher.target='_blank';
   launcher.rel='noopener noreferrer';
   launcher.setAttribute('aria-label','פתיחת הבוט החכם למגייסים');
-  launcher.innerHTML='<span>הבוט החכם</span><span class="ronenBotIcon" aria-hidden="true">🤖</span>';
+  launcher.innerHTML='<span>שאל והבוט החכם יענה</span><span class="ronenBotIcon" aria-hidden="true">🤖</span>';
   launcher.addEventListener('click',function(e){
     e.preventDefault();
     var popupWidth=Math.min(500,Math.max(360,screen.availWidth-40));
