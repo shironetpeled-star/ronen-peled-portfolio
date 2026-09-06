@@ -370,20 +370,20 @@
       const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+x.t);u.lang='he-IL';u.rate=.78;u.pitch=1;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>{if(id===run)setTimeout(next,x.p||420)};speechSynthesis.speak(u)};
     setTimeout(next,550);
   };
+  const packForAudio=(values,max)=>{const parts=[];let part='';values.forEach(value=>{if(!value)return;const next=part?part+'. '+value:value;if(next.length>max&&part){parts.push(part);part=value}else part=next});if(part)parts.push(part);return parts};
+  const fetchAudioPart=async(text,language)=>{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,language:language})});if(!response.ok)throw new Error('TTS unavailable');return response.blob()};
   const speakWithEleven=async(btn,list)=>{
     const requestId=++run;
-    const text=list.filter(x=>x.t).map(x=>x.t).join('. ').slice(0,4800);
-    if(!text)throw new Error('No text');
+    const parts=packForAudio(list.filter(x=>x.t).map(x=>x.t),1100).slice(0,5);
+    if(!parts.length)throw new Error('No text');
     btn.dataset.reading='1';btn.textContent='⏳ מכין הקראה…';
-    const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,language:'he'})});
-    if(!response.ok)throw new Error('TTS unavailable');
+    const first=await fetchAudioPart(parts[0],'he');
     if(requestId!==run)return;
-    const url=URL.createObjectURL(await response.blob());
-    const audio=new Audio(url);audio.dataset.url=url;window.__ronenPageAudio=audio;
-    audio.onplay=()=>{btn.textContent='⏹ עצור הקראה'};
-    audio.onended=()=>stop(btn);
-    audio.onerror=()=>stop(btn);
-    await audio.play();
+    const playPart=async(index,blob)=>{if(requestId!==run)return;const url=URL.createObjectURL(blob);const audio=new Audio(url);audio.dataset.url=url;window.__ronenPageAudio=audio;const next=index+1<parts.length?fetchAudioPart(parts[index+1],'he'):null;
+      audio.onplay=()=>{btn.textContent='⏹ עצור הקראה'};
+      audio.onended=async()=>{URL.revokeObjectURL(url);if(window.__ronenPageAudio===audio)window.__ronenPageAudio=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{await playPart(index+1,await next)}catch{stop(btn)}};
+      audio.onerror=()=>stop(btn);await audio.play()};
+    await playPart(0,first);
   };
   document.addEventListener('click',e=>{
     const btn=e.target.closest&&e.target.closest('#pageReadButton');if(!btn)return;
@@ -533,20 +533,20 @@
     };
     setTimeout(next,550);
   };
+  const packEnglishAudio=(values,max)=>{const parts=[];let part='';values.forEach(value=>{if(!value)return;const next=part?part+'. '+value:value;if(next.length>max&&part){parts.push(part);part=value}else part=next});if(part)parts.push(part);return parts};
+  const fetchEnglishAudio=async text=>{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,language:'en'})});if(!response.ok)throw new Error('TTS unavailable');return response.blob()};
   const speakEnglishWithEleven=async(items,btn)=>{
     const requestId=++runId;
-    const text=items.filter(item=>item.text).map(item=>item.text).join('. ').slice(0,4800);
-    if(!text)throw new Error('No text');
+    const parts=packEnglishAudio(items.filter(item=>item.text).map(item=>item.text),1100).slice(0,5);
+    if(!parts.length)throw new Error('No text');
     btn.dataset.reading='1';btn.textContent='⏳ Preparing audio…';
-    const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,language:'en'})});
-    if(!response.ok)throw new Error('TTS unavailable');
+    const first=await fetchEnglishAudio(parts[0]);
     if(requestId!==runId)return;
-    const url=URL.createObjectURL(await response.blob());
-    const audio=new Audio(url);audio.dataset.url=url;window.__ronenPageAudio=audio;
-    audio.onplay=()=>{btn.textContent='⏹ Stop reading'};
-    audio.onended=()=>stop(btn);
-    audio.onerror=()=>stop(btn);
-    await audio.play();
+    const playPart=async(index,blob)=>{if(requestId!==runId)return;const url=URL.createObjectURL(blob);const audio=new Audio(url);audio.dataset.url=url;window.__ronenPageAudio=audio;const next=index+1<parts.length?fetchEnglishAudio(parts[index+1]):null;
+      audio.onplay=()=>{btn.textContent='⏹ Stop reading'};
+      audio.onended=async()=>{URL.revokeObjectURL(url);if(window.__ronenPageAudio===audio)window.__ronenPageAudio=null;if(requestId!==runId)return;if(!next){stop(btn);return}btn.textContent='⏳ Preparing the next part…';try{await playPart(index+1,await next)}catch{stop(btn)}};
+      audio.onerror=()=>stop(btn);await audio.play()};
+    await playPart(0,first);
   };
 
   const add=()=>{
