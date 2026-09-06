@@ -212,7 +212,7 @@
   if(current()==='experience.html'){const obs=new MutationObserver(()=>ensureExperienceSkills());obs.observe(document.documentElement,{subtree:true,childList:true});setTimeout(()=>obs.disconnect(),5000)}
 })();
 
-// Recruiter assistant: localized Hebrew/English launcher opens the Base44 bot as a
+// Recruiter assistant: the localized Hebrew/English launcher opens the Base44 bot as a
 // left-side slide while leaving the rest of the site visible.
 (function(){
   if(document.getElementById('ronen-bot-launcher'))return;
