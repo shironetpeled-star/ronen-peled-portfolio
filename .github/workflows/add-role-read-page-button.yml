@@ -1,0 +1,57 @@
+name: Add role page read aloud button
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/add-role-read-page-button.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add read aloud support to role pages
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('assets/app.js')
+          s=p.read_text(encoding='utf-8')
+          marker='  const roles=['
+          code=r'''  function addRoleReadPageButton(){
+    if(!roles.includes(current())||document.documentElement.lang!=='he'||document.getElementById('roleReadPageButton'))return;
+    const roleNames={'product.html':'מנהל מוצר','project.html':'מנהל פרויקט','system.html':'מנתח מערכות','magic.html':"מתכנת מג\'יק",'customer.html':'Customer Success'};
+    const main=document.querySelector('main');if(!main)return;
+    const hero=main.querySelector('.innerHero,.hero,section');if(!hero)return;
+    if(getComputedStyle(hero).position==='static')hero.style.position='relative';
+    const btn=document.createElement('button');btn.id='roleReadPageButton';btn.type='button';btn.textContent='🔊 הקרא את הדף';btn.setAttribute('aria-label','הקרא את דף '+roleNames[current()]);
+    btn.style.cssText='position:absolute;top:18px;right:0;z-index:5;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 15px;border-radius:11px;background:#edf3ff;border:1px solid #195ed8;color:#195ed8;font:900 14px inherit;cursor:pointer;box-shadow:0 4px 12px rgba(13,34,54,.10)';
+    hero.appendChild(btn);
+    const stop=()=>{if(window.speechSynthesis)window.speechSynthesis.cancel();btn.textContent='🔊 הקרא את הדף';btn.dataset.reading='0'};
+    btn.addEventListener('click',()=>{
+      if(!('speechSynthesis' in window)){alert('הדפדפן אינו תומך בהקראת טקסט.');return}
+      if(btn.dataset.reading==='1'){stop();return}
+      window.speechSynthesis.cancel();
+      const skip=['header','nav','footer','button','script','style','.nextStep','#roleProfessionNavigation','.expQuick','.roleQuickLinks'];
+      const clone=main.cloneNode(true);clone.querySelectorAll(skip.join(',')).forEach(el=>el.remove());
+      const text=(clone.innerText||clone.textContent||'').replace(/\s+/g,' ').trim();if(!text)return;
+      const u=new SpeechSynthesisUtterance(roleNames[current()]+'. '+text);u.lang='he-IL';u.rate=.95;u.onend=stop;u.onerror=stop;btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';window.speechSynthesis.speak(u);
+    });
+    if(!document.getElementById('roleReadPageStyle')){const st=document.createElement('style');st.id='roleReadPageStyle';st.textContent='@media(max-width:720px){#roleReadPageButton{position:static!important;margin:14px 0 0!important}}';document.head.appendChild(st)}
+  }
+'''
+          if 'function addRoleReadPageButton()' not in s:
+              i=s.find(marker)
+              if i<0: raise SystemExit('roles marker not found')
+              s=s[:i]+code+s[i:]
+          # invoke after DOM is ready: append a listener independent of existing init logic
+          tail="\nwindow.addEventListener('DOMContentLoaded',()=>setTimeout(addRoleReadPageButton,0));\n"
+          if "setTimeout(addRoleReadPageButton,0)" not in s:s+=tail
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/app.js
+          git commit -m "Add read aloud button to professional role pages" || exit 0
+          git push
