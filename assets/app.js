@@ -262,3 +262,76 @@
   });
   document.body.appendChild(launcher);
 })();
+
+// Enhanced read-aloud pacing and pronunciation.
+(function(){
+  if(window.__ronenReadEnhanced)return;window.__ronenReadEnhanced=true;
+  const map=t=>(t||'').replace(/\s+/g,' ').trim()
+    .replace(/\b360°?\b/gi,'שלוש מאות ושישים מעלות')
+    .replace(/\bEnd[\s-]?to[\s-]?End\b/gi,'אנד טו אנד')
+    .replace(/\bCustomer Success\b/gi,'קאסטומר סקסס')
+    .replace(/\bProduct Management\b/gi,'פרודקט מנג׳מנט')
+    .replace(/\bProject Management\b/gi,'פרוג׳קט מנג׳מנט')
+    .replace(/\bSystem Analysis\b/gi,'סיסטם אנליסיס')
+    .replace(/\bMAGIC Development\b/gi,'מג׳יק דבלופמנט')
+    .replace(/\bMAGIC\b/gi,'מג׳יק')
+    .replace(/\bPRD\b/gi,'פי אר די')
+    .replace(/\bQA\b/gi,'קיו איי')
+    .replace(/\bUX\b/gi,'יו אקס')
+    .replace(/\bUI\b/gi,'יו איי')
+    .replace(/\bA\/B\b/gi,'איי בי')
+    .replace(/\bMVP\b/gi,'אם וי פי')
+    .replace(/\bMLP\b/gi,'אם אל פי')
+    .replace(/\bKPI(?:s)?\b/gi,'קיי פי איי')
+    .replace(/\bHTML\b/gi,'אייץ׳ טי אם אל')
+    .replace(/\bSQL\b/gi,'אס קיו אל')
+    .replace(/\bGo To Market\b/gi,'גו טו מרקט')
+    .replace(/\bHelp Desk\b/gi,'הלפ דסק')
+    .replace(/\bImplementation\b/gi,'אימפלמנטיישן')
+    .replace(/\bAdoption\b/gi,'אדופשן')
+    .replace(/\bDiscovery\b/gi,'דיסקאברי')
+    .replace(/\bRequirements\b/gi,'ריקוויירמנטס')
+    .replace(/\bDevelopment\b/gi,'דבלופמנט')
+    .replace(/\bTesting\b/gi,'טסטינג')
+    .replace(/\bValidation\b/gi,'ולידיישן')
+    .replace(/\bExperimentation\b/gi,'אקספרימנטיישן')
+    .replace(/\bLaunch\b/gi,'לאנץ׳')
+    .replace(/\bTraining\b/gi,'טריינינג')
+    .replace(/\bTechnical Support\b/gi,'טקניקל ספורט')
+    .replace(/\bCustomer Service\b/gi,'קאסטומר סרוויס')
+    .replace(/[•·|]/g,', ');
+  const voice=()=>speechSynthesis.getVoices().find(v=>/^he(?:-|_)/i.test(v.lang));
+  let run=0;
+  const chunks=root=>{
+    const c=root.cloneNode(true);c.querySelectorAll('button,script,style,nav,footer,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(x=>x.remove());
+    const a=[],seen=new Set();
+    c.querySelectorAll('h1,h2,h3,h4,p,li,.rdTags a,.rdActions a,article strong,article span').forEach(el=>{
+      const t=(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();if(!t||seen.has(t))return;seen.add(t);
+      a.push({t:map(t),p:/^H[1-4]$/.test(el.tagName)?1000:350});
+    });
+    return a;
+  };
+  const small=(main,s)=>[...main.querySelectorAll('section,article')].filter(x=>(x.innerText||'').includes(s)).sort((a,b)=>a.innerText.length-b.innerText.length)[0];
+  const build=()=>{
+    const main=document.querySelector('main'),page=location.pathname.split('/').pop()||'index.html';if(!main)return[];
+    const role={'product.html':'מנהל מוצר','project.html':'מנהל פרויקט','system.html':'מנתח מערכות','magic.html':"מתכנת מג'יק",'customer.html':'קאסטומר סקסס'};
+    if(role[page])return [{t:role[page],p:1100},...chunks(main)];
+    if(page!=='index.html')return[];
+    const blocks=[main.querySelector('.rdHeroCopy'),main.querySelector('.rdStats'),main.querySelector('.lifecycleSection'),small(main,'חמישה עולמות מקצועיים שמתחברים לתמונה אחת'),small(main,'הערך שאני מביא לארגון')].filter(Boolean);
+    const out=[],seen=new Set();blocks.forEach(b=>{const k=b.innerText.trim();if(!k||seen.has(k))return;seen.add(k);if(out.length)out.push({pause:1300});out.push(...chunks(b))});return out;
+  };
+  const stop=btn=>{run++;speechSynthesis.cancel();if(btn){btn.dataset.reading='0';btn.textContent='🔊 הקרא את הדף'}};
+  const speak=(btn,list)=>{
+    const id=++run;btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';let i=0;
+    const next=()=>{if(id!==run)return;if(i>=list.length){stop(btn);return}const x=list[i++];if(x.pause){setTimeout(next,x.pause);return}
+      const u=new SpeechSynthesisUtterance(x.t);u.lang='he-IL';u.rate=.84;u.pitch=1;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>{if(id===run)setTimeout(next,x.p||350)};speechSynthesis.speak(u)};
+    next();
+  };
+  document.addEventListener('click',e=>{
+    const btn=e.target.closest&&e.target.closest('#pageReadButton');if(!btn)return;
+    e.preventDefault();e.stopImmediatePropagation();
+    if(!('speechSynthesis' in window))return alert('הדפדפן אינו תומך בהקראת טקסט.');
+    if(btn.dataset.reading==='1'){stop(btn);return}
+    speechSynthesis.cancel();const list=build();if(list.length)speak(btn,list);
+  },true);
+})();
