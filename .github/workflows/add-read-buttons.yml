@@ -1,0 +1,75 @@
+name: Add read buttons
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/add-read-buttons.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch read aloud feature
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('assets/app.js')
+          s=p.read_text(encoding='utf-8')
+          marker="  const roles=['product.html','project.html','system.html','magic.html','customer.html'];"
+          fn=r'''  function addPageReadButton(){
+    const page=current();
+    if(document.documentElement.lang!=='he')return;
+    const roleNames={'product.html':'מנהל מוצר','project.html':'מנהל פרויקט','system.html':'מנתח מערכות','magic.html':"מתכנת מג׳יק",'customer.html':'Customer Success'};
+    const isRole=Object.prototype.hasOwnProperty.call(roleNames,page);
+    const isHome=page==='index.html';
+    if((!isRole&&!isHome)||document.getElementById('pageReadButton'))return;
+    const main=document.querySelector('main'); if(!main)return;
+    const hero=main.querySelector('.innerHero,.hero,section'); if(!hero)return;
+    if(getComputedStyle(hero).position==='static')hero.style.position='relative';
+    const btn=document.createElement('button');
+    btn.id='pageReadButton'; btn.type='button'; btn.textContent='🔊 הקרא את הדף';
+    btn.setAttribute('aria-label',isRole?'הקרא את דף '+roleNames[page]:'הקרא את התוכן המרכזי של דף הבית');
+    btn.style.cssText='position:absolute;top:18px;right:0;z-index:5;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 15px;border-radius:11px;background:#edf3ff;border:1px solid #195ed8;color:#195ed8;font:900 14px inherit;cursor:pointer;box-shadow:0 4px 12px rgba(13,34,54,.10)';
+    hero.appendChild(btn);
+    const stop=()=>{if(window.speechSynthesis)window.speechSynthesis.cancel();btn.textContent='🔊 הקרא את הדף';btn.dataset.reading='0'};
+    btn.addEventListener('click',()=>{
+      if(!('speechSynthesis' in window)){alert('הדפדפן אינו תומך בהקראת טקסט.');return}
+      if(btn.dataset.reading==='1'){stop();return}
+      window.speechSynthesis.cancel();
+      let text='';
+      if(isRole){
+        const clone=main.cloneNode(true);
+        clone.querySelectorAll('header,nav,footer,button,script,style,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks').forEach(el=>el.remove());
+        text=(clone.innerText||clone.textContent||'').replace(/\s+/g,' ').trim();
+      }else{
+        const wanted=['מחבר בין לקוח, מוצר, מערכת, פיתוח וביצוע','360','כל שלבי המוצר','חמישה עולמות מקצועיים שמתחברים לתמונה אחת','הערך שאני מביא לארגון'];
+        const blocks=[...main.querySelectorAll('section,article,.card,.highlight,.page,div')].filter(el=>wanted.some(w=>(el.innerText||'').includes(w)));
+        const seen=new Set(), parts=[];
+        blocks.forEach(el=>{const t=(el.innerText||'').replace(/\s+/g,' ').trim(); if(t&&!seen.has(t)){seen.add(t);parts.push(t)}});
+        text=parts.join('. ');
+      }
+      if(!text)return;
+      const u=new SpeechSynthesisUtterance((isRole?roleNames[page]+'. ':'')+text);u.lang='he-IL';u.rate=.95;u.onend=stop;u.onerror=stop;
+      btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';window.speechSynthesis.speak(u);
+    });
+    if(!document.getElementById('pageReadStyle')){const st=document.createElement('style');st.id='pageReadStyle';st.textContent='@media(max-width:720px){#pageReadButton{position:static!important;margin:14px 0 0!important}}';document.head.appendChild(st)}
+  }
+'''
+          if 'function addPageReadButton()' not in s:
+              s=s.replace(marker,fn+marker)
+          if 'addPageReadButton();' not in s:
+              s=s.replace('})();','  window.addEventListener(\'DOMContentLoaded\',()=>setTimeout(addPageReadButton,0));\n})();')
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add assets/app.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Add read aloud buttons to role and home pages"
+          git push origin main
