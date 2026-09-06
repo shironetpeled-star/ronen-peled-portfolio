@@ -347,7 +347,7 @@
   const chunks=root=>{
     const c=root.cloneNode(true);c.querySelectorAll('button,script,style,nav,footer,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(x=>x.remove());
     const a=[],seen=new Set();
-    c.querySelectorAll('h1,h2,h3,h4,p,li,.rdTags a,.rdActions a,article strong,article span').forEach(el=>{
+    c.querySelectorAll('h1,h2,h3,h4,.highlight>span:first-child,.roleExperience>span:first-child,.skillsHeaderTitle,p,li,.rdTags a,.rdActions a,article strong,article span').forEach(el=>{
       const t=(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();if(!t||seen.has(t))return;seen.add(t);
       split(map(t)).forEach((part,index)=>a.push({t:part,p:/^H[1-4]$/.test(el.tagName)?1000:(index?500:420)}));
     });
@@ -473,7 +473,7 @@
     clone.querySelectorAll('button,script,style,nav,footer,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton,#englishPageReadButton').forEach(x=>x.remove());
     const out=[];
     const seen=new Set();
-    clone.querySelectorAll('h1,h2,h3,h4,p,li,article strong,article span,.rdTags a,.rdActions a').forEach(el=>{
+    clone.querySelectorAll('h1,h2,h3,h4,.highlight>span:first-child,.roleExperience>span:first-child,.skillsHeaderTitle,p,li,article strong,article span,.rdTags a,.rdActions a').forEach(el=>{
       const raw=(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();
       if(!raw||seen.has(raw))return;
       seen.add(raw);
