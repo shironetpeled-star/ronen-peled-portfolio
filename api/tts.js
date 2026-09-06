@@ -1,5 +1,5 @@
 const WINDOW_MS = 10 * 60 * 1000;
-const MAX_REQUESTS = 8;
+const MAX_REQUESTS = 15;
 const visits = new Map();
 
 function allowedOrigin(req) {
