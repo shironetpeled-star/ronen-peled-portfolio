@@ -267,24 +267,59 @@
 (function(){
   if(window.__ronenReadEnhanced)return;window.__ronenReadEnhanced=true;
   const map=t=>(t||'').replace(/\s+/g,' ').trim()
+    .replace(/\s*[|•·]\s*/g,'. ')
+    .replace(/\s*&\s*/g,' וגם ')
+    .replace(/\bWHAT I BRING\b/gi,'מה אני מביא')
+    .replace(/\bMY ADVANTAGE\b/gi,'היתרונות שלי')
+    .replace(/\bEXPERIENCE\b/gi,'ניסיון מקצועי')
+    .replace(/\bPROFESSIONAL (?:SKILLS|CAPABILITIES)\b/gi,'יכולות מקצועיות')
+    .replace(/\bPERSONAL (?:SKILLS|CAPABILITIES)\b/gi,'יכולות אישיות')
+    .replace(/\bNEXT STEP\b/gi,'השלב הבא')
     .replace(/\b360°?\b/gi,'שלוש מאות ושישים מעלות')
     .replace(/\bEnd[\s-]?to[\s-]?End\b/gi,'אנד טו אנד')
+    .replace(/\bHands?[\s-]?On\b/gi,'הנדס און')
     .replace(/\bCustomer Success\b/gi,'קאסטומר סקסס')
+    .replace(/\bProduct Manager\b/gi,'פרודקט מנג׳ר')
+    .replace(/\bProject Manager\b/gi,'פרוג׳קט מנג׳ר')
     .replace(/\bProduct Management\b/gi,'פרודקט מנג׳מנט')
     .replace(/\bProject Management\b/gi,'פרוג׳קט מנג׳מנט')
     .replace(/\bSystem Analysis\b/gi,'סיסטם אנליסיס')
+    .replace(/\bSystem Analyst\b/gi,'סיסטם אנליסט')
     .replace(/\bMAGIC Development\b/gi,'מג׳יק דבלופמנט')
     .replace(/\bMAGIC\b/gi,'מג׳יק')
-    .replace(/\bPRD\b/gi,'פי אר די')
-    .replace(/\bQA\b/gi,'קיו איי')
-    .replace(/\bUX\b/gi,'יו אקס')
-    .replace(/\bUI\b/gi,'יו איי')
-    .replace(/\bA\/B\b/gi,'איי בי')
-    .replace(/\bMVP\b/gi,'אם וי פי')
-    .replace(/\bMLP\b/gi,'אם אל פי')
-    .replace(/\bKPI(?:s)?\b/gi,'קיי פי איי')
-    .replace(/\bHTML\b/gi,'אייץ׳ טי אם אל')
-    .replace(/\bSQL\b/gi,'אס קיו אל')
+    .replace(/\bPRD\b/gi,'פי. אר. די')
+    .replace(/\bQA\b/gi,'קיו. איי')
+    .replace(/\bUX\b/gi,'יו. אקס')
+    .replace(/\bUI\b/gi,'יו. איי')
+    .replace(/\bA\/B(?:\s+Testing)?\b/gi,'איי בי טסטינג')
+    .replace(/\bMVP\b/gi,'אם. וי. פי')
+    .replace(/\bMLP\b/gi,'אם. אל. פי')
+    .replace(/\bKPI(?:s)?\b/gi,'קיי. פי. איי')
+    .replace(/\bAPI(?:s)?\b/gi,'איי. פי. איי')
+    .replace(/\bAI\b/gi,'איי. איי')
+    .replace(/\bCRM\b/gi,'סי. אר. אם')
+    .replace(/\bERP\b/gi,'אי. אר. פי')
+    .replace(/\bHTML\b/gi,'אייץ׳. טי. אם. אל')
+    .replace(/\bSQL\b/gi,'אס. קיו. אל')
+    .replace(/\bPrototype Management\b/gi,'פרוטוטייפ מנג׳מנט')
+    .replace(/\bPrototype\b/gi,'פרוטוטייפ')
+    .replace(/\bStakeholders\b/gi,'סטייקהולדרס')
+    .replace(/\bPrioritization\b/gi,'פריוריטיזיישן')
+    .replace(/\bIntegrations?\b/gi,'אינטגרציות')
+    .replace(/\bArchitecture\b/gi,'ארכיטקטורה')
+    .replace(/\bEnterprise\b/gi,'אנטרפרייז')
+    .replace(/\bRollout\b/gi,'רול אאוט')
+    .replace(/\bDelivery\b/gi,'דליברי')
+    .replace(/\bFeedback\b/gi,'פידבק')
+    .replace(/\bData\b/gi,'דאטה')
+    .replace(/\bSoftware\b/gi,'סופטוור')
+    .replace(/\bBusiness\b/gi,'ביזנס')
+    .replace(/\bTechnical\b/gi,'טכני')
+    .replace(/\bFunctional\b/gi,'פונקציונלי')
+    .replace(/\bSMARTi\b/gi,'סמארטי')
+    .replace(/\bVerifone\b/gi,'וריפון')
+    .replace(/\bSIXT\b/gi,'סיקסט')
+    .replace(/\bOracle\b/gi,'אורקל')
     .replace(/\bGo To Market\b/gi,'גו טו מרקט')
     .replace(/\bHelp Desk\b/gi,'הלפ דסק')
     .replace(/\bImplementation\b/gi,'אימפלמנטיישן')
@@ -298,16 +333,23 @@
     .replace(/\bLaunch\b/gi,'לאנץ׳')
     .replace(/\bTraining\b/gi,'טריינינג')
     .replace(/\bTechnical Support\b/gi,'טקניקל ספורט')
-    .replace(/\bCustomer Service\b/gi,'קאסטומר סרוויס')
-    .replace(/[•·|]/g,', ');
-  const voice=()=>speechSynthesis.getVoices().find(v=>/^he(?:-|_)/i.test(v.lang));
+    .replace(/\bCustomer Service\b/gi,'קאסטומר סרוויס');
+  const voice=()=>{
+    const he=speechSynthesis.getVoices().filter(v=>/^he(?:-|_)/i.test(v.lang));
+    return he.find(v=>/Natural|Online|Google|Microsoft/i.test(v.name))||he[0]||null;
+  };
+  const split=t=>{
+    const parts=t.split(/(?<=[.!?;:])\s+/).filter(Boolean),out=[];
+    parts.forEach(part=>{if(part.length<=230)out.push(part);else{const words=part.split(' ');let line='';words.forEach(word=>{if((line+' '+word).trim().length>210){out.push(line.trim());line=word}else line=(line+' '+word).trim()});if(line)out.push(line)}});
+    return out;
+  };
   let run=0;
   const chunks=root=>{
     const c=root.cloneNode(true);c.querySelectorAll('button,script,style,nav,footer,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(x=>x.remove());
     const a=[],seen=new Set();
     c.querySelectorAll('h1,h2,h3,h4,p,li,.rdTags a,.rdActions a,article strong,article span').forEach(el=>{
       const t=(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();if(!t||seen.has(t))return;seen.add(t);
-      a.push({t:map(t),p:/^H[1-4]$/.test(el.tagName)?1000:350});
+      split(map(t)).forEach((part,index)=>a.push({t:part,p:/^H[1-4]$/.test(el.tagName)?1000:(index?500:420)}));
     });
     return a;
   };
@@ -322,17 +364,17 @@
   };
   const stop=btn=>{run++;speechSynthesis.cancel();if(btn){btn.dataset.reading='0';btn.textContent='🔊 הקרא את הדף'}};
   const speak=(btn,list)=>{
-    const id=++run;btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';let i=0;
+    const id=++run;btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';let i=0,spoken=0;
     const next=()=>{if(id!==run)return;if(i>=list.length){stop(btn);return}const x=list[i++];if(x.pause){setTimeout(next,x.pause);return}
-      const u=new SpeechSynthesisUtterance(x.t);u.lang='he-IL';u.rate=.84;u.pitch=1;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>{if(id===run)setTimeout(next,x.p||350)};speechSynthesis.speak(u)};
-    next();
+      const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+x.t);u.lang='he-IL';u.rate=.78;u.pitch=1;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>{if(id===run)setTimeout(next,x.p||420)};speechSynthesis.speak(u)};
+    setTimeout(next,550);
   };
   document.addEventListener('click',e=>{
     const btn=e.target.closest&&e.target.closest('#pageReadButton');if(!btn)return;
     e.preventDefault();e.stopImmediatePropagation();
     if(!('speechSynthesis' in window))return alert('הדפדפן אינו תומך בהקראת טקסט.');
     if(btn.dataset.reading==='1'){stop(btn);return}
-    speechSynthesis.cancel();const list=build();if(list.length)speak(btn,list);
+    speechSynthesis.cancel();const list=build();if(list.length)setTimeout(()=>speak(btn,list),180);
   },true);
 })();
 
@@ -392,7 +434,9 @@
 
   const pickVoice=()=>{
     const voices=speechSynthesis.getVoices();
-    return voices.find(v=>/^en-US$/i.test(v.lang)) ||
+    return voices.find(v=>/^en-US$/i.test(v.lang)&&/Natural|Online|Google|Microsoft/i.test(v.name)) ||
+           voices.find(v=>/^en-GB$/i.test(v.lang)&&/Natural|Online|Google|Microsoft/i.test(v.name)) ||
+           voices.find(v=>/^en-US$/i.test(v.lang)) ||
            voices.find(v=>/^en-GB$/i.test(v.lang)) ||
            voices.find(v=>/^en/i.test(v.lang)) || null;
   };
@@ -445,7 +489,7 @@
 
   const speakQueue=(items,btn)=>{
     const my=++runId;
-    let i=0;
+    let i=0,spoken=0;
     btn.dataset.reading='1';
     btn.textContent='⏹ Stop reading';
     speechSynthesis.cancel();
@@ -459,9 +503,9 @@
       const item=items[i++];
       if(item.pause&&!item.text){setTimeout(next,item.pause);return;}
       if(!item.text){next();return;}
-      const u=new SpeechSynthesisUtterance(item.text);
+      const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+item.text);
       u.lang='en-US';
-      u.rate=0.9;
+      u.rate=0.84;
       u.pitch=1;
       const v=pickVoice();
       if(v)u.voice=v;
@@ -469,7 +513,7 @@
       u.onerror=()=>setTimeout(next,250);
       speechSynthesis.speak(u);
     };
-    next();
+    setTimeout(next,550);
   };
 
   const add=()=>{
@@ -491,7 +535,7 @@
       if(!('speechSynthesis' in window)){alert('Your browser does not support text-to-speech.');return;}
       if(btn.dataset.reading==='1'){stop(btn);return;}
       const items=isHome?homeChunks(main):[{text:roles[currentPage],pause:1200},...extract(main)];
-      if(items.length)speakQueue(items,btn);
+      if(items.length){speechSynthesis.cancel();setTimeout(()=>speakQueue(items,btn),180);}
     });
     anchor.appendChild(btn);
 
