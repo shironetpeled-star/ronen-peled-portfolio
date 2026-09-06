@@ -362,8 +362,8 @@
     const blocks=[main.querySelector('.rdHeroCopy'),main.querySelector('.rdStats'),main.querySelector('.lifecycleSection'),small(main,'חמישה עולמות מקצועיים שמתחברים לתמונה אחת'),small(main,'הערך שאני מביא לארגון')].filter(Boolean);
     const out=[],seen=new Set();blocks.forEach(b=>{const k=b.innerText.trim();if(!k||seen.has(k))return;seen.add(k);if(out.length)out.push({pause:1300});out.push(...chunks(b))});return out;
   };
-  const stopAudio=()=>{const audio=window.__ronenPageAudio;if(audio){audio.pause();if(audio.dataset&&audio.dataset.url)URL.revokeObjectURL(audio.dataset.url);window.__ronenPageAudio=null}};
-  const primeAudio=()=>{const audio=new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA');audio.loop=true;audio.muted=true;audio.volume=0;window.__ronenPageAudio=audio;audio.play().catch(()=>{});return audio};
+  const stopAudio=()=>{const source=window.__ronenPageSource;if(source){try{source.onended=null;source.stop()}catch{}window.__ronenPageSource=null}const audio=window.__ronenPageAudio;if(audio){audio.pause();if(audio.dataset&&audio.dataset.url)URL.revokeObjectURL(audio.dataset.url);window.__ronenPageAudio=null}};
+  const primeAudio=()=>{const AudioContext=window.AudioContext||window.webkitAudioContext;if(!AudioContext)return null;const context=window.__ronenAudioContext||new AudioContext();window.__ronenAudioContext=context;context.resume();return context};
   const stop=btn=>{run++;stopAudio();speechSynthesis.cancel();if(btn){btn.dataset.reading='0';btn.textContent='🔊 הקרא את הדף'}};
   const speak=(btn,list)=>{
     const id=++run;btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';let i=0,spoken=0;
@@ -373,17 +373,17 @@
   };
   const packForAudio=(values,max)=>{const parts=[];let part='';values.forEach(value=>{if(!value)return;const next=part?part+'. '+value:value;if(next.length>max&&part){parts.push(part);part=value}else part=next});if(part)parts.push(part);return parts};
   const fetchAudioPart=async(text,language)=>{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,language:language})});if(!response.ok)throw new Error('TTS unavailable');return response.blob()};
-  const speakWithEleven=async(btn,list,audio)=>{
+  const speakWithEleven=async(btn,list,context)=>{
     const requestId=++run;
     const parts=packForAudio(list.filter(x=>x.t).map(x=>x.t),1100).slice(0,5);
     if(!parts.length)throw new Error('No text');
     btn.dataset.reading='1';btn.textContent='⏳ מכין הקראה…';
     const first=await fetchAudioPart(parts[0],'he');
     if(requestId!==run)return;
-    const playPart=async(index,blob)=>{if(requestId!==run)return;const url=URL.createObjectURL(blob);audio.pause();audio.loop=false;audio.muted=false;audio.volume=1;audio.src=url;audio.dataset.url=url;audio.load();window.__ronenPageAudio=audio;const next=index+1<parts.length?fetchAudioPart(parts[index+1],'he'):null;
-      audio.onplay=()=>{btn.textContent='⏹ עצור הקראה'};
-      audio.onended=async()=>{URL.revokeObjectURL(url);if(window.__ronenPageAudio===audio)window.__ronenPageAudio=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{await playPart(index+1,await next)}catch{stop(btn)}};
-      audio.onerror=()=>stop(btn);await audio.play()};
+    if(!context)throw new Error('Web Audio unavailable');
+    const playPart=async(index,blob)=>{if(requestId!==run)return;const next=index+1<parts.length?fetchAudioPart(parts[index+1],'he'):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==run)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ עצור הקראה';
+      source.onended=async()=>{if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{await playPart(index+1,await next)}catch{stop(btn)}};
+      source.start(0)};
     await playPart(0,first);
   };
   document.addEventListener('click',e=>{
@@ -391,7 +391,7 @@
     e.preventDefault();e.stopImmediatePropagation();
     if(!('speechSynthesis' in window))return alert('הדפדפן אינו תומך בהקראת טקסט.');
     if(btn.dataset.reading==='1'){stop(btn);return}
-    stopAudio();speechSynthesis.cancel();const list=build();if(list.length){const audio=primeAudio();speakWithEleven(btn,list,audio).catch(()=>{if(btn.dataset.reading==='1'){stopAudio();btn.textContent='⏹ עצור הקראה';setTimeout(()=>speak(btn,list),180)}})};
+    stopAudio();speechSynthesis.cancel();const list=build();if(list.length){const context=primeAudio();speakWithEleven(btn,list,context).catch(()=>{if(btn.dataset.reading==='1'){stopAudio();btn.textContent='⏹ עצור הקראה';setTimeout(()=>speak(btn,list),180)}})};
   },true);
 })();
 
@@ -459,8 +459,8 @@
   };
 
   let runId=0;
-  const stopEnglishAudio=()=>{const audio=window.__ronenPageAudio;if(audio){audio.pause();if(audio.dataset&&audio.dataset.url)URL.revokeObjectURL(audio.dataset.url);window.__ronenPageAudio=null}};
-  const primeEnglishAudio=()=>{const audio=new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA');audio.loop=true;audio.muted=true;audio.volume=0;window.__ronenPageAudio=audio;audio.play().catch(()=>{});return audio};
+  const stopEnglishAudio=()=>{const source=window.__ronenPageSource;if(source){try{source.onended=null;source.stop()}catch{}window.__ronenPageSource=null}const audio=window.__ronenPageAudio;if(audio){audio.pause();if(audio.dataset&&audio.dataset.url)URL.revokeObjectURL(audio.dataset.url);window.__ronenPageAudio=null}};
+  const primeEnglishAudio=()=>{const AudioContext=window.AudioContext||window.webkitAudioContext;if(!AudioContext)return null;const context=window.__ronenAudioContext||new AudioContext();window.__ronenAudioContext=context;context.resume();return context};
   const stop=btn=>{
     runId++;
     stopEnglishAudio();
@@ -537,17 +537,17 @@
   };
   const packEnglishAudio=(values,max)=>{const parts=[];let part='';values.forEach(value=>{if(!value)return;const next=part?part+'. '+value:value;if(next.length>max&&part){parts.push(part);part=value}else part=next});if(part)parts.push(part);return parts};
   const fetchEnglishAudio=async text=>{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,language:'en'})});if(!response.ok)throw new Error('TTS unavailable');return response.blob()};
-  const speakEnglishWithEleven=async(items,btn,audio)=>{
+  const speakEnglishWithEleven=async(items,btn,context)=>{
     const requestId=++runId;
     const parts=packEnglishAudio(items.filter(item=>item.text).map(item=>item.text),1100).slice(0,5);
     if(!parts.length)throw new Error('No text');
     btn.dataset.reading='1';btn.textContent='⏳ Preparing audio…';
     const first=await fetchEnglishAudio(parts[0]);
     if(requestId!==runId)return;
-    const playPart=async(index,blob)=>{if(requestId!==runId)return;const url=URL.createObjectURL(blob);audio.pause();audio.loop=false;audio.muted=false;audio.volume=1;audio.src=url;audio.dataset.url=url;audio.load();window.__ronenPageAudio=audio;const next=index+1<parts.length?fetchEnglishAudio(parts[index+1]):null;
-      audio.onplay=()=>{btn.textContent='⏹ Stop reading'};
-      audio.onended=async()=>{URL.revokeObjectURL(url);if(window.__ronenPageAudio===audio)window.__ronenPageAudio=null;if(requestId!==runId)return;if(!next){stop(btn);return}btn.textContent='⏳ Preparing the next part…';try{await playPart(index+1,await next)}catch{stop(btn)}};
-      audio.onerror=()=>stop(btn);await audio.play()};
+    if(!context)throw new Error('Web Audio unavailable');
+    const playPart=async(index,blob)=>{if(requestId!==runId)return;const next=index+1<parts.length?fetchEnglishAudio(parts[index+1]):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==runId)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ Stop reading';
+      source.onended=async()=>{if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==runId)return;if(!next){stop(btn);return}btn.textContent='⏳ Preparing the next part…';try{await playPart(index+1,await next)}catch{stop(btn)}};
+      source.start(0)};
     await playPart(0,first);
   };
 
@@ -570,7 +570,7 @@
       if(!('speechSynthesis' in window)){alert('Your browser does not support text-to-speech.');return;}
       if(btn.dataset.reading==='1'){stop(btn);return;}
       const items=isHome?homeChunks(main):[{text:roles[currentPage],pause:1200},...extract(main)];
-      if(items.length){stopEnglishAudio();speechSynthesis.cancel();const audio=primeEnglishAudio();speakEnglishWithEleven(items,btn,audio).catch(()=>{if(btn.dataset.reading==='1'){stopEnglishAudio();btn.textContent='⏹ Stop reading';setTimeout(()=>speakQueue(items,btn),180)}});}
+      if(items.length){stopEnglishAudio();speechSynthesis.cancel();const context=primeEnglishAudio();speakEnglishWithEleven(items,btn,context).catch(()=>{if(btn.dataset.reading==='1'){stopEnglishAudio();btn.textContent='⏹ Stop reading';setTimeout(()=>speakQueue(items,btn),180)}});}
     });
     anchor.appendChild(btn);
 
