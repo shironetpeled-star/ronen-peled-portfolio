@@ -79,6 +79,65 @@
       }
     `;document.head.appendChild(s)}
   }
+  function addPageReadButton(){
+    const page=current();
+    if(document.documentElement.lang!=='he')return;
+    const roleNames={'product.html':'מנהל מוצר','project.html':'מנהל פרויקט','system.html':'מנתח מערכות','magic.html':"מתכנת מג'יק",'customer.html':'Customer Success'};
+    const isRole=Object.prototype.hasOwnProperty.call(roleNames,page);
+    const isHome=page==='index.html';
+    if((!isRole&&!isHome)||document.getElementById('pageReadButton'))return;
+    const main=document.querySelector('main');if(!main)return;
+    const hero=isHome?main.querySelector('.rdHero'):main.querySelector('.innerHero,.hero,.roleHero,section');
+    if(!hero)return;
+    const anchor=isHome?(hero.querySelector('.rdHeroCopy')||hero):(hero.querySelector('.page')||hero);
+    if(getComputedStyle(anchor).position==='static')anchor.style.position='relative';
+    const btn=document.createElement('button');
+    btn.id='pageReadButton';btn.type='button';btn.textContent='🔊 הקרא את הדף';
+    btn.setAttribute('aria-label',isRole?'הקרא את דף '+roleNames[page]:'הקרא את התוכן המרכזי של דף הבית');
+    btn.style.cssText='position:absolute;top:18px;right:18px;z-index:5;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 15px;border-radius:11px;background:#edf3ff;border:1px solid #195ed8;color:#195ed8;font:900 14px inherit;cursor:pointer;box-shadow:0 4px 12px rgba(13,34,54,.10)';
+    anchor.appendChild(btn);
+    const stop=()=>{if(window.speechSynthesis)window.speechSynthesis.cancel();btn.textContent='🔊 הקרא את הדף';btn.dataset.reading='0'};
+    const cleanText=el=>{
+      if(!el)return '';
+      const clone=el.cloneNode(true);
+      clone.querySelectorAll('button,script,style,nav,footer,#pageReadButton').forEach(x=>x.remove());
+      return (clone.innerText||clone.textContent||'').replace(/\s+/g,' ').trim();
+    };
+    const findSmallestSection=needle=>{
+      const candidates=[...main.querySelectorAll('section,article')].filter(el=>(el.innerText||'').includes(needle));
+      return candidates.sort((a,b)=>(a.innerText||'').length-(b.innerText||'').length)[0]||null;
+    };
+    btn.addEventListener('click',()=>{
+      if(!('speechSynthesis' in window)){alert('הדפדפן אינו תומך בהקראת טקסט.');return}
+      if(btn.dataset.reading==='1'){stop();return}
+      window.speechSynthesis.cancel();
+      let text='';
+      if(isRole){
+        const clone=main.cloneNode(true);
+        clone.querySelectorAll('button,script,style,nav,footer,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(el=>el.remove());
+        text=(clone.innerText||clone.textContent||'').replace(/\s+/g,' ').trim();
+      }else{
+        const blocks=[
+          main.querySelector('.rdHeroCopy'),
+          main.querySelector('.rdStats'),
+          main.querySelector('.lifecycleSection'),
+          findSmallestSection('חמישה עולמות מקצועיים שמתחברים לתמונה אחת'),
+          findSmallestSection('הערך שאני מביא לארגון')
+        ].filter(Boolean);
+        const seen=new Set();
+        text=blocks.map(cleanText).filter(t=>t&&!seen.has(t)&&(seen.add(t),true)).join('. ');
+      }
+      if(!text)return;
+      const u=new SpeechSynthesisUtterance((isRole?roleNames[page]+'. ':'')+text);
+      u.lang='he-IL';u.rate=.95;u.onend=stop;u.onerror=stop;
+      btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';window.speechSynthesis.speak(u);
+    });
+    if(!document.getElementById('pageReadStyle')){
+      const st=document.createElement('style');st.id='pageReadStyle';
+      st.textContent='@media(max-width:720px){#pageReadButton{position:static!important;margin:14px 0 0!important}}';
+      document.head.appendChild(st);
+    }
+  }
   const roles=['product.html','project.html','system.html','magic.html','customer.html'];
   const quick=[['experience.html','פירוט ניסיון'],['projects.html','רשימת פרויקטים'],['work-environments.html','סוגי מערכות'],['education.html','השכלה']];
   const professions=[['index.html','עמוד בית - ראייה 360°'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html','MAGIC'],['customer.html','Customer Success']];
@@ -146,7 +205,7 @@
   function addBottomNavigation(){const page=current();if(!['education.html','work-environments.html','advantages.html','military.html','skills.html','service.html','contact.html'].includes(page))return;const main=document.querySelector('main');if(!main)return;let section=document.getElementById('sharedBottomNavigation');if(!section){section=document.createElement('section');section.id='sharedBottomNavigation';main.appendChild(section)}section.innerHTML=bottomMarkup(page==='contact.html'?'education.html':page);if(page==='contact.html'){const next=section.querySelector('.sbnNext');if(next)next.remove()}const experienceLinks=section.querySelector('.sbnGroup .sbnLinks');if(experienceLinks&&!experienceLinks.querySelector('a[href="advantages.html"]')){const advantages=document.createElement('a');advantages.href='advantages.html';advantages.textContent='היתרונות שלי';const systems=experienceLinks.querySelector('a[href="work-environments.html"]');if(systems)systems.insertAdjacentElement('afterend',advantages);else experienceLinks.appendChild(advantages)}if(['work-environments.html','advantages.html','military.html','skills.html','service.html'].includes(page)){const links=section.querySelector('.sbnGroup .sbnLinks');if(links&&!links.querySelector('a[href="skills.html"]')){const skills=document.createElement('a');skills.href='skills.html';skills.textContent='יכולות';links.appendChild(skills)}}section.style.marginTop=['work-environments.html','advantages.html'].includes(page)?'42px':'';if(page==='military.html'){const direct=document.querySelector('.milBottom');if(direct&&direct!==section)direct.style.display='none'}}
   function addExperienceBottomNavigation(){if(current()!=='experience.html')return;const main=document.querySelector('main');if(!main)return;let section=document.getElementById('sharedBottomNavigation');if(!section){section=document.createElement('section');section.id='sharedBottomNavigation';main.appendChild(section)}section.innerHTML=bottomMarkup('experience.html');section.style.marginTop='42px';document.querySelectorAll('main>.nextStep,main>.professionBottomNav,.experienceMoreJobsRow,#experienceQuickButtons').forEach(el=>{if(el!==section)el.style.display='none'});const links=section.querySelector('.sbnGroup .sbnLinks');if(!links)return;const self=links.querySelector('a[href="experience.html"]');if(self)self.remove();const advantages=links.querySelector('a[href="advantages.html"]');if(advantages)advantages.remove();const projects=links.querySelector('a[href="projects.html"]');if(projects)projects.textContent='רשימת עבודות ופרויקטים';if(!links.querySelector('a[href="skills.html"]')){const skills=document.createElement('a');skills.href='skills.html';skills.textContent='יכולות';links.appendChild(skills)}let more=links.querySelector('a[href="#additional-work"]');if(!more){more=document.createElement('a');more.href='#additional-work';more.textContent='עבודות נוספות';links.insertBefore(more,links.firstChild);more.addEventListener('click',e=>{e.preventDefault();const details=document.querySelector('details.moreJobs');if(details){details.id='additional-work';details.open=true;details.style.display='block';details.scrollIntoView({behavior:'smooth',block:'start'})}})}}
   if(current()==='experience.html')ensureExperienceSkills=function(){};
-  function repairAll(){normalizeHebrewTopbar();ensureExperienceSkills();addRoleNavigation();standardizeRoleOverview();normalizeRoleExperienceButtons();addBottomNavigation();addExperienceBottomNavigation()}
+  function repairAll(){normalizeHebrewTopbar();ensureExperienceSkills();addRoleNavigation();standardizeRoleOverview();normalizeRoleExperienceButtons();addBottomNavigation();addExperienceBottomNavigation();addPageReadButton()}
   const run=()=>{repairAll();setTimeout(repairAll,150);setTimeout(repairAll,700)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
   const core=document.createElement('script');core.src='assets/app-core.js?v=20260901-profession-skills-header-1';core.onload=run;core.onerror=run;document.head.appendChild(core);
