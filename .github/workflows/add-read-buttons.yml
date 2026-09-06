@@ -14,57 +14,7 @@ jobs:
         with:
           ref: main
       - name: Patch read aloud feature
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('assets/app.js')
-          s=p.read_text(encoding='utf-8')
-          marker="  const roles=['product.html','project.html','system.html','magic.html','customer.html'];"
-          fn=r'''  function addPageReadButton(){
-    const page=current();
-    if(document.documentElement.lang!=='he')return;
-    const roleNames={'product.html':'מנהל מוצר','project.html':'מנהל פרויקט','system.html':'מנתח מערכות','magic.html':"מתכנת מג׳יק",'customer.html':'Customer Success'};
-    const isRole=Object.prototype.hasOwnProperty.call(roleNames,page);
-    const isHome=page==='index.html';
-    if((!isRole&&!isHome)||document.getElementById('pageReadButton'))return;
-    const main=document.querySelector('main'); if(!main)return;
-    const hero=main.querySelector('.innerHero,.hero,section'); if(!hero)return;
-    if(getComputedStyle(hero).position==='static')hero.style.position='relative';
-    const btn=document.createElement('button');
-    btn.id='pageReadButton'; btn.type='button'; btn.textContent='🔊 הקרא את הדף';
-    btn.setAttribute('aria-label',isRole?'הקרא את דף '+roleNames[page]:'הקרא את התוכן המרכזי של דף הבית');
-    btn.style.cssText='position:absolute;top:18px;right:0;z-index:5;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 15px;border-radius:11px;background:#edf3ff;border:1px solid #195ed8;color:#195ed8;font:900 14px inherit;cursor:pointer;box-shadow:0 4px 12px rgba(13,34,54,.10)';
-    hero.appendChild(btn);
-    const stop=()=>{if(window.speechSynthesis)window.speechSynthesis.cancel();btn.textContent='🔊 הקרא את הדף';btn.dataset.reading='0'};
-    btn.addEventListener('click',()=>{
-      if(!('speechSynthesis' in window)){alert('הדפדפן אינו תומך בהקראת טקסט.');return}
-      if(btn.dataset.reading==='1'){stop();return}
-      window.speechSynthesis.cancel();
-      let text='';
-      if(isRole){
-        const clone=main.cloneNode(true);
-        clone.querySelectorAll('header,nav,footer,button,script,style,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks').forEach(el=>el.remove());
-        text=(clone.innerText||clone.textContent||'').replace(/\s+/g,' ').trim();
-      }else{
-        const wanted=['מחבר בין לקוח, מוצר, מערכת, פיתוח וביצוע','360','כל שלבי המוצר','חמישה עולמות מקצועיים שמתחברים לתמונה אחת','הערך שאני מביא לארגון'];
-        const blocks=[...main.querySelectorAll('section,article,.card,.highlight,.page,div')].filter(el=>wanted.some(w=>(el.innerText||'').includes(w)));
-        const seen=new Set(), parts=[];
-        blocks.forEach(el=>{const t=(el.innerText||'').replace(/\s+/g,' ').trim(); if(t&&!seen.has(t)){seen.add(t);parts.push(t)}});
-        text=parts.join('. ');
-      }
-      if(!text)return;
-      const u=new SpeechSynthesisUtterance((isRole?roleNames[page]+'. ':'')+text);u.lang='he-IL';u.rate=.95;u.onend=stop;u.onerror=stop;
-      btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';window.speechSynthesis.speak(u);
-    });
-    if(!document.getElementById('pageReadStyle')){const st=document.createElement('style');st.id='pageReadStyle';st.textContent='@media(max-width:720px){#pageReadButton{position:static!important;margin:14px 0 0!important}}';document.head.appendChild(st)}
-  }
-'''
-          if 'function addPageReadButton()' not in s:
-              s=s.replace(marker,fn+marker)
-          if 'addPageReadButton();' not in s:
-              s=s.replace('})();','  window.addEventListener(\'DOMContentLoaded\',()=>setTimeout(addPageReadButton,0));\n})();')
-          p.write_text(s,encoding='utf-8')
-          PY
+        run: python -c "import base64;exec(base64.b64decode('ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCnA9UGF0aCgiYXNzZXRzL2FwcC5qcyIpCnM9cC5yZWFkX3RleHQoZW5jb2Rpbmc9InV0Zi04IikKaWYgImZ1bmN0aW9uIGFkZFBhZ2VSZWFkQnV0dG9uKCkiIG5vdCBpbiBzOgogICAgbWFya2VyPSIgIGNvbnN0IHJvbGVzPVsncHJvZHVjdC5odG1sJywncHJvamVjdC5odG1sJywnc3lzdGVtLmh0bWwnLCdtYWdpYy5odG1sJywnY3VzdG9tZXIuaHRtbCddOyIKICAgIGZuPXIiIiIgIGZ1bmN0aW9uIGFkZFBhZ2VSZWFkQnV0dG9uKCl7CiAgICBjb25zdCBwYWdlPWN1cnJlbnQoKTsKICAgIGlmKGRvY3VtZW50LmRvY3VtZW50RWxlbWVudC5sYW5nIT09J2hlJylyZXR1cm47CiAgICBjb25zdCByb2xlTmFtZXM9eydwcm9kdWN0Lmh0bWwnOifXnteg15TXnCDXnteV16bXqCcsJ3Byb2plY3QuaHRtbCc6J9ee16DXlNecINek16jXldeZ16fXmCcsJ3N5c3RlbS5odG1sJzon157XoNeq15cg157Xoteo15vXldeqJywnbWFnaWMuaHRtbCc6Itee16rXm9eg16og157XkifXmdenIiwnY3VzdG9tZXIuaHRtbCc6J0N1c3RvbWVyIFN1Y2Nlc3MnfTsKICAgIGNvbnN0IGlzUm9sZT1PYmplY3QucHJvdG90eXBlLmhhc093blByb3BlcnR5LmNhbGwocm9sZU5hbWVzLHBhZ2UpOwogICAgY29uc3QgaXNIb21lPXBhZ2U9PT0naW5kZXguaHRtbCc7CiAgICBpZigoIWlzUm9sZSYmIWlzSG9tZSl8fGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYWdlUmVhZEJ1dHRvbicpKXJldHVybjsKICAgIGNvbnN0IG1haW49ZG9jdW1lbnQucXVlcnlTZWxlY3RvcignbWFpbicpO2lmKCFtYWluKXJldHVybjsKICAgIGNvbnN0IGhlcm89aXNIb21lP21haW4ucXVlcnlTZWxlY3RvcignLnJkSGVybycpOm1haW4ucXVlcnlTZWxlY3RvcignLmlubmVySGVybywuaGVybywucm9sZUhlcm8sc2VjdGlvbicpOwogICAgaWYoIWhlcm8pcmV0dXJuOwogICAgY29uc3QgYW5jaG9yPWlzSG9tZT8oaGVyby5xdWVyeVNlbGVjdG9yKCcucmRIZXJvQ29weScpfHxoZXJvKTooaGVyby5xdWVyeVNlbGVjdG9yKCcucGFnZScpfHxoZXJvKTsKICAgIGlmKGdldENvbXB1dGVkU3R5bGUoYW5jaG9yKS5wb3NpdGlvbj09PSdzdGF0aWMnKWFuY2hvci5zdHlsZS5wb3NpdGlvbj0ncmVsYXRpdmUnOwogICAgY29uc3QgYnRuPWRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2J1dHRvbicpOwogICAgYnRuLmlkPSdwYWdlUmVhZEJ1dHRvbic7YnRuLnR5cGU9J2J1dHRvbic7YnRuLnRleHRDb250ZW50PSfwn5SKINeU16fXqNeQINeQ16og15TXk9ejJzsKICAgIGJ0bi5zZXRBdHRyaWJ1dGUoJ2FyaWEtbGFiZWwnLGlzUm9sZT8n15TXp9eo15Ag15DXqiDXk9ejICcrcm9sZU5hbWVzW3BhZ2VdOifXlNen16jXkCDXkNeqINeU16rXldeb158g15TXnteo15vXlteZINep15wg15PXoyDXlNeR15nXqicpOwogICAgYnRuLnN0eWxlLmNzc1RleHQ9J3Bvc2l0aW9uOmFic29sdXRlO3RvcDoxOHB4O3JpZ2h0OjE4cHg7ei1pbmRleDo1O2Rpc3BsYXk6aW5saW5lLWZsZXg7YWxpZ24taXRlbXM6Y2VudGVyO2p1c3RpZnktY29udGVudDpjZW50ZXI7Z2FwOjdweDttaW4taGVpZ2h0OjQycHg7cGFkZGluZzo5cHggMTVweDtib3JkZXItcmFkaXVzOjExcHg7YmFja2dyb3VuZDojZWRmM2ZmO2JvcmRlcjoxcHggc29saWQgIzE5NWVkODtjb2xvcjojMTk1ZWQ4O2ZvbnQ6OTAwIDE0cHggaW5oZXJpdDtjdXJzb3I6cG9pbnRlcjtib3gtc2hhZG93OjAgNHB4IDEycHggcmdiYSgxMywzNCw1NCwuMTApJzsKICAgIGFuY2hvci5hcHBlbmRDaGlsZChidG4pOwogICAgY29uc3Qgc3RvcD0oKT0+e2lmKHdpbmRvdy5zcGVlY2hTeW50aGVzaXMpd2luZG93LnNwZWVjaFN5bnRoZXNpcy5jYW5jZWwoKTtidG4udGV4dENvbnRlbnQ9J/CflIog15TXp9eo15Ag15DXqiDXlNeT16MnO2J0bi5kYXRhc2V0LnJlYWRpbmc9JzAnfTsKICAgIGNvbnN0IGNsZWFuVGV4dD1lbD0+ewogICAgICBpZighZWwpcmV0dXJuICcnOwogICAgICBjb25zdCBjbG9uZT1lbC5jbG9uZU5vZGUodHJ1ZSk7CiAgICAgIGNsb25lLnF1ZXJ5U2VsZWN0b3JBbGwoJ2J1dHRvbixzY3JpcHQsc3R5bGUsbmF2LGZvb3RlciwjcGFnZVJlYWRCdXR0b24nKS5mb3JFYWNoKHg9PngucmVtb3ZlKCkpOwogICAgICByZXR1cm4gKGNsb25lLmlubmVyVGV4dHx8Y2xvbmUudGV4dENvbnRlbnR8fCcnKS5yZXBsYWNlKC9ccysvZywnICcpLnRyaW0oKTsKICAgIH07CiAgICBjb25zdCBmaW5kU21hbGxlc3RTZWN0aW9uPW5lZWRsZT0+ewogICAgICBjb25zdCBjYW5kaWRhdGVzPVsuLi5tYWluLnF1ZXJ5U2VsZWN0b3JBbGwoJ3NlY3Rpb24sYXJ0aWNsZScpXS5maWx0ZXIoZWw9PihlbC5pbm5lclRleHR8fCcnKS5pbmNsdWRlcyhuZWVkbGUpKTsKICAgICAgcmV0dXJuIGNhbmRpZGF0ZXMuc29ydCgoYSxiKT0+KGEuaW5uZXJUZXh0fHwnJykubGVuZ3RoLShiLmlubmVyVGV4dHx8JycpLmxlbmd0aClbMF18fG51bGw7CiAgICB9OwogICAgYnRuLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywoKT0+ewogICAgICBpZighKCdzcGVlY2hTeW50aGVzaXMnIGluIHdpbmRvdykpe2FsZXJ0KCfXlNeT16TXk9ek158g15DXmdeg15Ug16rXldee15og15HXlNen16jXkNeqINeY16fXodeYLicpO3JldHVybn0KICAgICAgaWYoYnRuLmRhdGFzZXQucmVhZGluZz09PScxJyl7c3RvcCgpO3JldHVybn0KICAgICAgd2luZG93LnNwZWVjaFN5bnRoZXNpcy5jYW5jZWwoKTsKICAgICAgbGV0IHRleHQ9Jyc7CiAgICAgIGlmKGlzUm9sZSl7CiAgICAgICAgY29uc3QgY2xvbmU9bWFpbi5jbG9uZU5vZGUodHJ1ZSk7CiAgICAgICAgY2xvbmUucXVlcnlTZWxlY3RvckFsbCgnYnV0dG9uLHNjcmlwdCxzdHlsZSxuYXYsZm9vdGVyLC5uZXh0U3RlcCwjcm9sZVByb2Zlc3Npb25OYXZpZ2F0aW9uLC5leHBRdWljaywucm9sZVF1aWNrTGlua3MsI3BhZ2VSZWFkQnV0dG9uJykuZm9yRWFjaChlbD0+ZWwucmVtb3ZlKCkpOwogICAgICAgIHRleHQ9KGNsb25lLmlubmVyVGV4dHx8Y2xvbmUudGV4dENvbnRlbnR8fCcnKS5yZXBsYWNlKC9ccysvZywnICcpLnRyaW0oKTsKICAgICAgfWVsc2V7CiAgICAgICAgY29uc3QgYmxvY2tzPVsKICAgICAgICAgIG1haW4ucXVlcnlTZWxlY3RvcignLnJkSGVyb0NvcHknKSwKICAgICAgICAgIG1haW4ucXVlcnlTZWxlY3RvcignLnJkU3RhdHMnKSwKICAgICAgICAgIG1haW4ucXVlcnlTZWxlY3RvcignLmxpZmVjeWNsZVNlY3Rpb24nKSwKICAgICAgICAgIGZpbmRTbWFsbGVzdFNlY3Rpb24oJ9eX157Xmdep15Qg16LXldec157XldeqINee16fXpteV16LXmdeZ150g16nXnteq15fXkdeo15nXnSDXnNeq157Xldeg15Qg15DXl9eqJyksCiAgICAgICAgICBmaW5kU21hbGxlc3RTZWN0aW9uKCfXlNei16jXmiDXqdeQ16DXmSDXnteR15nXkCDXnNeQ16jXkteV158nKQogICAgICAgIF0uZmlsdGVyKEJvb2xlYW4pOwogICAgICAgIGNvbnN0IHNlZW49bmV3IFNldCgpOwogICAgICAgIHRleHQ9YmxvY2tzLm1hcChjbGVhblRleHQpLmZpbHRlcih0PT50JiYhc2Vlbi5oYXModCkmJihzZWVuLmFkZCh0KSx0cnVlKSkuam9pbignLiAnKTsKICAgICAgfQogICAgICBpZighdGV4dClyZXR1cm47CiAgICAgIGNvbnN0IHU9bmV3IFNwZWVjaFN5bnRoZXNpc1V0dGVyYW5jZSgoaXNSb2xlP3JvbGVOYW1lc1twYWdlXSsnLiAnOicnKSt0ZXh0KTsKICAgICAgdS5sYW5nPSdoZS1JTCc7dS5yYXRlPS45NTt1Lm9uZW5kPXN0b3A7dS5vbmVycm9yPXN0b3A7CiAgICAgIGJ0bi5kYXRhc2V0LnJlYWRpbmc9JzEnO2J0bi50ZXh0Q29udGVudD0n4o+5INei16bXldeoINeU16fXqNeQ15QnO3dpbmRvdy5zcGVlY2hTeW50aGVzaXMuc3BlYWsodSk7CiAgICB9KTsKICAgIGlmKCFkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGFnZVJlYWRTdHlsZScpKXsKICAgICAgY29uc3Qgc3Q9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnc3R5bGUnKTtzdC5pZD0ncGFnZVJlYWRTdHlsZSc7CiAgICAgIHN0LnRleHRDb250ZW50PSdAbWVkaWEobWF4LXdpZHRoOjcyMHB4KXsjcGFnZVJlYWRCdXR0b257cG9zaXRpb246c3RhdGljIWltcG9ydGFudDttYXJnaW46MTRweCAwIDAhaW1wb3J0YW50fX0nOwogICAgICBkb2N1bWVudC5oZWFkLmFwcGVuZENoaWxkKHN0KTsKICAgIH0KICB9CiIiIgogICAgcz1zLnJlcGxhY2UobWFya2VyLGZuK21hcmtlcikKb2xkPSIgIGZ1bmN0aW9uIHJlcGFpckFsbCgpe25vcm1hbGl6ZUhlYnJld1RvcGJhcigpO2Vuc3VyZUV4cGVyaWVuY2VTa2lsbHMoKTthZGRSb2xlTmF2aWdhdGlvbigpO3N0YW5kYXJkaXplUm9sZU92ZXJ2aWV3KCk7bm9ybWFsaXplUm9sZUV4cGVyaWVuY2VCdXR0b25zKCk7YWRkQm90dG9tTmF2aWdhdGlvbigpO2FkZEV4cGVyaWVuY2VCb3R0b21OYXZpZ2F0aW9uKCl9IgpuZXc9IiAgZnVuY3Rpb24gcmVwYWlyQWxsKCl7bm9ybWFsaXplSGVicmV3VG9wYmFyKCk7ZW5zdXJlRXhwZXJpZW5jZVNraWxscygpO2FkZFJvbGVOYXZpZ2F0aW9uKCk7c3RhbmRhcmRpemVSb2xlT3ZlcnZpZXcoKTtub3JtYWxpemVSb2xlRXhwZXJpZW5jZUJ1dHRvbnMoKTthZGRCb3R0b21OYXZpZ2F0aW9uKCk7YWRkRXhwZXJpZW5jZUJvdHRvbU5hdmlnYXRpb24oKTthZGRQYWdlUmVhZEJ1dHRvbigpfSIKaWYgb2xkIGluIHM6CiAgICBzPXMucmVwbGFjZShvbGQsbmV3KQplbGlmICJhZGRQYWdlUmVhZEJ1dHRvbigpIiBub3QgaW4gcy5zcGxpdCgiZnVuY3Rpb24gcmVwYWlyQWxsKCkiLDEpWy0xXS5zcGxpdCgiXG4iLDEpWzBdOgogICAgcmFpc2UgU3lzdGVtRXhpdCgicmVwYWlyQWxsIHNpZ25hdHVyZSBjaGFuZ2VkOyBhYm9ydGluZyIpCnAud3JpdGVfdGV4dChzLGVuY29kaW5nPSJ1dGYtOCIpCg=='))"
       - name: Commit
         run: |
           git config user.name github-actions
@@ -73,4 +23,3 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m "Add read aloud buttons to role and home pages"
           git push origin main
-# trigger 2
