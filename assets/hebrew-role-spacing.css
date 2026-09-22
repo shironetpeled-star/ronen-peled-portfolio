@@ -1,6 +1,6 @@
 /* Unified spacing between the shared top navigation and the profession-page hero. */
 html[lang="he"] body .innerHero{
-  padding-top:55px!important;
+  padding-top:70px!important;
 }
 
 /* Profession pages: place the All Advantages button opposite the MY ADVANTAGE title. */
@@ -28,7 +28,7 @@ html[lang="he"] body .adv .advAllButton{
 
 @media(max-width:720px){
   html[lang="he"] body .innerHero{
-    padding-top:42px!important;
+    padding-top:52px!important;
   }
   html[lang="he"] body .adv>a[href="advantages.html"],
   html[lang="he"] body .adv .allAdvantagesButton,
