@@ -2,10 +2,8 @@
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const btn='display:inline-flex;align-items:center;justify-content:center;min-height:42px;box-sizing:border-box;padding:10px 14px;border-radius:11px;background:#edf3ff;border:1px solid #c9d9f5;color:#195ed8;text-decoration:none;font-weight:900;font-size:13px;line-height:1.2;white-space:normal;text-align:center';
   function link(href,text){const a=document.createElement('a');a.href=href;a.textContent=text;a.style.cssText=btn;return a}
-  function ensureExperience(){
-    if(page!=='experience.html')return;
-    const nav=document.querySelector('.professionBottomNav');
-    if(!nav||nav.dataset.rebuilt==='1')return;
+  function buildExperienceNav(nav){
+    if(!nav)return;
     nav.dataset.rebuilt='1';
     nav.innerHTML='';
     const style=document.createElement('style');
@@ -24,6 +22,13 @@
     [['index.html','עמוד בית - ראייה 360°'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html','MAGIC'],['customer.html','Customer Success']].forEach(x=>profLinks.appendChild(link(x[0],x[1])));
     prof.appendChild(profLinks);
     wrap.appendChild(exp);wrap.appendChild(prof);nav.appendChild(wrap);
+  }
+  function ensureExperience(){
+    if(page!=='experience.html')return;
+    const nav=document.querySelector('.professionBottomNav,#sharedBottomNavigation');
+    if(!nav)return;
+    if(nav.dataset.rebuilt==='1' && nav.querySelector('#experienceBottomNav'))return;
+    buildExperienceNav(nav);
   }
   function ensureOtherExperience(){
     if(page==='experience.html')return;
@@ -71,4 +76,12 @@
   function run(){ensureExperience();ensureOtherExperience();ensureMilitary()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
   setTimeout(run,250);setTimeout(run,1000);
+  if(page==='experience.html'){
+    const observer=new MutationObserver(()=>{
+      const nav=document.querySelector('.professionBottomNav,#sharedBottomNavigation');
+      if(nav && (!nav.querySelector('#experienceBottomNav') || nav.dataset.rebuilt!=='1')) buildExperienceNav(nav);
+    });
+    observer.observe(document.documentElement,{subtree:true,childList:true});
+    setTimeout(()=>observer.disconnect(),5000);
+  }
 })();
