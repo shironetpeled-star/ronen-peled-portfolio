@@ -1,8 +1,31 @@
 (function(){
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-  const btn='display:inline-flex;align-items:center;justify-content:center;min-height:42px;box-sizing:border-box;padding:10px 14px;border-radius:11px;background:#edf3ff;border:1px solid #c9d9f5;color:#195ed8;text-decoration:none;font-weight:900;font-size:13px;line-height:1.2;white-space:nowrap';
+  const btn='display:inline-flex;align-items:center;justify-content:center;min-height:42px;box-sizing:border-box;padding:10px 14px;border-radius:11px;background:#edf3ff;border:1px solid #c9d9f5;color:#195ed8;text-decoration:none;font-weight:900;font-size:13px;line-height:1.2;white-space:normal;text-align:center';
   function link(href,text){const a=document.createElement('a');a.href=href;a.textContent=text;a.style.cssText=btn;return a}
   function ensureExperience(){
+    if(page!=='experience.html')return;
+    const nav=document.querySelector('.professionBottomNav');
+    if(!nav||nav.dataset.rebuilt==='1')return;
+    nav.dataset.rebuilt='1';
+    nav.innerHTML='';
+    const style=document.createElement('style');
+    style.textContent='#experienceBottomNav{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;direction:rtl;width:100%;box-sizing:border-box}.experienceNavBox{background:#fff;border:1px solid #dce6f2;border-radius:16px;padding:14px;box-shadow:0 8px 20px rgba(13,34,54,.05);min-width:0}.experienceNavBoxTitle{font-size:15px;font-weight:950;color:#10284a;margin:0 0 10px;padding:7px 10px;border-radius:9px;background:#eef5ff;text-align:center}.experienceNavLinks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.experienceNavLinks a{width:100%;min-width:0;box-sizing:border-box}@media(max-width:760px){#experienceBottomNav{grid-template-columns:1fr}.experienceNavLinks{grid-template-columns:repeat(2,minmax(0,1fr))}}';
+    nav.appendChild(style);
+    const title=document.createElement('div');title.className='professionBottomNavTitle';title.textContent='מעבר מהיר';nav.appendChild(title);
+    const wrap=document.createElement('div');wrap.id='experienceBottomNav';
+    const exp=document.createElement('div');exp.className='experienceNavBox';
+    const expTitle=document.createElement('div');expTitle.className='experienceNavBoxTitle';expTitle.textContent='מעבר מהיר';exp.appendChild(expTitle);
+    const expLinks=document.createElement('div');expLinks.className='experienceNavLinks';
+    [['projects.html','רשימת עבודות ופרויקטים'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['experience.html','ניסיון']].forEach(x=>expLinks.appendChild(link(x[0],x[1])));
+    exp.appendChild(expLinks);
+    const prof=document.createElement('div');prof.className='experienceNavBox';
+    const profTitle=document.createElement('div');profTitle.className='experienceNavBoxTitle';profTitle.textContent='יכולות מקצועיות';prof.appendChild(profTitle);
+    const profLinks=document.createElement('div');profLinks.className='experienceNavLinks';
+    [['index.html','עמוד בית - ראייה 360°'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html','MAGIC'],['customer.html','Customer Success']].forEach(x=>profLinks.appendChild(link(x[0],x[1])));
+    prof.appendChild(profLinks);
+    wrap.appendChild(exp);wrap.appendChild(prof);nav.appendChild(wrap);
+  }
+  function ensureOtherExperience(){
     if(page==='experience.html')return;
     const more=document.querySelector('details.moreJobs');
     if(!more)return;
@@ -45,7 +68,7 @@
     groups.appendChild(group('יכולות מקצועיות',[['index.html','עמוד בית - ראייה 360°'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html','MAGIC'],['customer.html','Customer Success']],true));
     sec.appendChild(groups);main.appendChild(sec);
   }
-  function run(){ensureExperience();ensureMilitary()}
+  function run(){ensureExperience();ensureOtherExperience();ensureMilitary()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
   setTimeout(run,250);setTimeout(run,1000);
 })();
