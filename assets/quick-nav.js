@@ -76,6 +76,7 @@
   function run(){ensureExperience();ensureOtherExperience();ensureMilitary()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
   setTimeout(run,250);setTimeout(run,1000);
+  if(page==='experience.html')setInterval(ensureExperience,500);
   if(page==='experience.html'){
     const observer=new MutationObserver(()=>{
       const nav=document.querySelector('.professionBottomNav,#sharedBottomNavigation');
