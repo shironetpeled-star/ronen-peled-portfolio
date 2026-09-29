@@ -38,7 +38,6 @@
         html[lang="he"] .top nav>a:nth-child(6){grid-row:2!important;grid-column:28/span 9!important}
         html[lang="he"] .top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 9!important}
         html[lang="he"] body .top nav>a:nth-child(n+2):nth-child(-n+6){width:100%!important;min-width:0!important;box-sizing:border-box!important;justify-self:stretch!important;padding-left:12px!important;padding-right:12px!important}
-        html[lang="he"] body.home-redesign:not(:has(#skillSearch)) .top nav>a{width:calc(100% - 10px)!important;justify-self:center!important;padding-left:7px!important;padding-right:7px!important;white-space:nowrap!important}
         html[lang="he"] .top .navwrap{grid-template-columns:260px minmax(0,900px)!important;gap:24px!important}
         html[lang="he"] .top nav{grid-template-columns:repeat(54,minmax(0,1fr))!important;padding-left:0!important;padding-right:0!important}
         html[lang="he"] body .top nav>a{width:calc(100% - 8px)!important;padding-left:6px!important;padding-right:6px!important;font-size:12.5px!important;justify-self:center!important}
@@ -150,7 +149,7 @@
     });
     if(!document.getElementById('pageReadStyle')){
       const st=document.createElement('style');st.id='pageReadStyle';
-      st.textContent='body.home-redesign #pageReadButton{position:fixed!important;top:124px!important;right:20px!important;bottom:auto!important;left:auto!important;z-index:99998!important;display:flex!important;width:fit-content!important;max-width:calc(100vw - 40px);margin:0!important}@media(min-width:1600px){body.home-redesign #pageReadButton{top:29px!important}}@media(min-width:601px) and (max-width:1599px){body.home-redesign .rdHeroCopy{padding-top:52px!important}}@media(max-width:600px){body.home-redesign #pageReadButton{top:auto!important;right:12px!important;bottom:12px!important;padding:8px 10px!important;font-size:12px!important}}';
+      st.textContent='body.home-page #pageReadButton{position:fixed!important;top:124px!important;right:20px!important;bottom:auto!important;left:auto!important;z-index:99998!important;display:flex!important;width:fit-content!important;max-width:calc(100vw - 40px);margin:0!important}@media(min-width:1600px){body.home-page #pageReadButton{top:29px!important}}@media(min-width:601px) and (max-width:1599px){body.home-page .rdHeroCopy{padding-top:52px!important}}@media(max-width:600px){body.home-page #pageReadButton{top:auto!important;right:12px!important;bottom:12px!important;padding:8px 10px!important;font-size:12px!important}}';
       document.head.appendChild(st);
     }
   }
