@@ -190,10 +190,11 @@ function openCapability(capability){
   if(request!==evidenceRequest)return;
   renderEvidence(used,evidenceFor(corpus.work,capability),'לא נמצאה בעמוד הניסיון דוגמה מפורשת ליכולת הזאת.');
   renderEvidence(projects,evidenceFor(corpus.projects,capability),'לא נמצא בפרויקטים המתועדים קישור מפורש ליכולת הזאת.')
- }).catch(()=>{
+ }).catch(error=>{
   if(request!==evidenceRequest)return;
-  used.textContent='לא ניתן לטעון כרגע את פירוט הניסיון.';
-  projects.textContent='לא ניתן לטעון כרגע את פירוט הפרויקטים.'
+  console.error('Capability evidence rendering failed',error);
+  used.textContent='לא ניתן להציג כרגע את פירוט הניסיון: '+String(error&&error.message||error);
+  projects.textContent='לא ניתן להציג כרגע את פירוט הפרויקטים.'
  })
 }
 const cards=[...document.querySelectorAll('.skill.searchable')];
