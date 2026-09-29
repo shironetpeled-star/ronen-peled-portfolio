@@ -92,7 +92,7 @@
         html[lang="he"] .top nav.open a[href="contact.html"]{order:14}
         html[lang="he"] .top nav.open a[href="index-en.html"]{order:15}
       }
-      @media(min-width:951px){html[lang="he"] body.home-page .top .navwrap,html[lang="he"] body.advantages-page .top .navwrap{margin-left:14px!important;margin-right:14px!important}}
+      @media(min-width:951px){html[lang="he"] body.home-page .top .navwrap,html[lang="he"] body.advantages-page .top .navwrap{width:min(1240px,calc(100% - 28px))!important;margin-left:auto!important;margin-right:auto!important}}
     `;document.head.appendChild(s)}
   }
   function addPageReadButton(){
