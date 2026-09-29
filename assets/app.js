@@ -3,6 +3,7 @@
   const unifiedHeNav=[['index.html','בית'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html',"מתכנת מג'יק"],['customer.html','Customer Success'],['experience.html','ניסיון'],['projects.html','עבודות'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['military.html','שירות צבאי'],['skills.html','יכולות'],['advantages.html','היתרונות שלי'],['contact.html','צור איתי קשר'],['index-en.html','EN']];
   function normalizeHebrewTopbar(){
     if(document.documentElement.lang!=='he')return;
+    if(current()==='advantages.html')document.body.classList.add('advantages-page');
     let header=document.querySelector('header.top');if(!header)return;
     header.innerHTML='<div class="navwrap"><div class="brandBlock"><a class="brand" href="index.html"><b>רונן פלד</b><small>Product • Systems • Projects • MAGIC • Customer Success</small></a><span class="brandPhone">054-6546288</span></div><button class="menu" aria-label="תפריט">☰</button><nav></nav></div>';
     const nav=header.querySelector('nav');
@@ -91,6 +92,7 @@
         html[lang="he"] .top nav.open a[href="contact.html"]{order:14}
         html[lang="he"] .top nav.open a[href="index-en.html"]{order:15}
       }
+      @media(min-width:951px){html[lang="he"] body.home-page .top .navwrap,html[lang="he"] body.advantages-page .top .navwrap{margin-left:14px!important;margin-right:14px!important}}
     `;document.head.appendChild(s)}
   }
   function addPageReadButton(){
