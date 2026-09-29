@@ -8,7 +8,7 @@
     const nav=header.querySelector('nav');
     unifiedHeNav.forEach(([href,label])=>{const a=document.createElement('a');a.href=href;a.textContent=label;if(current()===href||(current()==='service.html'&&href==='military.html'))a.classList.add('active');nav.appendChild(a)});
     const menu=header.querySelector('.menu');if(menu)menu.addEventListener('click',()=>nav.classList.toggle('open'));
-    if(!document.getElementById('exactSkillsTopbarStyle')){const s=document.createElement('style');s.id='exactSkillsTopbarStyle';s.textContent=`
+    if(current()!=='index.html'&&!document.getElementById('exactSkillsTopbarStyle')){const s=document.createElement('style');s.id='exactSkillsTopbarStyle';s.textContent=`
       .top .brandBlock .brand b{font-size:24px!important;line-height:1.15!important;font-weight:900!important}
       .top .brandBlock .brand small::after{content:"מנהל מוצר • מנהל פרויקט • מנתח מערכות\\Aמתכנת מג'יק • Customer Success"!important;white-space:pre-line!important;font-size:15px!important;line-height:1.3!important;font-weight:700!important;color:#4f6073!important}
       .top .brandBlock .brandPhone{font-size:13px!important;font-weight:800!important}
