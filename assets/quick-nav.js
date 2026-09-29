@@ -54,25 +54,6 @@
     const summary=more.querySelector(':scope > summary');if(summary)summary.style.cssText=btn+';cursor:pointer;width:100%;min-height:42px';
     [...row.children].forEach(el=>{if(el.tagName==='A'){el.style.flex='1 1 0';el.style.minWidth='0'}});
   }
-  function ensureSkills(){
-    if(page!=='skills.html')return;
-    const main=document.querySelector('main');if(!main)return;
-    let sec=document.getElementById('skillsBottomNav');if(sec)return;
-    sec=document.createElement('section');sec.id='skillsBottomNav';
-    sec.innerHTML='<style>#skillsBottomNav{max-width:1240px;margin:0 auto;padding:0 24px 54px;box-sizing:border-box}.skillsNavGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto;gap:18px;direction:rtl;align-items:stretch}.skillsNavBox{display:flex;flex-direction:column;background:#fff;border:1px solid #dce6f2;border-radius:16px;padding:14px;box-shadow:0 8px 20px rgba(13,34,54,.05);min-width:0;box-sizing:border-box;grid-row:1}.skillsNavTitle{font-size:15px;font-weight:950;color:#10284a;margin:0 0 10px;padding:7px 10px;border-radius:9px;background:#eef5ff;text-align:center}.skillsNavLinks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%;box-sizing:border-box;align-items:stretch}.skillsNavLinks a{width:100%;min-width:0;min-height:42px;height:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;white-space:normal;line-height:1.2;text-align:center}.skillsNavLinks a{font-size:13px!important}@media(max-width:760px){.skillsNavGrid{grid-template-columns:1fr}.skillsNavBox{grid-row:auto}}</style>';
-    const wrap=document.createElement('div');wrap.className='skillsNavGrid';
-    const quick=document.createElement('div');quick.className='skillsNavBox';
-    const quickTitle=document.createElement('div');quickTitle.className='skillsNavTitle';quickTitle.textContent='מעבר מהיר';quick.appendChild(quickTitle);
-    const quickLinks=document.createElement('div');quickLinks.className='skillsNavLinks';
-    [['projects.html','רשימת עבודות ופרויקטים'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['experience.html','ניסיון']].forEach(x=>quickLinks.appendChild(link(x[0],x[1])));
-    quick.appendChild(quickLinks);
-    const prof=document.createElement('div');prof.className='skillsNavBox';
-    const profTitle=document.createElement('div');profTitle.className='skillsNavTitle';profTitle.textContent='יכולות מקצועיות';prof.appendChild(profTitle);
-    const profLinks=document.createElement('div');profLinks.className='skillsNavLinks';
-    [['index.html','עמוד בית - ראייה 360°'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html','MAGIC'],['customer.html','Customer Success']].forEach(x=>profLinks.appendChild(link(x[0],x[1])));
-    prof.appendChild(profLinks);
-    wrap.appendChild(quick);wrap.appendChild(prof);sec.appendChild(wrap);main.appendChild(sec);
-  }
   function group(title,items,professional){const box=document.createElement('div');box.className='cqnGroup'+(professional?' cqnProfessional':'');const h=document.createElement('div');h.className='cqnGroupTitle';h.textContent=title;box.appendChild(h);const links=document.createElement('div');links.className='cqnLinks';items.forEach(x=>links.appendChild(link(x[0],x[1])));box.appendChild(links);return box}
   function ensureMilitary(){
     if(page!=='military.html')return;
@@ -85,7 +66,7 @@
     const t=document.createElement('div');t.className='cqnTitle';t.textContent='מעבר מהיר';sec.appendChild(t);
     const groups=document.createElement('div');groups.className='cqnGroups';groups.appendChild(group('ניסיון',[['experience.html','ניסיון'],['projects.html','עבודות ופרויקטים'],['work-environments.html','סוגי מערכות'],['education.html','השכלה']],false));groups.appendChild(group('יכולות מקצועיות',[['index.html','עמוד בית - ראייה 360°'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html','MAGIC'],['customer.html','Customer Success']],true));sec.appendChild(groups);main.appendChild(sec);
   }
-  function run(){ensureExperience();ensureOtherExperience();ensureSkills();ensureMilitary()}
+  function run(){ensureExperience();ensureOtherExperience();ensureMilitary()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
   setTimeout(run,250);setTimeout(run,1000);
   if(page==='experience.html')setInterval(ensureExperience,500);
