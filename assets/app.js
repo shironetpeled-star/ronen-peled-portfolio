@@ -57,6 +57,21 @@
         html[lang="he"] .top nav>a:nth-child(6){grid-row:2!important;grid-column:28/span 9!important}
         html[lang="he"] .top nav>a:nth-child(7){grid-row:2!important;grid-column:37/span 9!important}
         html[lang="he"] .top nav>a:nth-child(15){grid-row:2!important;grid-column:46/span 9!important;justify-self:end!important}
+        html[lang="he"] .top nav>a[href="index.html"]{grid-row:1!important;grid-column:1/span 6!important;justify-self:start!important}
+        html[lang="he"] .top nav>a[href="experience.html"]{grid-row:1!important;grid-column:7/span 6!important}
+        html[lang="he"] .top nav>a[href="projects.html"]{grid-row:1!important;grid-column:13/span 6!important}
+        html[lang="he"] .top nav>a[href="work-environments.html"]{grid-row:1!important;grid-column:19/span 6!important}
+        html[lang="he"] .top nav>a[href="education.html"]{grid-row:1!important;grid-column:25/span 6!important}
+        html[lang="he"] .top nav>a[href="military.html"]{grid-row:1!important;grid-column:31/span 6!important}
+        html[lang="he"] .top nav>a[href="skills.html"]{grid-row:1!important;grid-column:37/span 6!important}
+        html[lang="he"] .top nav>a[href="advantages.html"]{grid-row:1!important;grid-column:43/span 6!important}
+        html[lang="he"] .top nav>a[href="contact.html"]{grid-row:1!important;grid-column:49/span 6!important;justify-self:end!important}
+        html[lang="he"] .top nav>a[href="product.html"]{grid-row:2!important;grid-column:1/span 9!important;justify-self:start!important}
+        html[lang="he"] .top nav>a[href="project.html"]{grid-row:2!important;grid-column:10/span 9!important}
+        html[lang="he"] .top nav>a[href="system.html"]{grid-row:2!important;grid-column:19/span 9!important}
+        html[lang="he"] .top nav>a[href="magic.html"]{grid-row:2!important;grid-column:28/span 9!important}
+        html[lang="he"] .top nav>a[href="customer.html"]{grid-row:2!important;grid-column:37/span 9!important}
+        html[lang="he"] .top nav>a[href="index-en.html"]{grid-row:2!important;grid-column:46/span 9!important;justify-self:end!important}
       }
       @media(max-width:950px){
         html[lang="he"] .top nav{background:#0d2946!important;border-color:#143c64!important}
