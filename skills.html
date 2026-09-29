@@ -193,7 +193,7 @@ function openCapability(capability){
  }).catch(error=>{
   if(request!==evidenceRequest)return;
   console.error('Capability evidence rendering failed',error);
-  used.textContent='לא ניתן להציג כרגע את פירוט הניסיון: '+String(error&&error.message||error);
+  used.textContent='שגיאת התאמה: '+String(error&&error.stack||error);
   projects.textContent='לא ניתן להציג כרגע את פירוט הפרויקטים.'
  })
 }
