@@ -134,7 +134,7 @@
     });
     if(!document.getElementById('pageReadStyle')){
       const st=document.createElement('style');st.id='pageReadStyle';
-      st.textContent='@media(max-width:720px){#pageReadButton{position:static!important;margin:14px 0 0!important}}';
+      st.textContent='body.home-redesign #pageReadButton{margin-block:12px!important}@media(max-width:720px){body.home-redesign #pageReadButton{position:static!important;margin:14px 0!important}}';
       document.head.appendChild(st);
     }
   }
