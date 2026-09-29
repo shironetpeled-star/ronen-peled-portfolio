@@ -11,11 +11,10 @@
       .professionBottomNav{width:100%!important;box-sizing:border-box!important;padding:0 0 54px!important}
       .professionBottomNavTitle{display:none!important}
       #experienceBottomNav{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-rows:auto!important;gap:18px!important;direction:rtl!important;width:100%!important;box-sizing:border-box!important;align-items:stretch!important}
-      .experienceNavBox{display:flex!important;flex-direction:column!important;background:#fff!important;border:1px solid #dce6f2!important;border-radius:16px!important;padding:14px!important;box-shadow:0 8px 20px rgba(13,34,54,.05)!important;min-width:0!important;width:auto!important;box-sizing:border-box!important}
+      .experienceNavBox{display:flex!important;flex-direction:column!important;background:#fff!important;border:1px solid #dce6f2!important;border-radius:16px!important;padding:14px!important;box-shadow:0 8px 20px rgba(13,34,54,.05)!important;min-width:0!important;width:auto!important;box-sizing:border-box!important;grid-row:1!important}
       .experienceNavBoxTitle{font-size:15px!important;font-weight:950!important;color:#10284a!important;margin:0 0 10px!important;padding:7px 10px!important;border-radius:9px!important;background:#eef5ff!important;text-align:center!important}
       .experienceNavLinks{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;width:100%!important;box-sizing:border-box!important}
       .experienceNavLinks a{width:100%!important;min-width:0!important;box-sizing:border-box!important}
-      @media(max-width:760px){#experienceBottomNav{grid-template-columns:1fr!important}.experienceNavLinks{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
     `;
     nav.appendChild(style);
     const wrap=document.createElement('div');wrap.id='experienceBottomNav';
