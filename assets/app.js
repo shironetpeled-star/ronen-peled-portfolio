@@ -134,7 +134,7 @@
     });
     if(!document.getElementById('pageReadStyle')){
       const st=document.createElement('style');st.id='pageReadStyle';
-      st.textContent='body.home-redesign #pageReadButton{position:static!important;display:flex!important;width:fit-content!important;max-width:100%;margin:14px 0!important}';
+      st.textContent='body.home-redesign #pageReadButton{position:fixed!important;top:124px!important;right:20px!important;bottom:auto!important;left:auto!important;z-index:99998!important;display:flex!important;width:fit-content!important;max-width:calc(100vw - 40px);margin:0!important}@media(min-width:1600px){body.home-redesign #pageReadButton{top:29px!important}}@media(min-width:601px) and (max-width:1599px){body.home-redesign .rdHeroCopy{padding-top:52px!important}}@media(max-width:600px){body.home-redesign #pageReadButton{top:auto!important;right:12px!important;bottom:12px!important;padding:8px 10px!important;font-size:12px!important}}';
       document.head.appendChild(st);
     }
   }
