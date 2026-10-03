@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>מתקן תמונות | Ronen Peled</title>
+<meta name="description" content="כלי לשיפור תמונות: חדות, צבע אחיד ומילוי נקודות, עם ניהול פרויקטים, מצגת PowerPoint ודף פרויקט.">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Frank+Ruhl+Libre:wght@500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
+<style>
+:root{
+  --bg:#ECEFEA; --surface:#F9FAF7; --surface2:#E2E7E1; --ink:#14242B; --muted:#55666B; --line:#C9D1CA;
+  --accent:#1D6B66; --accent-ink:#FFFFFF; --warn:#9A5B12; --ok:#1D6B3A;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0F1A1E;--surface:#16262B;--surface2:#1F3339;--ink:#E7EEEC;--muted:#9FB1B3;--line:#2C444B;--accent:#4FB5AC;--accent-ink:#06201E;--warn:#E0A55A;--ok:#6CD08F}
+}
+:root[data-theme="dark"]{--bg:#0F1A1E;--surface:#16262B;--surface2:#1F3339;--ink:#E7EEEC;--muted:#9FB1B3;--line:#2C444B;--accent:#4FB5AC;--accent-ink:#06201E;--warn:#E0A55A;--ok:#6CD08F}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 'Assistant',system-ui,'Segoe UI',Arial,sans-serif}
+h1,h2,h3{font-family:'Frank Ruhl Libre','David Libre',Georgia,serif;font-weight:700;margin:0;line-height:1.2}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.sitehead{background:var(--surface);border-bottom:1px solid var(--line)}
+.sitehead .in{max-width:1400px;margin:0 auto;padding:12px 20px;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;justify-content:space-between}
+.sitehead .logo{color:var(--ink);text-decoration:none;display:flex;flex-direction:column;line-height:1.25}
+.sitehead .logo b{font:700 22px 'Frank Ruhl Libre',Georgia,serif}
+.sitehead .logo span{font-size:13px;color:var(--muted)}
+.sitehead .tel{color:var(--ink);text-decoration:none;font-weight:600}
+.sitenav{display:flex;flex-wrap:wrap;gap:2px 4px;max-width:1400px;margin:0 auto;padding:0 14px 8px}
+.sitenav a{color:var(--ink);text-decoration:none;padding:6px 10px;border-radius:6px;font-size:15px}
+.sitenav a:hover{background:var(--surface2)}
+.sitefoot{background:var(--surface);border-top:1px solid var(--line);padding:22px 20px;text-align:center;color:var(--muted);font-size:14px}
+.sitefoot a{color:var(--accent);margin-inline-start:8px}
+.sitefoot b{color:var(--ink)}
+.app{display:grid;grid-template-columns:260px 1fr}
+.side{background:var(--surface);border-inline-end:1px solid var(--line);padding:20px 16px;display:flex;flex-direction:column;gap:16px}
+.brand{font-size:24px}
+.brand small{display:block;font:400 13px/1.4 'Assistant',sans-serif;color:var(--muted);margin-top:4px}
+.plist{display:flex;flex-direction:column;gap:6px}
+.pitem{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:start;padding:10px 12px;border:1px solid transparent;border-radius:6px;background:transparent}
+.pitem:hover{background:var(--surface2)}
+.pitem[aria-current="true"]{background:var(--surface2);border-color:var(--accent);font-weight:600}
+.pitem span.n{font-size:13px;color:var(--muted)}
+.newp{display:flex;gap:6px}
+.newp input{flex:1;min-width:0}
+input[type=text],textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 11px;width:100%}
+textarea{min-height:96px;resize:vertical}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:9px 14px;font-weight:600;transition:background .15s}
+.btn:hover{background:var(--surface2)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.sm{padding:6px 10px;font-size:14px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.demo-note{margin-top:auto;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.main{padding:24px clamp(16px,3vw,40px) 60px;min-width:0}
+.head{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-end;margin-bottom:20px}
+.head h2{font-size:32px}
+.head p{margin:4px 0 0;color:var(--muted)}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:22px;text-align:center;color:var(--muted);background:var(--surface);cursor:pointer}
+.drop.over,.drop:hover{border-color:var(--accent);color:var(--ink)}
+.drop strong{color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:18px 0 26px}
+.card{position:relative;border:2px solid transparent;border-radius:8px;overflow:hidden;background:var(--surface);padding:0;text-align:start}
+.card[aria-current="true"]{border-color:var(--accent)}
+.card img{display:block;width:100%;height:110px;object-fit:cover}
+.card .cap{padding:7px 9px;font-size:13px;display:flex;justify-content:space-between;gap:6px}
+.card .cap span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:12px;font-weight:700;border-radius:3px;padding:1px 6px}
+.tag.ok{background:var(--ok);color:#fff}
+.tag.ref{background:var(--warn);color:#fff}
+.editor{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:24px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.panel h3{font-size:20px;margin-bottom:10px}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.opt{border:2px solid var(--line);border-radius:8px;background:var(--surface);padding:6px;text-align:center}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--surface2)}
+.opt img{width:100%;height:80px;object-fit:cover;border-radius:4px;display:block;margin-bottom:6px;background:var(--surface2)}
+.opt b{display:block}
+.opt small{color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.chk{display:flex;gap:8px;align-items:center;margin-top:10px}
+.chk input{width:18px;height:18px;accent-color:var(--accent)}
+.busy{padding:40px 10px;text-align:center;color:var(--muted)}
+.spin{display:inline-block;width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;vertical-align:middle;margin-inline-end:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
+.pr{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.pr .it{display:flex;gap:8px;align-items:flex-start;margin:8px 0;font-size:15px}
+.pr del{color:var(--warn)} .pr ins{color:var(--ok);text-decoration:none;font-weight:600}
+.pr small{display:block;color:var(--muted)}
+.empty{max-width:560px;margin:12vh auto;text-align:center}
+.empty h2{font-size:36px;margin-bottom:10px}
+.empty p{color:var(--muted)}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));inset-inline-start:50%;transform:translateX(50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:6px;z-index:50;max-width:90vw}
+.modal{position:fixed;inset:0;background:rgba(10,20,24,.6);z-index:40;display:flex;align-items:center;justify-content:center;padding:16px}
+.mbox{background:var(--surface);border-radius:12px;max-width:1100px;width:100%;max-height:92vh;overflow:auto;display:grid;grid-template-columns:300px 1fr}
+.mbox .ctl{padding:18px;border-inline-end:1px solid var(--line)}
+.mbox .pv{padding:0;min-width:0;background:#fff;border-radius:0 12px 12px 0}
+.url{direction:ltr;text-align:left;font-size:13px;color:var(--muted);word-break:break-all;margin:6px 0 12px}
+.img-sel{display:flex;gap:8px;align-items:center;margin:8px 0;font-size:14px}
+.img-sel select{font:inherit;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:2px 4px;margin-inline-start:auto}
+.cmp{--p:50;position:relative;direction:ltr;overflow:hidden;border-radius:6px;background:rgba(0,0,0,.08);line-height:0;touch-action:none}
+.cmp img{display:block;width:100%;height:auto}
+.cmp .b{position:absolute;inset:0;clip-path:inset(0 calc(100% - var(--p)*1%) 0 0)}
+.cmp .ln{position:absolute;top:0;bottom:0;left:calc(var(--p)*1%);width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.cmp .ln::after{content:"↔";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fff;color:#111;font:700 16px/34px sans-serif;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.4)}
+.cmp input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+.cmp .tg{position:absolute;top:8px;font:600 12px/1 sans-serif;padding:5px 8px;background:rgba(0,0,0,.65);color:#fff;border-radius:3px}
+.cmp .tg.l{left:8px}.cmp .tg.r{right:8px}
+
+.addtile{min-height:146px;border:2px dashed var(--line);background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:600}.addtile span{font-size:34px;line-height:1}.addtile:hover{border-color:var(--accent);color:var(--ink)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 16px;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.pcard{border:1px solid var(--line);background:var(--surface);border-radius:10px;overflow:hidden;padding:0;text-align:start}
+.pcard:hover{border-color:var(--accent)}
+.pcard img,.pcard .ph{display:block;width:100%;height:150px;object-fit:cover}
+.pcard .ph{background:var(--surface2);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:14px}
+.pcard .pb{padding:10px 12px;display:flex;flex-direction:column}
+.pcard .pb span{color:var(--muted);font-size:14px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px}
+.sdesc{margin:10px 0 0;font-size:15px}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{border-inline-end:0;border-bottom:1px solid var(--line)}
+  .editor{grid-template-columns:1fr}
+  .mbox{grid-template-columns:1fr}
+  .mbox .ctl{border-inline-end:0;border-bottom:1px solid var(--line)}
+}
+</style>
+</head>
+<body>
+<header class="sitehead">
+  <div class="in"><a class="logo" href="https://www.ronenpeled.com/index.html"><b>רונן פלד</b><span>Product • Systems • Projects • MAGIC • Customer Success</span></a><a class="tel" href="tel:0546546288">054-6546288</a></div>
+  <nav class="sitenav" aria-label="תפריט ראשי">
+    <a href="https://www.ronenpeled.com/index.html">בית</a><a href="https://www.ronenpeled.com/skills.html">יכולות</a><a href="https://www.ronenpeled.com/product.html">מנהל מוצר</a><a href="https://www.ronenpeled.com/project.html">מנהל פרויקט</a><a href="https://www.ronenpeled.com/system.html">מנתח מערכות</a><a href="https://www.ronenpeled.com/magic.html">מתכנת מג'יק</a><a href="https://www.ronenpeled.com/customer.html">Customer Success</a><a href="https://www.ronenpeled.com/experience.html">ניסיון</a><a href="https://www.ronenpeled.com/projects.html">עבודות</a><a href="https://www.ronenpeled.com/work-environments.html">סוגי מערכות</a><a href="https://www.ronenpeled.com/education.html">השכלה</a><a href="https://www.ronenpeled.com/military.html">שירות צבאי</a><a href="https://www.ronenpeled.com/contact.html">צור איתי קשר</a><a href="https://www.ronenpeled.com/index-en.html">EN</a>
+  </nav>
+</header>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><h1>סטודיו תמונות</h1><small>שיפור תמונות לפרויקטים</small></div>
+    <div>
+      <label for="np" style="font-weight:600;font-size:14px">פרויקט חדש</label>
+      <div class="newp" style="margin-top:6px">
+        <input type="text" id="np" placeholder="שם הפרויקט" maxlength="60">
+        <button class="btn pri" data-act="newproj">הוסף</button>
+      </div>
+    </div>
+    <nav class="plist" id="plist" aria-label="פרויקטים"></nav>
+    <div class="demo-note">השיפור מחושב בדפדפן שלך. התמונות לא נשלחות לשום שרת. תמונות ששמרת נשמרות בדפדפן הזה בלבד (בגודל מוקטן, מקום מוגבל).</div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<footer class="sitefoot"><b>Ronen Peled</b><br>054-6546288 · shironetpeled@gmail.com<br>כל זכויות בנית האתר ועיצוב לרונן פלד בלבד<a href="https://www.ronenpeled.com/index.html">חזרה לבית</a></footer>
+<div id="modal"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<input type="file" id="file" accept="image/*" multiple hidden>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tick=()=>new Promise(r=>setTimeout(r,25));
+const safe=s=>String(s).replace(/[\\/:*?"<>|]/g,'_').trim()||'file';
+let uid=0;const nid=p=>p+(++uid);
+const S={projects:[],pid:null,iid:null,pub:null,busyExport:'',view:'home'};
+const LV={
+  soft:{n:'עדין',sub:'תיקון קל',con:1.05,sat:1.06,sharp:.35,speck:46,cm:.4,lv:.35},
+  mid:{n:'מאוזן',sub:'מומלץ',con:1.12,sat:1.14,sharp:.6,speck:32,cm:.7,lv:.6},
+  strong:{n:'חזק',sub:'מקסימלי',con:1.16,sat:1.18,sharp:.9,speck:22,cm:1,lv:.85}
+};
+const KEYS=['soft','mid','strong'];
+
+/* ---------- image processing ---------- */
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+function stats(d){
+  const m=[0,0,0],q=[0,0,0];let n=0;
+  for(let i=0;i<d.length;i+=16){for(let c=0;c<3;c++){const v=d[i+c];m[c]+=v;q[c]+=v*v}n++}
+  const mean=m.map(x=>x/n);
+  return{m:mean,s:q.map((x,c)=>Math.sqrt(Math.max(1,x/n-mean[c]*mean[c])))};
+}
+function boxBlur(s,w,h,r){
+  const t=new Float32Array(s.length),o=new Uint8ClampedArray(s.length),win=2*r+1;
+  for(let y=0;y<h;y++)for(let c=0;c<3;c++){
+    let sum=0;const base=y*w*4+c;
+    for(let i=-r;i<=r;i++)sum+=s[base+clamp(i,0,w-1)*4];
+    for(let x=0;x<w;x++){t[base+x*4]=sum/win;sum+=s[base+Math.min(w-1,x+r+1)*4]-s[base+Math.max(0,x-r)*4]}
+  }
+  const st=w*4;
+  for(let x=0;x<w;x++)for(let c=0;c<3;c++){
+    let sum=0;const base=x*4+c;
+    for(let i=-r;i<=r;i++)sum+=t[base+clamp(i,0,h-1)*st];
+    for(let y=0;y<h;y++){o[base+y*st]=sum/win;sum+=t[base+Math.min(h-1,y+r+1)*st]-t[base+Math.max(0,y-r)*st]}
+  }
+  return o;
+}
+function fillSpecks(d,w,h,thr){
+  for(const R of [4,3,2]){
+    const src=d.slice(),offs=[];
+    for(let k=-R;k<=R;k++){offs.push([k,-R],[k,R])}
+    for(let k=-R+1;k<=R-1;k++){offs.push([-R,k],[R,k])}
+    const idx=offs.map(([dx,dy])=>(dy*w+dx)*4),N=idx.length;
+    for(let y=R;y<h-R;y++)for(let x=R;x<w-R;x++){
+      const p=(y*w+x)*4;
+      const L=(src[p]*77+src[p+1]*150+src[p+2]*29)>>8;
+      let sr=0,sg=0,sb=0,sl=0,mn=255,mx=0;
+      for(let k=0;k<N;k++){
+        const q=p+idx[k],r=src[q],g=src[q+1],b=src[q+2],l=(r*77+g*150+b*29)>>8;
+        sr+=r;sg+=g;sb+=b;sl+=l;if(l<mn)mn=l;if(l>mx)mx=l;
+      }
+      if(Math.abs(L-sl/N)>thr&&(mx-mn)<thr*1.2){d[p]=sr/N;d[p+1]=sg/N;d[p+2]=sb/N}
+    }
+  }
+}
+function enhance(src,key,opt){
+  const p=LV[key],w=src.width,h=src.height;
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const x=c.getContext('2d');x.drawImage(src,0,0);
+  const id=x.getImageData(0,0,w,h),d=id.data;
+  if(opt.fill)fillSpecks(d,w,h,p.speck);
+  if(opt.ref){
+    const a=stats(d),b=opt.ref,luts=[0,1,2].map(ch=>{
+      const ratio=clamp(b.s[ch]/a.s[ch],.6,1.6),lut=new Uint8ClampedArray(256);
+      for(let v=0;v<256;v++){const t=(v-a.m[ch])*ratio+b.m[ch];lut[v]=v+(t-v)*p.cm}
+      return lut;
+    });
+    for(let i=0;i<d.length;i+=4){d[i]=luts[0][d[i]];d[i+1]=luts[1][d[i+1]];d[i+2]=luts[2][d[i+2]]}
+  }
+  const hist=new Uint32Array(256);let n=0;
+  for(let i=0;i<d.length;i+=8){hist[(d[i]*77+d[i+1]*150+d[i+2]*29)>>8]++;n++}
+  let lo=0,hi=255,acc=0;
+  for(let v=0;v<256;v++){acc+=hist[v];if(acc>=n*.01){lo=v;break}}
+  acc=0;for(let v=255;v>=0;v--){acc+=hist[v];if(acc>=n*.01){hi=v;break}}
+  if(hi-lo<20){lo=0;hi=255}
+  const gain=Math.min(255/(hi-lo),1.5),mid=(lo+hi)/2,lv=new Float32Array(256);
+  for(let v=0;v<256;v++){const s=(v-mid)*gain+128;lv[v]=(v+(s-v)*p.lv)-v}
+  for(let i=0;i<d.length;i+=4){
+    let r=d[i],g=d[i+1],b=d[i+2];
+    const L=(r*77+g*150+b*29)/256,sh=lv[Math.round(L)];
+    r+=sh;g+=sh;b+=sh;
+    const L2=L+sh;
+    r=L2+(r-L2)*p.sat;g=L2+(g-L2)*p.sat;b=L2+(b-L2)*p.sat;
+    d[i]=(r-128)*p.con+128;d[i+1]=(g-128)*p.con+128;d[i+2]=(b-128)*p.con+128;
+  }
+  const bl=boxBlur(d,w,h,2);
+  for(let i=0;i<d.length;i+=4){
+    for(let ch=0;ch<3;ch++){d[i+ch]=d[i+ch]+p.sharp*(d[i+ch]-bl[i+ch])}
+    d[i+3]=255;
+  }
+  x.putImageData(id,0,0);
+  return c;
+}
+function scaleCanvas(src,max){
+  const k=Math.min(1,max/Math.max(src.width,src.height));
+  if(k===1)return src;
+  const c=document.createElement('canvas');c.width=Math.round(src.width*k);c.height=Math.round(src.height*k);
+  c.getContext('2d').drawImage(src,0,0,c.width,c.height);return c;
+}
+function fileToCanvas(file){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file),im=new Image();
+    im.onload=()=>{const c=document.createElement('canvas');const k=Math.min(1,1200/Math.max(im.width,im.height));
+      c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(url);res(c)};
+    im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('bad image'))};
+    im.src=url;
+  });
+}
+function demoCanvas(){
+  const c=document.createElement('canvas');c.width=1000;c.height=680;const x=c.getContext('2d');
+  x.fillStyle='#8f8b80';x.fillRect(0,0,1000,680);
+  for(let i=0;i<9;i++){x.fillStyle=`hsl(${28+i*3},${14+i%3*3}%,${50+(i%4)*3}%)`;x.fillRect(0,i*76,1000,74)}
+  x.fillStyle='#6f8a86';x.fillRect(620,60,300,230);
+  x.fillStyle='#a79672';x.fillRect(80,360,360,220);
+  x.fillStyle='#8c7f8f';x.beginPath();x.arc(740,500,110,0,7);x.fill();
+  const id=x.getImageData(0,0,1000,680),d=id.data;
+  for(let i=0;i<d.length;i+=4){const n=(Math.random()-.5)*14;d[i]+=n;d[i+1]+=n;d[i+2]+=n}
+  x.putImageData(id,0,0);
+  for(let i=0;i<260;i++){
+    const px=Math.random()*980+10,py=Math.random()*660+10,r=1+Math.random()*1.6,light=Math.random()<.7;
+    x.fillStyle=light?'#f2f0ea':'#3e3b36';x.beginPath();x.arc(px,py,r,0,7);x.fill();
+  }
+  return c;
+}
+const blobOf=(c,t='image/jpeg',q=.95)=>new Promise(r=>c.toBlob(r,t,q));
+
+/* ---------- state helpers ---------- */
+const proj=()=>S.projects.find(p=>p.id===S.pid);
+const cur=()=>{const p=proj();return p&&p.images.find(i=>i.id===S.iid)};
+const chosenCanvas=i=>i.saved?i.saved.c:null;
+const ou=i=>i._ou||(i._ou=i.orig.toDataURL('image/jpeg',.9));
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,3200)}
+
+async function addImages(files,canvases){
+  const p=proj();if(!p)return toast('צור או בחר פרויקט קודם');
+  const list=canvases||[];
+  if(!canvases){for(const f of files){try{list.push({c:await fileToCanvas(f),name:f.name})}catch(e){toast('הקובץ '+f.name+' אינו תמונה תקינה')}}}
+  for(const it of list){
+    const img={id:nid('i'),name:it.name,orig:it.c,desc:'',saved:null,sel:'mid',fill:true,v:{},vkey:'',busy:false,pr:null};
+    p.images.push(img);S.iid=img.id;
+  }
+  S.view='work';render();ensure(cur());
+}
+function refStats(i){if(!i.stat){const c=i.orig;i.stat=stats(c.getContext('2d').getImageData(0,0,c.width,c.height).data)}return i.stat}
+async function ensure(img){
+  if(!img)return;
+  const p=proj(),refId=p.refId&&p.refId!==img.id&&p.images.some(i=>i.id===p.refId)?p.refId:null;
+  const key=img.fill+'|'+refId;
+  if(img.vkey===key&&img.v.soft&&img.v.mid&&img.v.strong)return;
+  img.vkey=key;img.busy=true;img.v={};render();
+  const ref=refId?refStats(p.images.find(i=>i.id===refId)):null;
+  for(const k of ['mid','soft','strong']){
+    await tick();if(img.vkey!==key)return;
+    const c=enhance(img.orig,k,{fill:img.fill,ref});
+    img.v[k]={c,url:c.toDataURL('image/jpeg',.92)};
+    render();
+  }
+  img.busy=false;render();
+}
+
+/* ---------- render ---------- */
+function render(){renderSide();renderMain();renderModal()}
+function renderSide(){
+  const tot=S.projects.reduce((n,p)=>n+p.images.filter(i=>i.saved).length,0);
+  $('#plist').innerHTML=`<button class="pitem" data-act="home" aria-current="${S.view==='home'}"><span>כל הפרויקטים</span><span class="n">${tot} שמורות</span></button><hr style="border:0;border-top:1px solid var(--line);width:100%;margin:4px 0">`+
+  (S.projects.map(p=>`<button class="pitem" data-act="selproj" data-id="${p.id}" aria-current="${S.view!=='home'&&p.id===S.pid}"><span>${esc(p.name)}</span><span class="n">${p.images.filter(i=>i.saved).length}/${p.images.length}</span></button>`).join('')||'<div style="color:var(--muted);font-size:14px">עדיין אין פרויקטים.</div>');
+}
+function cmpHTML(a,b,la='לפני',lb='אחרי'){
+  return `<div class="cmp" style="--p:50"><img src="${b}" alt="${lb}"><div class="b"><img src="${a}" alt="${la}"></div><div class="ln"></div><span class="tg l">${la}</span><span class="tg r">${lb}</span><input type="range" min="0" max="100" value="50" aria-label="השוואת לפני ואחרי" oninput="this.parentNode.style.setProperty('--p',this.value)"></div>`;
+}
+function homeHTML(){
+  if(!S.projects.length)return `<div class="empty"><h2>תתחיל בפרויקט הראשון</h2><p>פרויקט מחזיק קבוצת תמונות שמשופרות יחד באותו סגנון ובצבע אחיד. הקלד שם בצד ולחץ "הוסף".</p><div class="row" style="justify-content:center"><button class="btn pri" data-act="quick">צור פרויקט עם תמונת דוגמה</button></div></div>`;
+  return `<div class="head"><div><h2>כל הפרויקטים</h2><p>${S.projects.length} פרויקטים</p></div></div><div class="pgrid">`+S.projects.map(p=>{
+    const sv=p.images.filter(i=>i.saved),cov=sv[0]?sv[0].saved.url:(p.images[0]?scaleCanvas(p.images[0].orig,400).toDataURL('image/jpeg',.7):'');
+    return `<button class="pcard" data-act="openproj" data-id="${p.id}">${cov?`<img src="${cov}" alt="">`:'<div class="ph">אין תמונות עדיין</div>'}<div class="pb"><b>${esc(p.name)}</b><span>${sv.length} שמורות מתוך ${p.images.length}</span></div></button>`;
+  }).join('')+`</div>`;
+}
+function savedHTML(p){
+  const sv=p.images.filter(i=>i.saved);
+  if(!sv.length)return `<div class="empty" style="margin:8vh auto"><h2 style="font-size:28px">עוד אין תמונות שמורות</h2><p>בלשונית "עבודה" בחר אופציה ולחץ "שמור בפרויקט". התמונה תופיע כאן עם השוואת לפני/אחרי.</p><div class="row" style="justify-content:center"><button class="btn pri" data-act="tab" data-v="work">חזרה לעבודה</button></div></div>`;
+  return `<div class="sgrid">`+sv.map(i=>`<article class="panel"><h3>${esc(i.name)}</h3>${cmpHTML(ou(i),i.saved.url)}<p class="sdesc">${i.desc?esc(i.desc):'<span style="color:var(--muted)">ללא תיאור</span>'}</p><div class="row"><button class="btn sm" data-act="openedit" data-id="${i.id}">פתח לעריכה</button><button class="btn sm" data-act="dlsaved" data-id="${i.id}">הורד</button><button class="btn sm" data-act="unsave" data-id="${i.id}">הסר מהשמורים</button></div></article>`).join('')+`</div>`;
+}
+function renderMain(){
+  const m=$('#main'),p=proj();
+  if(S.view==='home'||!p){m.innerHTML=homeHTML();return}
+  const img=cur(),nsv=p.images.filter(i=>i.saved).length;
+  let h=`<div class="head"><div><h2>${esc(p.name)}</h2><p>${p.images.length} תמונות, ${nsv} נשמרו</p></div>
+  <div class="acts">
+    <button class="btn pri" data-act="newimg">+ הוסף תמונות</button>
+    <button class="btn" data-act="zip" ${p.images.length?'':'disabled'}>${S.busyExport==='zip'?'מכין…':'הורד הכל (ZIP)'}</button>
+    <button class="btn" data-act="pptx" ${p.images.length?'':'disabled'}>${S.busyExport==='pptx'?'מכין…':'צור מצגת PowerPoint'}</button>
+    <button class="btn pri" data-act="publish" ${p.images.length?'':'disabled'}>פרסם באתר</button>
+  </div></div>
+  <div class="tabs" role="tablist"><button role="tab" data-act="tab" data-v="work" aria-selected="${S.view==='work'}">עבודה</button><button role="tab" data-act="tab" data-v="saved" aria-selected="${S.view==='saved'}">שמורות (${nsv})</button></div>`;
+  if(S.view==='saved'){m.innerHTML=h+savedHTML(p);return}
+  h+=`<div class="drop" id="drop" data-act="upload" tabindex="0" role="button"><strong>גרור תמונות לכאן</strong> או לחץ לבחירה מהמחשב<br><span style="font-size:14px">אפשר להעלות כמה תמונות יחד. <a href="#" data-act="demo" style="color:var(--accent)">או טען תמונת דוגמה עם נקודות לא מלאות</a></span></div>`;
+  h+=`<div class="grid">`+p.images.map(i=>`<button class="card" data-act="pick" data-id="${i.id}" aria-current="${i.id===S.iid}"><img src="${i._th||(i._th=scaleCanvas(i.orig,300).toDataURL('image/jpeg',.8))}" alt="${esc(i.name)}"><div class="cap"><span>${esc(i.name)}</span>${i.saved?'<span class="tag ok">נשמר</span>':''}${p.refId===i.id?'<span class="tag ref">ייחוס</span>':''}</div></button>`).join('')+`<button class="card addtile" data-act="newimg" aria-label="הוסף תמונות לפרויקט"><span>+</span>הוסף תמונות</button></div>`;
+  if(img){
+    const ready=img.v[img.sel],isSaved=img.saved&&img.saved.key===img.sel;
+    const lbl=isSaved?'נשמר בפרויקט ✓':(img.saved?'החלף בגרסה '+LV[img.sel].n:'שמור בפרויקט');
+    h+=`<div class="editor"><div class="panel"><h3>${esc(img.name)}</h3>`;
+    h+=ready?cmpHTML(ou(img),ready.url):`<div class="busy"><span class="spin"></span>מעבד שלוש אופציות…</div>`;
+    h+=`<div class="opts">`+KEYS.map(k=>`<button class="opt" data-act="opt" data-k="${k}" aria-pressed="${img.sel===k}">${img.v[k]?`<img src="${img.v[k].url}" alt="">`:'<img alt="">'}<b>${LV[k].n}</b><small>${LV[k].sub}</small></button>`).join('')+`</div>
+    <div class="row"><button class="btn pri" data-act="choose" ${ready&&!isSaved?'':'disabled'}>${lbl}</button>
+    <button class="btn" data-act="revert" ${img.saved?'':'disabled'}>הסר מהשמורים</button>
+    <button class="btn" data-act="dlimg">הורד תמונה</button>
+    <button class="btn sm" data-act="delimg">מחק מהפרויקט</button></div>
+    <p style="color:var(--muted);font-size:14px;margin:10px 0 0">${img.saved?`נשמרה הגרסה ${LV[img.saved.key].n}. היא מופיעה בלשונית "שמורות".`:`האופציה שמסומנת: ${LV[img.sel].n}. לחץ "שמור בפרויקט" כדי להוסיף אותה לשמורות.`}</p></div>
+    <div class="panel"><h3>הגדרות שיפור</h3>
+      <label class="chk"><input type="checkbox" data-act="fill" ${img.fill?'checked':''}> מילוי נקודות וחורים באזורי מילוי</label>
+      <div class="row"><button class="btn sm" data-act="setref">${p.refId===img.id?'זו תמונת הייחוס לצבע':'קבע כתמונת ייחוס לצבע'}</button></div>
+      <p style="color:var(--muted);font-size:14px;margin:8px 0 0">${p.refId&&p.refId!==img.id?'הצבע מותאם לתמונת הייחוס של הפרויקט.':'כשנקבעת תמונת ייחוס, שאר התמונות בפרויקט מותאמות לצבע שלה.'}</p>
+      <h3 style="margin-top:22px">תיאור התמונה</h3>
+      <textarea id="desc" placeholder="למשל: משטח עץ אלון, בגוון חם, תיקון חורים בשוליים">${esc(img.desc)}</textarea>
+      <div class="row"><button class="btn pri" data-act="savedesc">שמור תיאור</button><button class="btn" data-act="newimg">צור תמונה חדשה</button></div>`;
+    if(img.pr){
+      h+=`<div class="pr">`+(img.pr.length?img.pr.map((c,n)=>`<div class="it"><input type="checkbox" data-act="prchk" data-n="${n}" ${c.ok?'checked':''} aria-label="אשר תיקון"><div><del>${esc(c.from)}</del> ← <ins>${esc(c.to)}</ins>${c.reason?`<small>${esc(c.reason)}</small>`:''}</div></div>`).join('')+`<div class="row"><button class="btn pri sm" data-act="applypr">החל תיקונים שנבחרו</button><button class="btn sm" data-act="dismisspr">סגור</button></div>`:'<div style="color:var(--ok)">לא נמצאו תיקונים.</div>')+`</div>`;
+    }
+    h+=`</div></div>`;
+  }
+  m.innerHTML=h;
+}
+
+/* ---------- site page (publish) ---------- */
+const SITE_CSS=`.site{font-family:'Assistant',system-ui,'Segoe UI',Arial,sans-serif;background:#fff;color:#1b1f21;padding:36px 20px 56px;max-width:940px;margin:0 auto;line-height:1.6;direction:rtl}
+.site h1{font-family:'Frank Ruhl Libre',Georgia,serif;font-size:clamp(28px,5vw,44px);margin:0 0 6px}
+.site .sub{color:#5b6669;margin:0 0 28px}
+.site figure{margin:0 0 34px}
+.site figure>img{width:100%;height:auto;display:block;border-radius:6px}
+.site figcaption{margin-top:10px;font-size:17px}
+.site .ai{font-size:13px;color:#667;border-top:1px solid #dde;padding-top:12px;margin-top:20px}
+${document.querySelector('style').textContent.match(/\.cmp\{[\s\S]*?\.cmp \.tg\.l\{left:8px\}\.cmp \.tg\.r\{right:8px\}/)[0]}`;
+function pageParts(p,pub,scaled){
+  const U=c=>{const s=scaled?scaleCanvas(c,1000):c;return s.toDataURL('image/jpeg',scaled?.85:.9)};
+  const items=p.images.filter(i=>pub.inc[i.id]);
+  const figs=items.map(i=>{
+    const enh=pub.ver[i.id]==='enh'?chosenCanvas(i):null;
+    const alt=esc((i.desc||i.name).slice(0,120));
+    const media=enh?(pub.ba?`<div class="cmp" style="--p:50"><img src="${U(enh)}" alt="${alt}"><div class="b"><img src="${U(i.orig)}" alt="לפני"></div><div class="ln"></div><span class="tg l">לפני</span><span class="tg r">אחרי</span><input type="range" min="0" max="100" value="50" aria-label="השוואת לפני ואחרי" oninput="this.parentNode.style.setProperty('--p',this.value)"></div>`:`<img src="${U(enh)}" alt="${alt}">`):`<img src="${U(i.orig)}" alt="${alt}">`;
+    return `<figure>${media}${i.desc?`<figcaption>${esc(i.desc)}</figcaption>`:''}</figure>`;
+  }).join('');
+  const body=`<div class="site"><h1>${esc(p.name)}</h1><p class="sub">${items.length} תמונות מהפרויקט</p>${figs}${pub.ai?'<p class="ai">חלק מהתמונות עובדו בעזרת בינה מלאכותית לשיפור חדות וצבע.</p>':''}</div>`;
+  return{css:SITE_CSS,body,desc:(items.find(i=>i.desc)||{}).desc||p.name};
+}
+function openPublish(){
+  const p=proj();const inc={},ver={};
+  p.images.forEach(i=>{inc[i.id]=true;ver[i.id]=i.saved?'enh':'orig'});
+  S.pub={inc,ver,ai:true,ba:true,ok:false};render();
+}
+function renderModal(){
+  const M=$('#modal'),pub=S.pub,p=proj();
+  if(!pub||!p){M.innerHTML='';return}
+  const slug=p.name.trim().replace(/\s+/g,'-');
+  const none=!p.images.some(i=>pub.inc[i.id]);
+  M.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-label="פרסום באתר"><div class="mbox">
+    <div class="ctl"><h3 style="margin-bottom:6px">פרסום באתר</h3>
+      <div class="url">ronenpeled.com/projects/${esc(slug)}</div>
+      <div style="font-weight:600;font-size:14px">אילו תמונות יופיעו בדף</div>
+      ${p.images.map(i=>`<div class="img-sel"><input type="checkbox" data-pact="inc" data-id="${i.id}" ${pub.inc[i.id]?'checked':''} aria-label="כלול ${esc(i.name)}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px">${esc(i.name)}</span><select data-pact="ver" data-id="${i.id}" aria-label="גרסה"><option value="orig" ${pub.ver[i.id]==='orig'?'selected':''}>מקור</option><option value="enh" ${pub.ver[i.id]==='enh'?'selected':''} ${i.saved?'':'disabled'}>משופרת</option></select></div>`).join('')}
+      <label class="chk"><input type="checkbox" data-pact="ba" ${pub.ba?'checked':''}> הצג לפני/אחרי בדף</label>
+      <label class="chk"><input type="checkbox" data-pact="ai" ${pub.ai?'checked':''}> הוסף הערה שהתמונות עובדו ב-AI</label>
+      <label class="chk" style="margin-top:16px;font-weight:600"><input type="checkbox" data-pact="ok" ${pub.ok?'checked':''}> ראיתי את התצוגה המקדימה ואני מאשר לפרסום</label>
+      <div class="row"><button class="btn pri" data-act="dlpage" ${pub.ok&&!none?'':'disabled'}>הורד את הדף (HTML)</button><button class="btn" data-act="closemodal">סגור</button></div>
+      <p style="font-size:13px;color:var(--muted);margin-top:12px">בתצוגה הזו הדף יורד כקובץ להעלאה ידנית לאתר. בגרסה המלאה אפשר לחבר העלאה אוטומטית. הדף עצמאי ולא משנה דבר באתר הקיים.</p>
+    </div>
+    <div class="pv" id="pv"></div></div></div>`;
+  const host=$('#pv'),sh=host.attachShadow({mode:'open'}),parts=pageParts(p,pub,false);
+  sh.innerHTML=`<style>${parts.css}</style>${parts.body}`;
+}
+function buildPageHTML(p,pub){
+  const x=pageParts(p,pub,true);
+  return `<!doctype html>\n<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(p.name)}</title><meta name="description" content="${esc(x.desc.slice(0,155))}"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&family=Frank+Ruhl+Libre:wght@700&display=swap"><style>body{margin:0;background:#fff}${x.css}</style></head><body>${x.body}</body></html>`;
+}
+
+/* ---------- exports ---------- */
+async function save(filename,data){
+  const blob=data instanceof Blob?data:new Blob([data]);
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast('הקובץ הורד');
+}
+async function exportZip(){
+  const p=proj();if(!window.JSZip)return toast('רכיב ה-ZIP לא נטען');
+  S.busyExport='zip';render();
+  try{
+    const z=new JSZip(),o=z.folder('originals'),e=z.folder('enhanced');let txt='';
+    for(const i of p.images){
+      const b=safe(i.name.replace(/\.[^.]+$/,''));
+      o.file(b+'.jpg',await blobOf(i.orig));
+      const c=chosenCanvas(i);if(c)e.file(b+'-enhanced.jpg',await blobOf(c));
+      txt+=`${i.name}\n${i.desc||'(ללא תיאור)'}\n\n`;
+    }
+    z.file('descriptions.txt',txt);
+    await save(safe(p.name)+'.zip',await z.generateAsync({type:'blob'}));
+  }catch(err){toast('יצירת ה-ZIP נכשלה')}
+  S.busyExport='';render();
+}
+function fit(c,bw,bh){const k=Math.min(bw/c.width,bh/c.height);return{w:c.width*k,h:c.height*k}}
+async function exportPptx(){
+  const p=proj();if(!window.PptxGenJS)return toast('רכיב המצגת לא נטען');
+  S.busyExport='pptx';render();
+  try{
+    const pp=new PptxGenJS();pp.layout='LAYOUT_WIDE';pp.rtlMode=true;
+    const s0=pp.addSlide();s0.background={color:'14242B'};
+    s0.addText(p.name,{x:.7,y:2.6,w:11.9,h:1.4,fontSize:44,bold:true,color:'FFFFFF',align:'right',rtlMode:true,fontFace:'Arial'});
+    s0.addText(p.images.length+' תמונות',{x:.7,y:4.0,w:11.9,h:.6,fontSize:20,color:'9FB1B3',align:'right',rtlMode:true,fontFace:'Arial'});
+    for(const i of p.images){
+      const s=pp.addSlide();
+      s.addText(i.name.replace(/\.[^.]+$/,''),{x:.6,y:.35,w:12.1,h:.8,fontSize:30,bold:true,color:'14242B',align:'right',rtlMode:true,fontFace:'Arial'});
+      const en=chosenCanvas(i),put=(c,cx,cw,label)=>{
+        const f=fit(c,cw,4.5),x=cx+(cw-f.w)/2;
+        s.addImage({data:scaleCanvas(c,1100).toDataURL('image/jpeg',.88).replace(/^data:/,''),x,y:1.4+(4.5-f.h)/2,w:f.w,h:f.h});
+        if(label)s.addText(label,{x:cx,y:5.95,w:cw,h:.4,fontSize:14,color:'55666B',align:'center',rtlMode:true,fontFace:'Arial'});
+      };
+      if(en){put(i.orig,6.9,5.9,'לפני');put(en,.55,5.9,'אחרי')}else put(i.orig,2.4,8.5,'');
+      if(i.desc)s.addText(i.desc,{x:.6,y:6.4,w:12.1,h:.9,fontSize:18,color:'14242B',align:'right',rtlMode:true,fontFace:'Arial',valign:'top'});
+    }
+    const blob=await pp.write({outputType:'blob'});
+    await save(safe(p.name)+'.pptx',blob);
+  }catch(err){console.error(err);toast('יצירת המצגת נכשלה')}
+  S.busyExport='';render();
+}
+async function proofread(){
+  const img=cur();if(!img)return;
+  const text=($('#desc')?.value||img.desc).trim();img.desc=text;
+  if(!text)return toast('כתוב תיאור קודם');
+  const sample=await claude.use('sample');
+  if(!sample)return toast('ההגהה זמינה רק בתוך Claude');
+  img.prBusy=true;render();
+  try{
+    const r=await sample.json(`אתה מגיה עברית. בדוק את הטקסט הבא ומצא שגיאות כתיב, פיסוק וניסוח. החזר JSON בלבד בצורה {"changes":[{"from":"קטע מדויק מהטקסט","to":"התיקון","reason":"הסבר קצר"}]}. כל "from" חייב להופיע בטקסט כמו שהוא. אם אין תיקונים, החזר {"changes":[]}.\n\nהטקסט:\n${text}`,{modelTier:'quick'});
+    img.pr=(r.changes||[]).filter(c=>c.from&&c.to&&c.from!==c.to&&text.includes(c.from)).map(c=>({...c,ok:true}));
+  }catch(e){toast(e.code==='not_granted'?'ההגהה דורשת אישור שימוש ב-Claude':'ההגהה נכשלה')}
+  img.prBusy=false;render();
+}
+
+/* ---------- events ---------- */
+function newProject(name){
+  name=(name||$('#np').value).trim();if(!name)return toast('הקלד שם לפרויקט');
+  const p={id:nid('p'),name,images:[],refId:null};S.projects.push(p);S.pid=p.id;S.iid=null;S.view='work';$('#np').value='';persist();render();return p;
+}
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-act]');if(!t||t.tagName==='INPUT')return;
+  const a=t.dataset.act,p=proj(),img=cur();
+  if(a==='demo'||a==='upload')e.preventDefault();
+  if(a==='newproj')newProject();
+  else if(a==='quick'){newProject('הפרויקט הראשון');addImages(null,[{c:demoCanvas(),name:'דוגמה.png'}])}
+  else if(a==='home'){S.view='home';render()}
+  else if(a==='selproj'){S.pid=t.dataset.id;S.iid=null;S.view='work';render()}
+  else if(a==='openproj'){S.pid=t.dataset.id;S.iid=null;S.view=proj().images.some(i=>i.saved)?'saved':'work';render()}
+  else if(a==='tab'){S.view=t.dataset.v;render()}
+  else if(a==='openedit'){S.iid=t.dataset.id;S.view='work';render();ensure(cur())}
+  else if(a==='unsave'){const x=p.images.find(i=>i.id===t.dataset.id);x.saved=null;persist();render();toast('הוסרה מהשמורים')}
+  else if(a==='dlsaved'){const x=p.images.find(i=>i.id===t.dataset.id);await save(safe(x.name.replace(/\.[^.]+$/,''))+'-enhanced.jpg',await blobOf(x.saved.c))}
+  else if(a==='upload')$('#file').click();
+  else if(a==='demo')addImages(null,[{c:demoCanvas(),name:'דוגמה-'+(p.images.length+1)+'.png'}]);
+  else if(a==='pick'){S.iid=t.dataset.id;render();ensure(cur())}
+  else if(a==='opt'){img.sel=t.dataset.k;render()}
+  else if(a==='choose'){const v=img.v[img.sel];img.saved={key:img.sel,c:v.c,url:v.url};img._po=null;persist(true);render();toast('נשמר בפרויקט. אפשר לראות בלשונית שמורות')}
+  else if(a==='revert'){img.saved=null;persist();render()}
+  else if(a==='delimg'){p.images=p.images.filter(i=>i!==img);if(p.refId===img.id)p.refId=null;S.iid=null;persist();render()}
+  else if(a==='setref'){p.refId=p.refId===img.id?null:img.id;p.images.forEach(i=>{if(i!==img)i.vkey=''});render();ensure(img)}
+  else if(a==='dlimg'){const c=chosenCanvas(img)||img.orig;await save(safe(img.name.replace(/\.[^.]+$/,''))+(chosenCanvas(img)?'-enhanced':'')+'.jpg',await blobOf(c))}
+  else if(a==='zip')exportZip();
+  else if(a==='pptx')exportPptx();
+  else if(a==='publish')openPublish();
+  else if(a==='closemodal'){S.pub=null;render()}
+  else if(a==='dlpage'){await save(safe(p.name)+'.html',new Blob([buildPageHTML(p,S.pub)],{type:'text/html'}))}
+  else if(a==='proof')proofread();
+  else if(a==='savedesc'){const ta=$('#desc');img.desc=ta?ta.value:img.desc;img._po=null;persist(true);toast(img.saved?'התיאור נשמר':'התיאור נשמר בפרויקט. כדי שיישאר גם אחרי סגירת הדף, שמור קודם את הגרסה המשופרת')}
+  else if(a==='newimg'){$('#file').click()}
+  else if(a==='applypr'){let d=img.desc;img.pr.filter(c=>c.ok).forEach(c=>{d=d.replace(c.from,c.to)});img.desc=d;img.pr=null;if(img.saved){img._po=null;persist()}render();toast('התיקונים הוחלו')}
+  else if(a==='dismisspr'){img.pr=null;render()}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='file'){addImages([...t.files]);t.value='';return}
+  if(t.dataset.act==='fill'){const i=cur();i.fill=t.checked;ensure(i);return}
+  if(t.dataset.act==='prchk'){cur().pr[+t.dataset.n].ok=t.checked;return}
+  const pa=t.dataset.pact;if(!pa||!S.pub)return;
+  if(pa==='inc')S.pub.inc[t.dataset.id]=t.checked;
+  else if(pa==='ver')S.pub.ver[t.dataset.id]=t.value;
+  else S.pub[pa]=t.checked;
+  if(pa!=='ok')S.pub.ok=false;
+  renderModal();
+});
+document.addEventListener('input',e=>{if(e.target.id==='desc'){const i=cur();if(i){i.desc=e.target.value;if(i.saved){i._po=null;persist()}}}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.id==='np')newProject();
+  if((e.key==='Enter'||e.key===' ')&&e.target.id==='drop'){e.preventDefault();$('#file').click()}
+  if(e.key==='Escape'&&S.pub){S.pub=null;render()}
+});
+['dragover','dragleave','drop'].forEach(ev=>document.addEventListener(ev,e=>{
+  const d=e.target.closest&&e.target.closest('#drop');if(!d)return;
+  e.preventDefault();d.classList.toggle('over',ev==='dragover');
+  if(ev==='drop'&&e.dataTransfer.files.length)addImages([...e.dataTransfer.files].filter(f=>f.type.startsWith('image/')));
+}));
+/* ---------- persistence (saved images only, this browser) ---------- */
+const KEY='ronenpeled-picfixer-v1';
+let _pt=null;
+function persist(now){clearTimeout(_pt);if(now)return doPersist();_pt=setTimeout(doPersist,600)}
+function doPersist(){
+  try{
+    const data=S.projects.map(p=>({id:p.id,name:p.name,images:p.images.filter(i=>i.saved).map(i=>{
+      if(!i._po)i._po={o:scaleCanvas(i.orig,700).toDataURL('image/jpeg',.7),e:scaleCanvas(i.saved.c,1000).toDataURL('image/jpeg',.82)};
+      return{id:i.id,name:i.name,desc:i.desc,key:i.saved.key,o:i._po.o,e:i._po.e};
+    })}));
+    localStorage.setItem(KEY,JSON.stringify(data));
+  }catch(e){toast('אין מקום לשמירה קבועה בדפדפן. השמורות יישארו עד סגירת הדף')}
+}
+const loadCv=u=>new Promise(r=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);r(c)};im.onerror=()=>r(null);im.src=u});
+async function restore(){
+  let data=[];try{data=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}
+  for(const pd of data){
+    const p={id:pd.id,name:pd.name,images:[],refId:null};
+    for(const d of pd.images){
+      const o=await loadCv(d.o),e=await loadCv(d.e);if(!o||!e)continue;
+      p.images.push({id:d.id,name:d.name,orig:o,desc:d.desc||'',saved:{key:d.key,c:e,url:d.e},sel:d.key,fill:true,v:{},vkey:'',busy:false,pr:null,_po:{o:d.o,e:d.e}});
+    }
+    S.projects.push(p);
+    uid=Math.max(uid,+String(p.id).slice(1)||0,...p.images.map(i=>+String(i.id).slice(1)||0));
+  }
+  if(S.projects.length)S.view='home';
+  render();
+}
+render();restore();
+</script>
+</body>
+</html>
