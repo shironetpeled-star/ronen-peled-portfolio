@@ -84,12 +84,12 @@ function addParityStyles(){
  .esbRow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:stretch}
  .esbGroup{min-width:0;background:#fff;border:1px solid #dce6f2;border-radius:16px;padding:13px 14px;box-shadow:0 8px 20px rgba(13,34,54,.05)}
  .esbGroupTitle{font-size:15px;font-weight:950;color:#10284a;margin:0 0 9px;padding:7px 10px;border-radius:9px;background:#eef5ff}
- .esbLinks{display:grid;grid-template-columns:repeat(var(--link-count,6),minmax(105px,1fr));gap:5px;overflow-x:auto;min-width:0;width:100%;align-items:stretch}
+ .esbLinks{display:grid;grid-template-columns:repeat(var(--link-count,6),minmax(0,1fr));gap:5px;overflow-x:auto;min-width:0;width:100%;align-items:stretch}
  .esbLinks a{display:flex;align-items:center;justify-content:center;min-height:44px;padding:8px 4px;border-radius:10px;background:#edf3ff;border:1px solid #c9d9f5;color:#195ed8!important;text-decoration:none;font-weight:900;font-size:11px;line-height:1.2;white-space:normal;text-align:center;box-sizing:border-box}
  .esbLinks a:hover{background:#195ed8;color:#fff!important}
  .enRoleNavigation{padding-bottom:54px}.enRoleNavigation .enProfessionButtons{flex-wrap:nowrap;overflow-x:auto;align-items:stretch}.enRoleNavigation a{white-space:nowrap;flex:0 0 auto}
  html[lang="en"] .companyMark{direction:ltr}
- @media(max-width:620px){html[lang="en"] footer:has(.footerPageLinks){padding-bottom:100px}.esbNext{padding:24px 20px}}
+ @media(max-width:900px){.esbLinks{grid-template-columns:repeat(var(--link-count,6),minmax(105px,1fr))}} @media(max-width:620px){html[lang="en"] footer:has(.footerPageLinks){padding-bottom:100px}.esbNext{padding:24px 20px}}
  `;document.head.appendChild(style);
 }
 function navigationGroup(title,items,professional){
