@@ -56,98 +56,81 @@ html[lang="en"] .top nav a:hover{background:#8cece3!important;color:#174f9f!impo
 function headerIsComplete(h){if(!h)return false;const links=[...h.querySelectorAll('nav>a')];if(links.length!==enNav.length)return false;return enNav.every(([href,label],i)=>{const a=links[i];if(!a)return false;const actual=(a.getAttribute('href')||'').split('/').pop();return actual===href&&a.textContent.trim()===label})}
 function normalizeHeader(){if(document.documentElement.lang!=='en')return;ensureStyles();let h=document.querySelector('header.top');if(!h){h=document.createElement('header');h.className='top';document.body.insertBefore(h,document.body.firstChild)}const expected='english-unified-nav-v3';if(h.dataset.sync===expected&&headerIsComplete(h))return;h.dataset.sync=expected;h.innerHTML='<div class="navwrap"><div class="brandBlock"><a class="brand" href="index-en.html"><b>RONEN PELED</b><small>Product Manager • Project Manager • System Analyst<br>MAGIC Developer • Customer Success</small></a><span class="brandPhone">054-6546288</span></div><button class="menu" aria-label="Menu">☰</button><nav></nav></div>';const n=h.querySelector('nav');enNav.forEach(([href,label])=>{const a=document.createElement('a');a.href=href;a.textContent=label;if(page()===href)a.classList.add('active');n.appendChild(a)});h.querySelector('.menu').addEventListener('click',()=>n.classList.toggle('open'))}
 function row(items,cls){const d=document.createElement('div');d.className=cls||'enQuickRow';items.forEach(([href,label])=>{const a=document.createElement('a');a.href=href;a.textContent=label;d.appendChild(a)});return d}
-function patchRole(){if(!rolePages.includes(page()))return;const main=document.querySelector('main');if(!main)return;const overview=main.querySelector('.page.section.two');if(overview){overview.classList.add('roleOverview');const bring=overview.children[0],exp=overview.querySelector('.highlight');if(bring)bring.classList.add('roleBringCard');if(exp){exp.classList.add('roleExperience');if(!exp.querySelector('.expQuick')){const r=row(roleQuick,'expQuick');exp.appendChild(r)}}if(bring&&!bring.querySelector('.sectionTitle')){const h2=bring.querySelector('h2');if(h2){const wrap=document.createElement('div');wrap.className='sectionTitle';wrap.innerHTML='<span>WHAT I BRING</span>';h2.parentNode.insertBefore(wrap,h2);wrap.appendChild(h2)}}}
-const firstSoft=main.querySelector('.soft.section');if(firstSoft&&!firstSoft.querySelector('.enSkillsHeader')){const hd=document.createElement('div');hd.className='enSkillsHeader';hd.innerHTML='<strong>Skills & Capabilities</strong><a href="skills-en.html">View all skills</a>';firstSoft.insertBefore(hd,firstSoft.firstChild)}
-const adv=main.querySelector('.adv');if(adv&&!adv.querySelector('.enAllAdvantages')){const a=document.createElement('a');a.className='enAllAdvantages';a.href='advantages-en.html';a.textContent='All My Advantages';adv.appendChild(a)}
-if(!main.querySelector('.enNextStep')){const sec=document.createElement('section');sec.className='page enNextStep';sec.innerHTML='<div class="enNextStepCard"><div><span>NEXT STEP</span><h2>Let’s connect the role to the value I can bring</h2><p>I would be glad to discuss the challenge, the customer and business needs, and how my combined experience can help.</p></div><a href="contact-en.html">Contact Me</a></div>';main.appendChild(sec)}
-if(!main.querySelector('.enProfessionNav')){const sec=document.createElement('section');sec.className='page enProfessionNav';const t=document.createElement('div');t.textContent='Move to other professional roles';sec.appendChild(t);sec.appendChild(row(roleNav.filter(x=>x[0]!==page()),'enProfessionButtons'));main.appendChild(sec)}
-patchRoleText();}
-function patchRoleText(){const p=page();const bring=document.querySelector('.roleBringCard .bigtext');if(p==='product-en.html'&&bring){bring.textContent='End-to-end product management — from understanding the business and customer need, through requirements definition, prioritization, specification and work with development, to launch, implementation, adoption and measurement of business value. I work continuously with customers, users and cross-functional teams, connecting business needs, user experience and the technology solution.';const box=document.querySelector('.roleBringCard');if(box&&!box.querySelector('.enProductEducation')){const e=document.createElement('div');e.className='educationBlock enProductEducation';e.innerHTML='<div class="sectionTitle"><span>EDUCATION</span><h2>Education</h2></div><article class="productCourse" style="position:relative;margin-top:10px;background:#fff;border:1px solid #dce6f0;border-radius:16px;padding:16px 18px;box-shadow:0 10px 28px rgba(13,34,54,.07)"><h3>🎓 Product Management Course</h3><p><b>Credential:</b> Certified Product Manager</p><p><b>Institution:</b> Bar-Ilan University · High-Tech Environments · Cyber, Data & AI specialization</p><p><b>Certificates:</b> Certified Product Manager — Bar-Ilan University · ISC2 Cybersecurity Certification</p></article>';box.appendChild(e)}}
-if(p==='en-05.html'){const h=document.querySelector('.roleBringCard h2');if(h)h.textContent='What I bring to the role';if(bring)bring.textContent='Hands-on MAGIC development across versions, databases and live business systems, combined with system analysis, customer understanding and end-to-end responsibility. I connect the technical change to the business reason, user need, system impact, testing and implementation.'}
-if(p==='en-06.html'&&bring)bring.textContent='Customer Success with a strong technical and product perspective: B2B, B2C and Enterprise customers, Help Desk and technical support, escalations and critical incidents, onboarding, training, Product Adoption and retention. I work collaboratively across the full customer journey, build long-term trust, and translate customer needs and feedback into practical product and system improvements.'
-const adv=document.querySelector('.adv');if(adv&&!adv.querySelector('.enAdvList')){const old=adv.querySelector('p');if(old)old.style.display='none';const ul=document.createElement('ul');ul.className='enAdvList';const items=p==='product-en.html'?['<strong>End-to-end perspective</strong> — Product + Technology + System Analysis + Customer Success.','<strong>360° product analysis</strong> — technology, business and human perspectives across the full lifecycle.','<strong>Understand the real need</strong> — what to build, why, for whom and which value it must create.','<strong>Business and marketing view</strong> — customer needs, value proposition and Go-to-Market.','<strong>User and business value</strong> — balance user needs, company goals and technology constraints.','<strong>Analytical thinking</strong> — identify patterns, gaps and opportunities.','<strong>Root Cause Analysis</strong> — solve the underlying problem, not only the symptom.','<strong>Complex problem solving</strong> — compare alternatives, tradeoffs and impact.']:['<strong>360° perspective</strong> — customer, business, system and technology.','<strong>Root-cause thinking</strong> — identify what really needs to change.','<strong>Cross-functional communication</strong> — connect users, customers, development and management.','<strong>Ownership</strong> — lead from need through implementation and follow-up.','<strong>Practical problem solving</strong> — evaluate alternatives and deliver workable solutions.','<strong>Technical understanding</strong> — make decisions with awareness of system constraints and dependencies.'];items.forEach(t=>{const li=document.createElement('li');li.innerHTML=t;ul.appendChild(li)});adv.appendChild(ul)}}
-function patchExperience(){if(page()!=='history-en.html')return;const main=document.querySelector('main');if(!main||main.querySelector('.enQuickRow'))return;const timeline=main.querySelector('.timeline');if(!timeline)return;timeline.insertAdjacentElement('beforebegin',row([['skills-en.html','Skills'],['role-magic-en.html','Projects'],['work-environments-en.html','System Types'],['role-customer-en.html','Education']],'enQuickRow'))}
-function patchProjectEducationButtons(){if(!['role-magic-en.html','role-customer-en.html','work-environments-en.html','service-page-en.html','contact-en.html','skills-en.html'].includes(page()))return;const main=document.querySelector('main');if(!main||main.querySelector('.enQuickRow'))return;const foot=main.querySelector('section:last-of-type');if(foot)foot.appendChild(row([['history-en.html','Experience'],['skills-en.html','Skills'],['role-magic-en.html','Projects'],['work-environments-en.html','System Types']],'enQuickRow'))}
-function englishBottomMarkup(contactOnly){return `<style>
-#englishSharedBottom{max-width:1240px;margin:42px auto 0;padding:0 24px 54px;box-sizing:border-box}.esbNext{background:linear-gradient(135deg,#0e2945,#195ed8);color:#fff;border-radius:20px;padding:28px 30px;box-shadow:0 14px 34px rgba(13,34,54,.14);border-left:5px solid #21c7b7;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}.esbNext span{display:block;color:#8ee8df;font-size:12px;letter-spacing:1.5px;font-weight:900;margin-bottom:5px}.esbNext h2{margin:0 0 5px;font-size:clamp(1.5rem,3vw,2.15rem)}.esbNext p{margin:0;color:#dce9f7}.esbContact{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border-radius:11px;background:#fff;color:#195ed8!important;font-weight:900;text-decoration:none!important;white-space:nowrap}.esbTitle{font-size:14px;font-weight:900;color:#405469;margin:22px 0 8px}.esbRow{display:grid;grid-template-columns:minmax(310px,.72fr) minmax(0,1.28fr);gap:14px;align-items:stretch}.esbGroup{min-width:0;background:#fff;border:1px solid #dce6f2;border-radius:16px;padding:13px 14px;box-shadow:0 8px 20px rgba(13,34,54,.05)}.esbGroupTitle{font-size:15px;font-weight:950;color:#10284a;margin:0 0 9px;padding:7px 10px;border-radius:9px;background:#eef5ff}.esbLinks{display:flex;gap:7px;flex-wrap:wrap}.esbLinks a{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 11px;border-radius:10px;background:#edf3ff;border:1px solid #c9d9f5;color:#195ed8!important;text-decoration:none!important;font-weight:900;font-size:12.5px;white-space:nowrap}.esbLinks a:hover{background:#195ed8;color:#fff!important}.esbProfessional .esbLinks{flex-wrap:nowrap;gap:6px}.esbProfessional .esbLinks a{flex:1 1 0;min-width:0;padding-left:7px;padding-right:7px;font-size:12px}@media(max-width:900px){.esbRow{grid-template-columns:1fr}.esbProfessional .esbLinks{flex-wrap:wrap}.esbProfessional .esbLinks a{flex:1 1 calc(33.333% - 8px)}}@media(max-width:720px){.esbLinks a,.esbProfessional .esbLinks a{flex:1 1 calc(50% - 8px)}}
-</style>${contactOnly?'':'<div class="esbNext"><div><span>NEXT STEP</span><h2>Let’s discuss the next role</h2><p>I would be glad to discuss the role, its challenges, and the value I can bring.</p></div><a class="esbContact" href="contact-en.html">Contact Me →</a></div>'}<div class="esbTitle">Quick Navigation</div><div class="esbRow"><div class="esbGroup"><div class="esbGroupTitle">Experience</div><div class="esbLinks"><a href="history-en.html">Experience</a><a href="role-magic-en.html">Work & Projects</a><a href="work-environments-en.html">System Types</a><a href="role-customer-en.html">Education</a><a href="advantages-en.html">My Advantages</a><a href="skills-en.html">Skills</a></div></div><div class="esbGroup esbProfessional"><div class="esbGroupTitle">Professional Capabilities</div><div class="esbLinks"><a href="index-en.html">Home · 360° View</a><a href="product-en.html">Product Manager</a><a href="project-en.html">Project Manager</a><a href="system-en.html">System Analyst</a><a href="en-05.html">MAGIC</a><a href="en-06.html">Customer Success</a></div></div></div>`}
-function addEnglishBottom(){const p=page();if(!['history-en.html','role-magic-en.html','work-environments-en.html','role-customer-en.html','service-page-en.html','skills-en.html','advantages-en.html','contact-en.html'].includes(p))return;const main=document.querySelector('main');if(!main)return;main.querySelectorAll('.enQuickRow,.quickArea,.quickButtons,.professionBottomNav,.nextStep').forEach(el=>el.style.display='none');let section=document.getElementById('englishSharedBottom');if(!section){section=document.createElement('section');section.id='englishSharedBottom';main.appendChild(section)}section.innerHTML=englishBottomMarkup(p==='contact-en.html')}
-function run(){if(document.documentElement.lang!=='en')return;normalizeHeader();patchRole();addEnglishBottom()}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
-let busy=false;new MutationObserver(()=>{if(busy)return;busy=true;requestAnimationFrame(()=>{busy=false;normalizeHeader()})}).observe(document.documentElement,{subtree:true,childList:true});
-})();
-(()=>{
-  if(document.documentElement.lang!=='en')return;
-  const apply=()=>{
-    return;
-    let style=document.getElementById('englishNavEdgeHotfix');
-    if(!style){
-      style=document.createElement('style');
-      style.id='englishNavEdgeHotfix';
-      style.textContent=`
-@media(min-width:951px){
-  html[lang="en"] body header.top nav{
-    display:grid!important;
-    grid-template-columns:repeat(7,minmax(0,1fr))!important;
-    grid-template-rows:35px 35px!important;
-    column-gap:10px!important;
-    row-gap:20px!important;
-    width:100%!important;
-    max-width:none!important;
-    min-width:0!important;
-    padding:0!important;
-    margin:0!important;
-    box-sizing:border-box!important;
-    align-items:stretch!important;
-    justify-items:stretch!important;
-  }
-  html[lang="en"] body header.top nav>a,
-  html[lang="en"] body header.top nav>a:nth-child(14),
-  html[lang="en"] body header.top nav>a[href="index.html"]{
-    position:static!important;
-    inset:auto!important;
-    top:auto!important;
-    right:auto!important;
-    bottom:auto!important;
-    left:auto!important;
-    transform:none!important;
-    width:100%!important;
-    max-width:none!important;
-    min-width:0!important;
-    height:35px!important;
-    min-height:35px!important;
-    max-height:35px!important;
-    margin:0!important;
-    padding:0 7px!important;
-    box-sizing:border-box!important;
-    align-self:stretch!important;
-    justify-self:stretch!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    line-height:1!important;
-    white-space:nowrap!important;
-  }
-  html[lang="en"] body header.top nav>a:nth-child(-n+7){grid-row:1!important}
-  html[lang="en"] body header.top nav>a:nth-child(n+8){grid-row:2!important}
-  html[lang="en"] body header.top nav>a:nth-child(1),html[lang="en"] body header.top nav>a:nth-child(8){grid-column:1!important}
-  html[lang="en"] body header.top nav>a:nth-child(2),html[lang="en"] body header.top nav>a:nth-child(9){grid-column:2!important}
-  html[lang="en"] body header.top nav>a:nth-child(3),html[lang="en"] body header.top nav>a:nth-child(10){grid-column:3!important}
-  html[lang="en"] body header.top nav>a:nth-child(4),html[lang="en"] body header.top nav>a:nth-child(11){grid-column:4!important}
-  html[lang="en"] body header.top nav>a:nth-child(5),html[lang="en"] body header.top nav>a:nth-child(12){grid-column:5!important}
-  html[lang="en"] body header.top nav>a:nth-child(6),html[lang="en"] body header.top nav>a:nth-child(13){grid-column:6!important}
-  html[lang="en"] body header.top nav>a:nth-child(7),html[lang="en"] body header.top nav>a:nth-child(14){grid-column:7!important}
+
+const englishPageMap={"index-en.html":"index.html","product-en.html":"product.html","project-en.html":"project.html","system-en.html":"system.html","en-05.html":"magic.html","en-06.html":"customer.html","history-en.html":"experience.html","role-magic-en.html":"projects.html","role-customer-en.html":"education.html","service-page-en.html":"military.html","skills-en.html":"skills.html","work-environments-en.html":"work-environments.html","advantages-en.html":"advantages.html","contact-en.html":"contact.html"};
+const navigationByPage={
+ 'history-en.html':[['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['role-customer-en.html','Education'],['service-page-en.html','Military Service'],['skills-en.html','Skills'],['advantages-en.html','My Advantages']],
+ 'work-environments-en.html':[['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['role-customer-en.html','Education'],['service-page-en.html','Military Service'],['skills-en.html','Skills'],['advantages-en.html','My Advantages']],
+ 'role-customer-en.html':[['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['service-page-en.html','Military Service'],['advantages-en.html','My Advantages'],['skills-en.html','Skills']],
+ 'service-page-en.html':[['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['role-customer-en.html','Education'],['skills-en.html','Skills'],['advantages-en.html','My Advantages']],
+ 'skills-en.html':[['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['advantages-en.html','My Advantages'],['role-customer-en.html','Education'],['service-page-en.html','Military Service']],
+ 'advantages-en.html':[['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['advantages-en.html','My Advantages'],['role-customer-en.html','Education'],['service-page-en.html','Military Service'],['skills-en.html','Skills']],
+ 'contact-en.html':[['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['advantages-en.html','My Advantages'],['role-customer-en.html','Education'],['service-page-en.html','Military Service'],['skills-en.html','Skills']]
+};
+function addParityStyles(){
+ if(document.getElementById('englishParityStyles'))return;
+ const style=document.createElement('style');style.id='englishParityStyles';style.textContent=`
+ html[lang="en"] .innerHero{text-align:left} @media(min-width:951px){html[lang="en"] .top .navwrap{grid-template-columns:320px minmax(0,900px)!important}html[lang="en"] .top .brandBlock{min-width:320px!important}html[lang="en"] .top .brand small{font-size:12px!important}html[lang="en"] body .top nav>a{font-size:11px!important;overflow:visible!important}}
+ html[lang="en"] footer{direction:ltr}
+ html[lang="en"] .skillSlider{direction:ltr}
+ html[lang="en"] .skillSlider h3{font-size:17px} html[lang="en"] .skillGrid>.skill{min-width:0;max-width:100%;overflow-wrap:anywhere} html[lang="en"] .titleWithIcon h3{min-width:0;white-space:normal} @media(max-width:620px){html[lang="en"] .skillGrid{grid-template-columns:minmax(0,1fr)!important}html[lang="en"] .titleWithIcon{flex-wrap:wrap}}
+ html[lang="en"] .skillGrid .skill p{overflow-wrap:anywhere}
+ #englishSharedBottom{max-width:1240px;margin:42px auto 0;padding:0 24px 54px;box-sizing:border-box}
+ .esbNext{background:linear-gradient(135deg,#0e2945,#195ed8);color:#fff;border-radius:20px;padding:28px 30px;box-shadow:0 14px 34px rgba(13,34,54,.14);border-left:5px solid #21c7b7;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+ .esbNext span{display:block;color:#8ee8df;font-size:12px;letter-spacing:1.5px;font-weight:900;margin-bottom:5px}
+ .esbNext h2{margin:0 0 5px;font-size:clamp(1.5rem,3vw,2.15rem)}.esbNext p{margin:0;color:#dce9f7}
+ .esbContact{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border-radius:11px;background:#fff;color:#195ed8!important;font-weight:900;text-decoration:none;white-space:nowrap}
+ .esbTitle{font-size:14px;font-weight:900;color:#405469;margin:22px 0 8px}
+ .esbRow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:stretch}
+ .esbGroup{min-width:0;background:#fff;border:1px solid #dce6f2;border-radius:16px;padding:13px 14px;box-shadow:0 8px 20px rgba(13,34,54,.05)}
+ .esbGroupTitle{font-size:15px;font-weight:950;color:#10284a;margin:0 0 9px;padding:7px 10px;border-radius:9px;background:#eef5ff}
+ .esbLinks{display:grid;grid-template-columns:repeat(var(--link-count,6),minmax(105px,1fr));gap:5px;overflow-x:auto;min-width:0;width:100%;align-items:stretch}
+ .esbLinks a{display:flex;align-items:center;justify-content:center;min-height:44px;padding:8px 4px;border-radius:10px;background:#edf3ff;border:1px solid #c9d9f5;color:#195ed8!important;text-decoration:none;font-weight:900;font-size:11px;line-height:1.2;white-space:normal;text-align:center;box-sizing:border-box}
+ .esbLinks a:hover{background:#195ed8;color:#fff!important}
+ .enRoleNavigation{padding-bottom:54px}.enRoleNavigation .enProfessionButtons{flex-wrap:nowrap;overflow-x:auto;align-items:stretch}.enRoleNavigation a{white-space:nowrap;flex:0 0 auto}
+ html[lang="en"] .companyMark{direction:ltr}
+ @media(max-width:620px){html[lang="en"] footer:has(.footerPageLinks){padding-bottom:100px}.esbNext{padding:24px 20px}}
+ `;document.head.appendChild(style);
 }
-`;
-      document.head.appendChild(style);
-    }
-    const nav=document.querySelector('header.top nav');
-    if(nav){
-      const he=[...nav.querySelectorAll('a')].find(a=>(a.getAttribute('href')||'').split('/').pop()==='index.html');
-      if(he){he.textContent='HE';he.setAttribute('aria-label','Hebrew');}
-    }
-  };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();
-  setTimeout(apply,200);setTimeout(apply,800);
-  new MutationObserver(apply).observe(document.documentElement,{subtree:true,childList:true});
+function navigationGroup(title,items,professional){
+ const box=document.createElement('div');box.className='esbGroup'+(professional?' esbProfessional':'');
+ const heading=document.createElement('div');heading.className='esbGroupTitle';heading.textContent=title;
+ const links=row(items,'esbLinks');links.style.setProperty('--link-count',items.length);
+ box.append(heading,links);return box;
+}
+function addEnglishBottom(){
+ const p=page(),items=navigationByPage[p];if(!items||document.getElementById('englishSharedBottom'))return;
+ const main=document.querySelector('main');if(!main)return;
+ main.querySelectorAll('.nextStep,.professionBottomNav,.experienceMoreJobsRow,#experienceQuickButtons,.milBottom').forEach(el=>el.style.display='none');
+ const section=document.createElement('section');section.id='englishSharedBottom';
+ if(p!=='contact-en.html'){const next=document.createElement('div');next.className='esbNext';next.innerHTML='<div><span>NEXT STEP</span><h2>Let’s discuss the next role</h2><p>I would be glad to discuss the role, its challenges and the value I can bring.</p></div><a class="esbContact" href="contact-en.html">Contact Me →</a>';section.appendChild(next);}
+ const title=document.createElement('div');title.className='esbTitle';title.textContent='Quick Navigation';
+ const groups=document.createElement('div');groups.className='esbRow';groups.append(navigationGroup('Experience',items,false),navigationGroup('Professional Capabilities',roleNav,true));section.append(title,groups);main.appendChild(section);
+}
+function normalizeFooter(){
+ const footer=document.querySelector('footer');if(!footer)return;
+ const copyright=footer.querySelector('.siteCopyright');if(copyright)copyright.textContent='© All website creation and design rights reserved to Ronen Peled.';
+ const home=footer.querySelector('.footerPageLinks a:last-child, :scope > a');if(home){home.href='index-en.html';if(!home.querySelector('svg'))home.textContent='Back to home page';}
+}
+function normalizeEnglishRole(){
+ if(!rolePages.includes(page()))return;
+ const main=document.querySelector('main');const overview=main.querySelector('.page.section.two');
+ if(overview){overview.classList.add('roleOverview');overview.children[0].classList.add('roleBringCard');const exp=overview.querySelector('.highlight');if(exp){exp.classList.add('roleExperience');if(!exp.querySelector('.expQuick'))exp.appendChild(row(roleQuick,'expQuick'));}}
+ if(!main.querySelector('.professionBottomNav,.enRoleNavigation')){
+  const nav=document.createElement('section');nav.className='page enRoleNavigation';nav.innerHTML='<div class="professionBottomNavTitle">Quick Navigation</div>';nav.appendChild(row(roleNav.filter(x=>x[0]!==page()).concat([['skills-en.html','Skills'],['advantages-en.html','My Advantages']]),'enProfessionButtons'));main.appendChild(nav);
+ }
+}
+function localizeGeneratedControls(){
+ const labels={'הרחב לפירוט':'Expand for details','הרחב פירוט':'Expand for details','צמצם פירוט':'Collapse details','מקומות עבודה נוספים':'Additional Workplaces','עבודות נוספות':'Additional Work','הצג פחות':'Show less'};
+ document.querySelectorAll('details>summary,button').forEach(el=>{const translated=labels[el.textContent.trim()];if(translated)el.textContent=translated;});
+}
+function sync(){
+ if(document.documentElement.lang!=='en')return;
+ normalizeHeader();localizeGeneratedControls();addParityStyles();addEnglishBottom();normalizeEnglishRole();normalizeFooter();
+ const he=document.querySelector('header.top nav a[href="index.html"]');if(he)he.href=englishPageMap[page()]||(page()==='thanks-en.html'?'thanks.html':'index.html');
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});else sync();
+setTimeout(sync,150);setTimeout(sync,700);
+let scheduled=false;new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;localizeGeneratedControls();const h=document.querySelector('header.top');if(!h)return;const expected=enNav.map(x=>x[0]);const actual=[...h.querySelectorAll('nav>a')].map(a=>a.getAttribute('href'));if(actual.length!==expected.length||actual.some((v,i)=>i<expected.length-1&&v!==expected[i])){normalizeHeader();const he=h.querySelector('nav a[href="index.html"]');if(he)he.href=englishPageMap[page()]||(page()==='thanks-en.html'?'thanks.html':'index.html');}})}).observe(document.documentElement,{childList:true,subtree:true});
 })();
+
