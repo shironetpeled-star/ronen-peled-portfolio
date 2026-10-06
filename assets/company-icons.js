@@ -1,7 +1,7 @@
 (()=>{
   // Historical company-logo mapping restored for the Hebrew Projects and Experience pages.
   const page=location.pathname.split('/').pop()||'index.html';
-  if(!['projects.html','experience.html'].includes(page))return;
+  if(!['projects.html','experience.html','role-magic-en.html'].includes(page))return;
   const rules=[
     {names:['SMARTi','Smarti','דור אלי שני'],src:'assets/images/smarti-logo.svg',fallback:'👥',title:'SMARTi'},
     {names:['Shlomo SIXT','Shlomo Sixt','שלמה SIXT','קבוצת שלמה','שלמה'],src:'https://www.shlomo.co.il/favicon.ico',fallback:'🚗',title:'Shlomo SIXT'},
