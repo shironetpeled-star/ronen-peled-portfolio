@@ -615,6 +615,7 @@
     if(name&&document.documentElement.lang==='he')name.textContent='רונן פלד';
     const isHebrew=document.documentElement.lang==='he';
     const homeLink=footer.querySelector(':scope > a');
+    if(homeLink)homeLink.textContent=isHebrew?'חזרה לעמוד הבית':'Back to home page';
     if(homeLink&&!footer.querySelector('.footerPageLinks')){
       const navigation=document.createElement('nav');
       navigation.className='footerPageLinks';
