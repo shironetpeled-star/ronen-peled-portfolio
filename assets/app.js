@@ -611,6 +611,8 @@
     const footer=document.querySelector('footer');
     const contact=footer&&footer.querySelector('div');
     if(!contact)return;
+    const copyright=footer.querySelector('.siteCopyright');
+    if(copyright&&!copyright.textContent.trim().startsWith('©'))copyright.prepend(document.createTextNode('© '));
     const name=contact.querySelector('b');
     if(name&&document.documentElement.lang==='he')name.textContent='רונן פלד';
     const isHebrew=document.documentElement.lang==='he';
