@@ -648,6 +648,22 @@
         entry[0].prepend(icon);
       });
     }
+    function contactIcon(pathData){
+      const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');
+      icon.setAttribute('viewBox','0 0 24 24');
+      icon.setAttribute('fill','none');
+      icon.setAttribute('stroke','currentColor');
+      icon.setAttribute('stroke-width','2');
+      icon.setAttribute('stroke-linecap','round');
+      icon.setAttribute('stroke-linejoin','round');
+      icon.setAttribute('aria-hidden','true');
+      icon.setAttribute('focusable','false');
+      icon.classList.add('footerContactIcon');
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',pathData);
+      icon.appendChild(path);
+      return icon;
+    }
     const details=contact.querySelector('span');
     if(details&&!details.querySelector('a')){
       const phone=document.createElement('a');
@@ -660,6 +676,8 @@
       const emailValue=document.createElement('bdi');
       emailValue.textContent='shironetpeled@gmail.com';
       email.replaceChildren(document.createTextNode(isHebrew?'מייל: ':'Email: '),emailValue);
+      phone.prepend(contactIcon('M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 3.1 5.2 2 2 0 0 1 5.1 3h3a2 2 0 0 1 2 1.7l.4 2.8a2 2 0 0 1-.6 1.7L8.6 10.5a16 16 0 0 0 4.9 4.9l1.3-1.3a2 2 0 0 1 1.7-.6l2.8.4a2 2 0 0 1 1.7 2Z'));
+      email.prepend(contactIcon('M3 5h18v14H3zM3 6l9 7 9-7'));
       details.replaceChildren(phone,document.createTextNode(' · '),email);
     }
     if(contact.querySelector('.footerLinkedIn'))return;
@@ -669,9 +687,10 @@
     link.target='_blank';
     link.rel='noopener noreferrer';
     link.textContent='LinkedIn: '+decodeURI(link.href);
+    link.prepend(contactIcon('M3 3h18v18H3zM7 10v7M7 7v.1M11 17v-7M11 13a3 3 0 0 1 6 0v4'));
     contact.appendChild(link);
     const style=document.createElement('style');
-    style.textContent='footer:has(.footerLinkedIn){min-height:116px}footer .footerLinkedIn{display:block;align-self:flex-start;margin-top:6px;color:#9cafc1;font-size:13px;line-height:1.7;direction:ltr;max-width:100%;overflow-wrap:anywhere;text-decoration:underline}footer:has(.footerLinkedIn)>div{min-width:0;max-width:100%}footer:has(.footerLinkedIn)>div>span{overflow-wrap:anywhere}footer:has(.footerLinkedIn)>div>span a{display:inline-block;max-width:100%}footer .footerPageLinks{display:flex;flex-direction:column;align-items:center;justify-content:center;align-self:center;gap:4px;text-align:center}footer .footerPageLinks a{display:inline-flex;align-items:center;justify-content:center;gap:6px}footer .footerPageLinks svg{width:16px;height:16px;flex:0 0 16px}@media(max-width:620px){footer:has(.footerPageLinks){padding-bottom:100px}}footer .footerLinkedIn:hover,footer .footerLinkedIn:focus-visible{text-decoration:underline}';
+    style.textContent='footer:has(.footerLinkedIn){min-height:116px}footer .footerLinkedIn{display:block;align-self:flex-start;margin-top:6px;color:#9cafc1;font-size:13px;line-height:1.7;direction:ltr;max-width:100%;overflow-wrap:anywhere;text-decoration:underline}footer:has(.footerLinkedIn)>div{min-width:0;max-width:100%}footer:has(.footerLinkedIn)>div>span{overflow-wrap:anywhere}footer:has(.footerLinkedIn)>div>span a{display:inline-block;max-width:100%}footer .footerContactIcon{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-inline-end:5px}footer .footerPageLinks{display:flex;flex-direction:column;align-items:center;justify-content:center;align-self:center;gap:4px;text-align:center}footer .footerPageLinks a{display:inline-flex;align-items:center;justify-content:center;gap:6px}footer .footerPageLinks svg{width:16px;height:16px;flex:0 0 16px}@media(max-width:620px){footer:has(.footerPageLinks){padding-bottom:100px}}footer .footerLinkedIn:hover,footer .footerLinkedIn:focus-visible{text-decoration:underline}';
     document.head.appendChild(style);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateFooter,{once:true});
