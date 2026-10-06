@@ -610,7 +610,10 @@
   function updateFooter(){
     const footer=document.querySelector('footer');
     const contact=footer&&footer.querySelector('div');
-    if(!contact||contact.querySelector('.footerLinkedIn'))return;
+    if(!contact)return;
+    const name=contact.querySelector('b');
+    if(name&&document.documentElement.lang==='he')name.textContent='רונן פלד';
+    if(contact.querySelector('.footerLinkedIn'))return;
     const link=document.createElement('a');
     link.className='footerLinkedIn';
     link.href='https://il.linkedin.com/in/%D7%A8%D7%95%D7%A0%D7%9F-%D7%A4%D7%9C%D7%93-a27a771a';
