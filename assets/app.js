@@ -613,6 +613,16 @@
     if(!contact)return;
     const name=contact.querySelector('b');
     if(name&&document.documentElement.lang==='he')name.textContent='רונן פלד';
+    const details=contact.querySelector('span');
+    if(details&&!details.querySelector('a')){
+      const phone=document.createElement('a');
+      phone.href='tel:+972546546288';
+      phone.textContent='054-6546288';
+      const email=document.createElement('a');
+      email.href='mailto:shironetpeled@gmail.com';
+      email.textContent='shironetpeled@gmail.com';
+      details.replaceChildren(phone,document.createTextNode(' · '),email);
+    }
     if(contact.querySelector('.footerLinkedIn'))return;
     const link=document.createElement('a');
     link.className='footerLinkedIn';
