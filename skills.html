@@ -181,7 +181,7 @@ function skillsPageLifecycleFacts(record){
 }
 const skillsPageManagementCapabilities=new Set(['Leadership Without Authority','Critical Incidents','Creativity']);
 function skillsPageManagementEvidence(record){
- const roles=record.facts.filter(fact=>/מנהל מוצר|מנהל פרויקט|ניהול פרויקט|ניהול המוצר\/הפרויקט|הובלת הפרויקט|ניהול כל שלבי המוצר/.test(fact));
+ const roles=record.facts.filter(fact=>/מנהל מוצר|מנהל פרויקט|ניהול (?:ה)?פרויקט|ניהול המוצר\/הפרויקט|הובלת הפרויקט|ניהול כל שלבי המוצר/.test(fact));
  if(/מנהל מוצר|מנהל פרויקט/.test(record.title))roles.unshift(record.title);
  if(roles.length)return roles[0];
  const relatedWork={
