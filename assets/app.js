@@ -603,3 +603,25 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(add,0),{once:true});
   else setTimeout(add,0);
 })();
+
+
+/* Shared footer contact link on Hebrew and English pages. */
+(function(){
+  function updateFooter(){
+    const footer=document.querySelector('footer');
+    const contact=footer&&footer.querySelector('div');
+    if(!contact||contact.querySelector('.footerLinkedIn'))return;
+    const link=document.createElement('a');
+    link.className='footerLinkedIn';
+    link.href='https://il.linkedin.com/in/%D7%A8%D7%95%D7%A0%D7%9F-%D7%A4%D7%9C%D7%93-a27a771a';
+    link.target='_blank';
+    link.rel='noopener noreferrer';
+    link.textContent='LinkedIn';
+    contact.appendChild(link);
+    const style=document.createElement('style');
+    style.textContent='footer:has(.footerLinkedIn){min-height:116px}footer .footerLinkedIn{display:block;align-self:flex-start;margin-top:6px;color:#9cafc1;font-size:13px;line-height:1.7;direction:ltr}footer .footerLinkedIn:hover,footer .footerLinkedIn:focus-visible{text-decoration:underline}';
+    document.head.appendChild(style);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateFooter,{once:true});
+  else updateFooter();
+})();
