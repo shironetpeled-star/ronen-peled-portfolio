@@ -161,11 +161,30 @@ const skillsPageEvidenceAliasOverrides={
 "Audience Engagement":["מעורבות","קשר עם לקוחות"],
 "Customer Communication":["תקשורת עם לקוחות","עבודה ישירה מול לקוחות"]
 };
+const skillsPageLifecycleStages=new Set([
+ 'Product Lifecycle','Discovery','Strategy','Roadmap','Prioritization','Requirements',
+ 'MVP/MLP','Validation','Adoption','GTM','RICE','SWOT','User Acceptance Testing (UAT)',
+ 'Business & Functional Analysis','Architecture','Data Structures','Reporting',
+ 'System Constraints','End-to-End Thinking','Planning','Scope','WBS','Risk',
+ 'Dependencies','Stakeholders','Implementation','Rollout','Delivery',
+ 'QA','Testing','A/B Testing','Prototype Management','PRD','Ownership'
+]);
+function skillsPageLifecycleFacts(record){
+ return record.facts.filter(fact=>
+  /\b(?:end[\s\u2010-\u2015-]*to[\s\u2010-\u2015-]*end|start[\s\u2010-\u2015-]*to[\s\u2010-\u2015-]*end|hands[\s\u2010-\u2015-]*on)\b|מקצה לקצה|כל שלבי המוצר/i.test(fact)
+ )
+}
 function skillsPageMatchEvidence(records,capability){
  const terms=[...(skillsPageEvidenceAliases[capability]||[capability]),...(skillsPageEvidenceAliasOverrides[capability]||[])].map(term=>term.toLowerCase());
  return records.map(record=>{
   const facts=record.facts.filter(fact=>terms.some(term=>fact.toLowerCase().includes(term)));
-  return facts.length?{...record,excerpt:facts.slice(0,3).join(' ')}:null
+  const lifecycleFacts=skillsPageLifecycleStages.has(capability)?skillsPageLifecycleFacts(record):[];
+  if(!facts.length&&!lifecycleFacts.length)return null;
+  const excerpts=facts.slice(0,3);
+  if(lifecycleFacts.length&&!facts.some(fact=>fact.toLowerCase().includes(capability.toLowerCase()))){
+   excerpts.push('שיוך שלב '+capability+' לפי האחריות המקיפה המתוארת: '+lifecycleFacts[0]);
+  }
+  return {...record,excerpt:excerpts.join(' ')}
  }).filter(Boolean)
 }
 function skillsPageRenderEvidence(target,records,emptyText){
