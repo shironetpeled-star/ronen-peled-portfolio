@@ -614,6 +614,21 @@
     const name=contact.querySelector('b');
     if(name&&document.documentElement.lang==='he')name.textContent='רונן פלד';
     const isHebrew=document.documentElement.lang==='he';
+    const homeLink=footer.querySelector(':scope > a');
+    if(homeLink&&!footer.querySelector('.footerPageLinks')){
+      const navigation=document.createElement('nav');
+      navigation.className='footerPageLinks';
+      navigation.setAttribute('aria-label',isHebrew?'ניווט תחתון':'Footer navigation');
+      const topLink=document.createElement('a');
+      topLink.href='#';
+      topLink.textContent=isHebrew?'חזרה לתחילת העמוד':'Back to top';
+      topLink.addEventListener('click',function(event){
+        event.preventDefault();
+        window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+      });
+      homeLink.replaceWith(navigation);
+      navigation.append(topLink,homeLink);
+    }
     const details=contact.querySelector('span');
     if(details&&!details.querySelector('a')){
       const phone=document.createElement('a');
@@ -637,7 +652,7 @@
     link.textContent='LinkedIn: '+decodeURI(link.href);
     contact.appendChild(link);
     const style=document.createElement('style');
-    style.textContent='footer:has(.footerLinkedIn){min-height:116px}footer .footerLinkedIn{display:block;align-self:flex-start;margin-top:6px;color:#9cafc1;font-size:13px;line-height:1.7;direction:ltr;max-width:100%;overflow-wrap:anywhere;text-decoration:underline}footer:has(.footerLinkedIn)>div{min-width:0;max-width:100%}footer:has(.footerLinkedIn)>div>span{overflow-wrap:anywhere}footer:has(.footerLinkedIn)>div>span a{display:inline-block;max-width:100%}footer .footerLinkedIn:hover,footer .footerLinkedIn:focus-visible{text-decoration:underline}';
+    style.textContent='footer:has(.footerLinkedIn){min-height:116px}footer .footerLinkedIn{display:block;align-self:flex-start;margin-top:6px;color:#9cafc1;font-size:13px;line-height:1.7;direction:ltr;max-width:100%;overflow-wrap:anywhere;text-decoration:underline}footer:has(.footerLinkedIn)>div{min-width:0;max-width:100%}footer:has(.footerLinkedIn)>div>span{overflow-wrap:anywhere}footer:has(.footerLinkedIn)>div>span a{display:inline-block;max-width:100%}footer .footerPageLinks{display:flex;flex-direction:column;align-items:center;justify-content:center;align-self:center;gap:4px;text-align:center}footer .footerPageLinks a{display:block}footer .footerLinkedIn:hover,footer .footerLinkedIn:focus-visible{text-decoration:underline}';
     document.head.appendChild(style);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateFooter,{once:true});
