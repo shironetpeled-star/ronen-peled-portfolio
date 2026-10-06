@@ -133,4 +133,14 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 setTimeout(sync,150);setTimeout(sync,700);
 let scheduled=false;new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;localizeGeneratedControls();const h=document.querySelector('header.top');if(!h)return;const expected=enNav.map(x=>x[0]);const actual=[...h.querySelectorAll('nav>a')].map(a=>a.getAttribute('href'));if(actual.length!==expected.length||actual.some((v,i)=>i<expected.length-1&&v!==expected[i])){normalizeHeader();const he=h.querySelector('nav a[href="index.html"]');if(he)he.href=englishPageMap[page()]||(page()==='thanks-en.html'?'thanks.html':'index.html');}})}).observe(document.documentElement,{childList:true,subtree:true});
 })();
-
+(()=>{
+ if(document.documentElement.lang!=='en')return;
+ function apply(){
+  if(document.getElementById('englishNavExactHebrewLayout'))return;
+  const style=document.createElement('style');
+  style.id='englishNavExactHebrewLayout';
+  style.textContent='html[lang="en"] body header.top .brandPhone{display:block!important;width:100%!important;text-align:left!important;align-self:flex-start!important;margin-left:0!important;margin-right:auto!important}';
+  document.head.appendChild(style);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();
+})();
