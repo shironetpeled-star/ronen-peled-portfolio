@@ -179,13 +179,32 @@ function skillsPageLifecycleFacts(record){
   /\b(?:end[\s\u2010-\u2015-]*to[\s\u2010-\u2015-]*end|start[\s\u2010-\u2015-]*to[\s\u2010-\u2015-]*end|hands[\s\u2010-\u2015-]*on)\b|מקצה לקצה|כל שלבי המוצר/i.test(fact)
  )
 }
+const skillsPageManagementCapabilities=new Set(['Leadership Without Authority','Critical Incidents','Creativity']);
+function skillsPageManagementEvidence(record){
+ const roles=record.facts.filter(fact=>/מנהל מוצר|מנהל פרויקט|ניהול פרויקט|ניהול המוצר\/הפרויקט|הובלת הפרויקט|ניהול כל שלבי המוצר/.test(fact));
+ if(/מנהל מוצר|מנהל פרויקט/.test(record.title))roles.unshift(record.title);
+ if(roles.length)return roles[0];
+ const relatedWork={
+  'projects.html#payroll-validation':'experience.html#smarti',
+  'projects.html#html-reporting':'experience.html#smarti',
+  'experience.html#secuitech-services':'projects.html#additional-services-portfolio'
+ };
+ const relatedUrl=relatedWork[record.url];
+ if(!relatedUrl)return '';
+ const related=[...skillsPageEvidenceCorpus.work,...skillsPageEvidenceCorpus.projects].find(item=>item.url===relatedUrl);
+ if(!related)return '';
+ const role=skillsPageManagementEvidence(related);
+ return role?'פרויקט או עבודה הקשורים לאחריות הניהולית ב־'+related.title+' — '+role:'';
+}
 function skillsPageMatchEvidence(records,capability){
  const terms=[...(skillsPageEvidenceAliases[capability]||[capability]),...(skillsPageEvidenceAliasOverrides[capability]||[])].map(term=>term.toLowerCase());
  return records.map(record=>{
   const facts=record.facts.filter(fact=>terms.some(term=>fact.toLowerCase().includes(term)));
   const lifecycleFacts=skillsPageLifecycleStages.has(capability)?skillsPageLifecycleFacts(record):[];
-  if(!facts.length&&!lifecycleFacts.length)return null;
+  const management=skillsPageManagementCapabilities.has(capability)?skillsPageManagementEvidence(record):'';
+  if(!facts.length&&!lifecycleFacts.length&&!management)return null;
   const excerpts=facts.slice(0,3);
+  if(management)excerpts.push('שיוך ליכולת '+capability+' לפי אחריות ניהול מוצר או פרויקט: '+management);
   if(capability==='Btrieve'&&!facts.some(fact=>/Btrieve/i.test(fact))){
    excerpts.unshift('שיוך ליכולת Btrieve לפי העבודה בסביבת MAGIC המתוארת כאן.');
   }
