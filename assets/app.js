@@ -616,10 +616,10 @@
     link.href='https://il.linkedin.com/in/%D7%A8%D7%95%D7%A0%D7%9F-%D7%A4%D7%9C%D7%93-a27a771a';
     link.target='_blank';
     link.rel='noopener noreferrer';
-    link.textContent='LinkedIn';
+    link.textContent=decodeURI(link.href);
     contact.appendChild(link);
     const style=document.createElement('style');
-    style.textContent='footer:has(.footerLinkedIn){min-height:116px}footer .footerLinkedIn{display:block;align-self:flex-start;margin-top:6px;color:#9cafc1;font-size:13px;line-height:1.7;direction:ltr}footer .footerLinkedIn:hover,footer .footerLinkedIn:focus-visible{text-decoration:underline}';
+    style.textContent='footer:has(.footerLinkedIn){min-height:116px}footer .footerLinkedIn{display:block;align-self:flex-start;margin-top:6px;color:#9cafc1;font-size:13px;line-height:1.7;direction:ltr;max-width:100%;overflow-wrap:anywhere;text-decoration:underline}footer:has(.footerLinkedIn)>div{min-width:0;max-width:100%}footer .footerLinkedIn:hover,footer .footerLinkedIn:focus-visible{text-decoration:underline}';
     document.head.appendChild(style);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateFooter,{once:true});
