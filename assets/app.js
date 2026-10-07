@@ -126,8 +126,8 @@
       const candidates=[...main.querySelectorAll('section,article')].filter(el=>(el.innerText||'').includes(needle));
       return candidates.sort((a,b)=>(a.innerText||'').length-(b.innerText||'').length)[0]||null;
     };
-    document.addEventListener('click',event=>{
-      const clicked=event.target.closest&&event.target.closest('#pageReadButton');if(!clicked)return;btn=clicked;
+    window.readPortfolioPage=clicked=>{
+      btn=clicked;
       if(!('speechSynthesis' in window)){alert('הדפדפן אינו תומך בהקראת טקסט.');return}
       if(btn.dataset.reading==='1'){stop();return}
       window.speechSynthesis.cancel();
@@ -152,7 +152,8 @@
       const u=new SpeechSynthesisUtterance((isRole?roleNames[page]+'. ':'')+text);
       u.lang='he-IL';u.rate=.95;u.onend=stop;u.onerror=stop;
       btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';window.speechSynthesis.speak(u);
-    });
+    };
+    btn.setAttribute('onclick','window.readPortfolioPage(this)');
     if(!document.getElementById('pageReadStyle')){
       const st=document.createElement('style');st.id='pageReadStyle';
       st.textContent='body.home-page #pageReadButton{position:fixed!important;top:124px!important;right:20px!important;bottom:auto!important;left:auto!important;z-index:99998!important;display:flex!important;width:fit-content!important;max-width:calc(100vw - 40px);margin:0!important}@media(min-width:1600px){body.home-page #pageReadButton{top:29px!important}}@media(min-width:601px) and (max-width:1599px){body.home-page .rdHeroCopy{padding-top:52px!important}}@media(max-width:600px){body.home-page #pageReadButton{top:auto!important;right:12px!important;bottom:12px!important;padding:8px 10px!important;font-size:12px!important}}';
