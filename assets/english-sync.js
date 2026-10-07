@@ -70,7 +70,7 @@ const navigationByPage={
 function addParityStyles(){
  if(document.getElementById('englishParityStyles'))return;
  const style=document.createElement('style');style.id='englishParityStyles';style.textContent=`
- html[lang="en"] .innerHero{text-align:left}@media(min-width:951px){html[lang="en"] body header.top nav>a[href="role-magic-en.html"]{font-size:clamp(8px,.7vw,10px)!important;padding-left:3px!important;padding-right:3px!important}} @media(min-width:951px){html[lang="en"] .top .navwrap{grid-template-columns:320px minmax(0,900px)!important}html[lang="en"] .top .brandBlock{min-width:320px!important}html[lang="en"] .top .brand small{font-size:12px!important}html[lang="en"] body .top nav>a{font-size:10px!important;overflow:visible!important}}
+ html[lang="en"] .innerHero{text-align:left}@media(min-width:951px){html[lang="en"] body header.top nav>a[href="role-magic-en.html"]{font-size:clamp(8px,.7vw,10px)!important;letter-spacing:0!important;padding-left:3px!important;padding-right:3px!important}} @media(min-width:951px){html[lang="en"] .top .navwrap{grid-template-columns:320px minmax(0,900px)!important}html[lang="en"] .top .brandBlock{min-width:320px!important}html[lang="en"] .top .brand small{font-size:12px!important}html[lang="en"] body .top nav>a{font-size:10px!important;overflow:visible!important}}
  html[lang="en"] footer{direction:ltr}
  html[lang="en"] .skillSlider{direction:ltr}
  html[lang="en"] .skillSlider h3{font-size:17px} html[lang="en"] .skillGrid>.skill{min-width:0;max-width:100%;overflow-wrap:anywhere} html[lang="en"] .titleWithIcon h3{min-width:0;white-space:normal} @media(max-width:620px){html[lang="en"] .skillGrid{grid-template-columns:minmax(0,1fr)!important}html[lang="en"] .titleWithIcon{flex-wrap:wrap}}
