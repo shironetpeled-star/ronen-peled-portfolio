@@ -629,7 +629,8 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     const contact=footer&&footer.querySelector('div');
     if(!contact)return;
     const copyright=footer.querySelector('.siteCopyright');
-    if(copyright&&!copyright.textContent.trim().startsWith('©'))copyright.prepend(document.createTextNode('© '));
+    if(copyright&&document.documentElement.lang==='he')copyright.textContent='© כל זכויות שמורות על בנית האתר ועיצובו לרונן פלד בלבד';
+    else if(copyright&&!copyright.textContent.trim().startsWith('©'))copyright.prepend(document.createTextNode('© '));
     const name=contact.querySelector('b');
     if(name&&document.documentElement.lang==='he')name.textContent='רונן פלד';
     const isHebrew=document.documentElement.lang==='he';
