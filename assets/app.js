@@ -396,7 +396,18 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   const build=()=>{
     const main=document.querySelector('main'),page=location.pathname.split('/').pop()||'index.html';if(!main)return[];
     const role={'product.html':'מנהל מוצר','project.html':'מנהל פרויקט','system.html':'מנתח מערכות','magic.html':"מתכנת מג'יק",'customer.html':'קאסטומר סקסס'};
-    if(page==='skills.html')return [{t:'יכולות מקצועיות',p:1100},...chunks(main)];
+    if(page==='skills.html'){
+      const out=[],seen=new Set();
+      main.querySelectorAll('.skillGrid .skill').forEach(card=>{
+        const heading=card.querySelector('h3');if(!heading)return;
+        const title=(heading.innerText||heading.textContent||'').replace(/^[^\p{L}\p{N}]+/u,'').trim();
+        if(!title||seen.has(title))return;seen.add(title);
+        if(out.length)out.push({pause:1800});
+        out.push({t:map(title),p:900});
+        const labels=[...new Set([...card.querySelectorAll('.skillAbility')].map(button=>button.textContent.trim()).filter(Boolean))];
+        labels.forEach(label=>split(map(label)).forEach(part=>out.push({t:part,p:420})));
+      });return out;
+    }
     if(role[page])return [{t:role[page],p:1100},...chunks(main)];
     if(page!=='index.html')return[];
     const blocks=[main.querySelector('.rdHeroCopy'),main.querySelector('.rdStats'),main.querySelector('.lifecycleSection'),small(main,'חמישה עולמות מקצועיים שמתחברים לתמונה אחת'),small(main,'הערך שאני מביא לארגון')].filter(Boolean);
@@ -415,14 +426,16 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   const fetchAudioPart=async(text,language)=>{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,language:language})});if(!response.ok)throw new Error('TTS unavailable');return response.blob()};
   const speakWithEleven=async(btn,list,context)=>{
     const requestId=++run;
-    const parts=packForAudio(list.filter(x=>x.t).map(x=>x.t),1100).slice(0,5);
+    const categoryAudio=location.pathname.split('/').pop()==='skills.html';
+    const groups=[];let group=[];list.forEach(item=>{if(item.pause){if(group.length)groups.push(group);group=[]}else if(item.t)group.push(item.t)});if(group.length)groups.push(group);
+    const parts=categoryAudio?groups.map(values=>values.join('. ')):packForAudio(list.filter(x=>x.t).map(x=>x.t),1100).slice(0,5);
     if(!parts.length)throw new Error('No text');
     btn.dataset.reading='1';btn.textContent='⏳ מכין הקראה…';
     const first=await fetchAudioPart(parts[0],'he');
     if(requestId!==run)return;
     if(!context)throw new Error('Web Audio unavailable');
     const playPart=async(index,blob)=>{if(requestId!==run)return;const next=index+1<parts.length?fetchAudioPart(parts[index+1],'he'):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==run)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ עצור הקראה';
-      source.onended=async()=>{if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{await playPart(index+1,await next)}catch{stop(btn)}};
+      source.onended=async()=>{if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{if(categoryAudio)await new Promise(resolve=>setTimeout(resolve,1800));if(requestId!==run)return;await playPart(index+1,await next)}catch{stop(btn)}};
       source.start(0)};
     await playPart(0,first);
   };
