@@ -103,7 +103,8 @@
     const isRole=Object.prototype.hasOwnProperty.call(roleNames,page);
     const isHome=page==='index.html';
     const isAdvantages=page==='advantages.html';
-    if((!isRole&&!isHome&&!isAdvantages)||document.getElementById('pageReadButton'))return;
+    const isSkills=page==='skills.html';
+    if((!isRole&&!isHome&&!isAdvantages&&!isSkills)||document.getElementById('pageReadButton'))return;
     const main=document.querySelector('main');if(!main)return;
     const hero=isHome?main.querySelector('.rdHero'):main.querySelector('.innerHero,.hero,.roleHero,section');
     if(!hero)return;
@@ -111,7 +112,7 @@
     if(getComputedStyle(anchor).position==='static')anchor.style.position='relative';
     const btn=document.createElement('button');
     btn.id='pageReadButton';btn.type='button';btn.textContent='🔊 הקרא את הדף';
-    btn.setAttribute('aria-label',isRole?'הקרא את דף '+roleNames[page]:(isAdvantages?'הקרא את דף היתרונות שלי':'הקרא את התוכן המרכזי של דף הבית'));
+    btn.setAttribute('aria-label',isRole?'הקרא את דף '+roleNames[page]:(isAdvantages?'הקרא את דף היתרונות שלי':(isSkills?'הקרא את דף היכולות':'הקרא את התוכן המרכזי של דף הבית')));
     btn.style.cssText='position:absolute;top:18px;right:18px;z-index:5;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 15px;border-radius:11px;background:#edf3ff;border:1px solid #195ed8;color:#195ed8;font:900 14px inherit;cursor:pointer;box-shadow:0 4px 12px rgba(13,34,54,.10)';
     anchor.appendChild(btn);
     const stop=()=>{if(window.speechSynthesis)window.speechSynthesis.cancel();btn.textContent='🔊 הקרא את הדף';btn.dataset.reading='0'};
@@ -130,8 +131,9 @@
       if(btn.dataset.reading==='1'){stop();return}
       window.speechSynthesis.cancel();
       let text='';
-      if(isRole||isAdvantages){
+      if(isRole||isAdvantages||isSkills){
         const clone=main.cloneNode(true);
+        if(isSkills)clone.querySelectorAll('.skillAbility').forEach(button=>button.replaceWith(document.createTextNode(button.textContent+' ')));
         clone.querySelectorAll('button,script,style,nav,footer,.nextStep,.sharedBottomNavigation,#sharedBottomNavigation,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(el=>el.remove());
         text=(clone.innerText||clone.textContent||'').replace(/\s+/g,' ').trim();
       }else{
