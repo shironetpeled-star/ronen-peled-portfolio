@@ -384,6 +384,16 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     return out;
   };
   let run=0;
+  let topicList=[],topicStarts=[],topicIndex=0;
+  const rememberTopics=list=>{topicList=list;topicStarts=list.map((item,i)=>item.t&&item.p>=900?i:-1).filter(i=>i>=0);if(!topicStarts.length||topicStarts[0]!==0)topicStarts.unshift(0);topicIndex=0;};
+  window.addEventListener('portfolioReadSkip',event=>{
+    if(document.documentElement.lang!=='he')return;
+    const btn=document.getElementById('pageReadButton');if(!btn)return;
+    if(!topicList.length)rememberTopics(build());
+    topicIndex=Math.max(0,Math.min(topicStarts.length-1,topicIndex+event.detail));
+    const list=topicList.slice(topicStarts[topicIndex]);stop(btn);
+    const context=primeAudio();speakWithEleven(btn,list,context).catch(()=>{if(btn.dataset.reading==='1')speak(btn,list)});
+  });
   const chunks=root=>{
     const c=root.cloneNode(true);c.querySelectorAll('.skillAbility').forEach(button=>{const text=document.createElement('span');text.className='readCapability';text.textContent=button.textContent;button.replaceWith(text)});c.querySelectorAll('button,script,style,nav,footer,.rdActions,.rdTags,.homeExperienceBox,.rdValueAdvantages,.rdCTA>a,.rdRoles b,.skillsHeaderButton,.allAdvantagesLink,.enAllAdvantages,.sbnContact,.esbContact,.orgLink,.projectLinksRow,.projectLinks,.enQuickRow,.courseHighlights>summary,.workDetails>summary,.moreJobs>summary,a.btn,a.button,a[role="button"],input,select,textarea,#sharedBottomNavigation,.sharedBottomNavigation,#englishSharedBottom,#centralMilitaryQuickNav,.milBottom,.professionBottomNav,.professionBottomNavRow,.enRoleNavigation,#roleProfessionNavigation,.sbnTitle,.sbnRow,.esbTitle,.esbRow,.milQuickTitle,.milGroups,.cqnGroups,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(x=>x.remove());
     const a=[],seen=new Set();
@@ -445,7 +455,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     e.preventDefault();e.stopImmediatePropagation();
     if(!('speechSynthesis' in window))return alert('הדפדפן אינו תומך בהקראת טקסט.');
     if(btn.dataset.reading==='1'){stop(btn);return}
-    stopAudio();speechSynthesis.cancel();const list=build();if(list.length){const context=primeAudio();speakWithEleven(btn,list,context).catch(()=>{if(btn.dataset.reading==='1'){stopAudio();btn.textContent='⏹ עצור הקראה';setTimeout(()=>speak(btn,list),180)}})};
+    stopAudio();speechSynthesis.cancel();const list=build();rememberTopics(list);if(list.length){const context=primeAudio();speakWithEleven(btn,list,context).catch(()=>{if(btn.dataset.reading==='1'){stopAudio();btn.textContent='⏹ עצור הקראה';setTimeout(()=>speak(btn,list),180)}})};
   },true);
 })();
 
@@ -513,6 +523,8 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   };
 
   let runId=0;
+  let englishTopics=[],englishStarts=[],englishTopicIndex=0;
+  window.addEventListener('portfolioReadSkip',event=>{if(document.documentElement.lang!=='en')return;const btn=document.getElementById('englishPageReadButton');if(!btn)return;if(!englishTopics.length){englishTopics=isHome?homeChunks(document.querySelector('main')):extract(document.querySelector('main'));englishStarts=englishTopics.map((item,i)=>item.text&&item.pause>=1000?i:-1).filter(i=>i>=0);if(!englishStarts.length||englishStarts[0]!==0)englishStarts.unshift(0);}englishTopicIndex=Math.max(0,Math.min(englishStarts.length-1,englishTopicIndex+event.detail));const items=englishTopics.slice(englishStarts[englishTopicIndex]);stop(btn);const context=primeEnglishAudio();speakEnglishWithEleven(items,btn,context).catch(()=>{if(btn.dataset.reading==='1')speakQueue(items,btn)});});
   const stopEnglishAudio=()=>{const source=window.__ronenPageSource;if(source){try{source.onended=null;source.stop()}catch{}window.__ronenPageSource=null}const audio=window.__ronenPageAudio;if(audio){audio.pause();if(audio.dataset&&audio.dataset.url)URL.revokeObjectURL(audio.dataset.url);window.__ronenPageAudio=null}};
   const primeEnglishAudio=()=>{const AudioContext=window.AudioContext||window.webkitAudioContext;if(!AudioContext)return null;const context=window.__ronenAudioContext||new AudioContext();window.__ronenAudioContext=context;context.resume();return context};
   const stop=btn=>{
@@ -624,6 +636,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       if(!('speechSynthesis' in window)){alert('Your browser does not support text-to-speech.');return;}
       if(btn.dataset.reading==='1'){stop(btn);return;}
       const items=isHome?homeChunks(main):extract(document.querySelector('main')||main);
+      englishTopics=items;englishStarts=items.map((item,i)=>item.text&&item.pause>=1000?i:-1).filter(i=>i>=0);if(!englishStarts.length||englishStarts[0]!==0)englishStarts.unshift(0);englishTopicIndex=0;
       if(items.length){stopEnglishAudio();speechSynthesis.cancel();const context=primeEnglishAudio();speakEnglishWithEleven(items,btn,context).catch(()=>{if(btn.dataset.reading==='1'){stopEnglishAudio();btn.textContent='⏹ Stop reading';setTimeout(()=>speakQueue(items,btn),180)}});}
     });
     anchor.appendChild(btn);
@@ -733,3 +746,5 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateFooter,{once:true});
   else updateFooter();
 })();
+
+(()=>{function add(){const read=document.querySelector('#pageReadButton,#englishPageReadButton');if(!read||document.getElementById('pageReadTopicControls'))return;const en=document.documentElement.lang==='en',row=document.createElement('div');row.id='pageReadTopicControls';row.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin:12px 0';[[-1,en?'◀ Previous topic':'◀ הנושא הקודם'],[1,en?'Next topic ▶':'הנושא הבא ▶']].forEach(([step,label])=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.style.cssText='padding:9px 12px;min-height:42px;border-radius:11px;border:1px solid #195ed8;background:#edf3ff;color:#195ed8;font-weight:900;cursor:pointer';b.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('portfolioReadSkip',{detail:step})));row.appendChild(b)});read.parentElement.appendChild(row)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(add,900));else setTimeout(add,900);})();
