@@ -64,7 +64,7 @@ const navigationByPage={
  'role-customer-en.html':[['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['service-page-en.html','Military Service'],['advantages-en.html','My Advantages'],['skills-en.html','Skills']],
  'service-page-en.html':[['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['role-customer-en.html','Education'],['skills-en.html','Skills'],['advantages-en.html','My Advantages']],
  'skills-en.html':[['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['role-customer-en.html','Education'],['service-page-en.html','Military Service'],['skills-en.html','Skills'],['advantages-en.html','My Advantages']],
- 'advantages-en.html':[['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['advantages-en.html','My Advantages'],['role-customer-en.html','Education'],['service-page-en.html','Military Service'],['skills-en.html','Skills']],
+ 'advantages-en.html':[['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['role-customer-en.html','Education'],['service-page-en.html','Military Service'],['skills-en.html','Skills']],
  'contact-en.html':[['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['advantages-en.html','My Advantages'],['role-customer-en.html','Education'],['service-page-en.html','Military Service'],['skills-en.html','Skills']]
 };
 function addParityStyles(){
