@@ -110,7 +110,7 @@
     if(!hero)return;
     const anchor=isHome?(hero.querySelector('.rdHeroCopy')||hero):(hero.querySelector('.page')||hero);
     if(getComputedStyle(anchor).position==='static')anchor.style.position='relative';
-    const btn=document.createElement('button');
+    let btn=document.createElement('button');
     btn.id='pageReadButton';btn.type='button';btn.textContent='🔊 הקרא את הדף';
     btn.setAttribute('aria-label',isRole?'הקרא את דף '+roleNames[page]:(isAdvantages?'הקרא את דף היתרונות שלי':(isSkills?'הקרא את דף היכולות':'הקרא את התוכן המרכזי של דף הבית')));
     btn.style.cssText='position:absolute;top:18px;right:18px;z-index:5;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 15px;border-radius:11px;background:#edf3ff;border:1px solid #195ed8;color:#195ed8;font:900 14px inherit;cursor:pointer;box-shadow:0 4px 12px rgba(13,34,54,.10)';
@@ -126,7 +126,8 @@
       const candidates=[...main.querySelectorAll('section,article')].filter(el=>(el.innerText||'').includes(needle));
       return candidates.sort((a,b)=>(a.innerText||'').length-(b.innerText||'').length)[0]||null;
     };
-    btn.addEventListener('click',()=>{
+    document.addEventListener('click',event=>{
+      const clicked=event.target.closest&&event.target.closest('#pageReadButton');if(!clicked)return;btn=clicked;
       if(!('speechSynthesis' in window)){alert('הדפדפן אינו תומך בהקראת טקסט.');return}
       if(btn.dataset.reading==='1'){stop();return}
       window.speechSynthesis.cancel();
