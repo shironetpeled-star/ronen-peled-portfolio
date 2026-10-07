@@ -133,7 +133,7 @@
       window.speechSynthesis.cancel();
       let text='';
       if(isRole||isAdvantages||isSkills){
-        const clone=main.cloneNode(true);
+        const clone=(document.querySelector('main')||main).cloneNode(true);
         if(isSkills)clone.querySelectorAll('.skillAbility').forEach(button=>button.replaceWith(document.createTextNode(button.textContent+' ')));
         clone.querySelectorAll('button,script,style,nav,footer,.nextStep,.sharedBottomNavigation,#sharedBottomNavigation,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(el=>el.remove());
         text=(clone.innerText||clone.textContent||'').replace(/\s+/g,' ').trim();
