@@ -747,4 +747,20 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   else updateFooter();
 })();
 
-(()=>{function add(){const read=document.querySelector('#pageReadButton,#englishPageReadButton');if(!read||document.getElementById('pageReadTopicControls'))return;const en=document.documentElement.lang==='en',row=document.createElement('div');row.id='pageReadTopicControls';row.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin:12px 0';[[-1,en?'◀ Previous topic':'◀ הנושא הקודם'],[1,en?'Next topic ▶':'הנושא הבא ▶']].forEach(([step,label])=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.style.cssText='padding:9px 12px;min-height:42px;border-radius:11px;border:1px solid #195ed8;background:#edf3ff;color:#195ed8;font-weight:900;cursor:pointer';b.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('portfolioReadSkip',{detail:step})));row.appendChild(b)});const parent=read.parentElement;read.replaceWith(row);row.insertBefore(read,row.lastElementChild);read.style.setProperty('position','static','important');read.style.setProperty('margin','0','important');read.style.setProperty('max-width','none','important');row.style.cssText='display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:nowrap;margin:12px 0;direction:ltr;max-width:100%';row.querySelectorAll('button').forEach(button=>{button.style.setProperty('position','static','important');button.style.setProperty('font-size','clamp(10px,1.2vw,14px)','important');button.style.setProperty('padding','9px 10px','important');button.style.setProperty('min-width','0','important');button.style.setProperty('white-space','nowrap','important')});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(add,900));else setTimeout(add,900);setTimeout(add,2000);setTimeout(add,4000);})();
+(()=>{
+ let savedRead=null,row=null,queued=false;
+ function maintain(){
+  let read=document.querySelector('#pageReadButton,#englishPageReadButton')||savedRead;
+  if(!read)return;savedRead=read;const en=document.documentElement.lang==='en';
+  if(!row){row=document.createElement('div');row.id='pageReadTopicControls';row.setAttribute('aria-label',en?'Page narration controls':'כפתורי הקראת הדף');
+   [[-1,en?'◀ Previous topic':'◀ הנושא הקודם'],[1,en?'Next topic ▶':'הנושא הבא ▶']].forEach(([step,label])=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('portfolioReadSkip',{detail:step})));row.appendChild(b)});
+  }
+  if(!row.isConnected)document.body.appendChild(row);
+  if(read.parentElement!==row)row.insertBefore(read,row.lastElementChild);
+  const style='position:static!important;display:inline-flex!important;visibility:visible!important;opacity:1!important;margin:0!important;inset:auto!important;transform:none!important;align-items:center!important;justify-content:center!important;gap:5px!important;min-height:42px!important;padding:9px 10px!important;border-radius:11px!important;border:1px solid #195ed8!important;background:#edf3ff!important;color:#195ed8!important;font-size:13px!important;font-weight:900!important;min-width:0!important;max-width:none!important;white-space:nowrap!important;cursor:pointer!important';
+  row.querySelectorAll('button').forEach(b=>{if(b.style.cssText!==style)b.style.cssText=style;b.hidden=false});
+ }
+ const css=document.createElement('style');css.textContent='#pageReadTopicControls{position:fixed!important;top:126px!important;right:20px!important;left:auto!important;z-index:99999!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;width:max-content!important;max-width:calc(100vw - 24px)!important;padding:6px!important;margin:0!important;border-radius:14px;background:#fff;box-shadow:0 4px 16px rgba(13,34,54,.18)}@media(max-width:950px){#pageReadTopicControls{top:90px!important;right:12px!important}#pageReadTopicControls button{font-size:11px!important;padding:8px 7px!important}}';document.head.appendChild(css);
+ const observer=new MutationObserver(()=>{if(queued)return;queued=true;setTimeout(()=>{queued=false;maintain()},100)});observer.observe(document.body,{childList:true,subtree:true});
+ maintain();setTimeout(maintain,1200);setTimeout(maintain,5000);
+})();
