@@ -59,7 +59,7 @@
         html[lang="he"] .top nav>a:nth-child(15){grid-row:2!important;grid-column:46/span 9!important;justify-self:end!important}
         html[lang="he"] .top nav>a[href="index.html"]{grid-row:1!important;grid-column:1/span 6!important;justify-self:start!important}
         html[lang="he"] body:not(.home-redesign) .top nav>a[href="experience.html"]{grid-row:1!important;grid-column:7/span 6!important}
-        html[lang="he"] .top nav>a[href="projects.html"]{grid-row:1!important;grid-column:13/span 6!important;font-size:clamp(8px,.8vw,11px)!important;padding-left:3px!important;padding-right:3px!important;white-space:nowrap!important}
+        html[lang="he"] body .top nav>a[href="projects.html"]{grid-row:1!important;grid-column:13/span 6!important;font-size:clamp(8px,.8vw,11px)!important;padding-left:3px!important;padding-right:3px!important;white-space:nowrap!important}
         html[lang="he"] .top nav>a[href="work-environments.html"]{grid-row:1!important;grid-column:19/span 6!important}
         html[lang="he"] .top nav>a[href="education.html"]{grid-row:1!important;grid-column:25/span 6!important}
         html[lang="he"] .top nav>a[href="military.html"]{grid-row:1!important;grid-column:31/span 6!important}
