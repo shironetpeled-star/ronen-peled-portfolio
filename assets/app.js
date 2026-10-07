@@ -384,9 +384,9 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   };
   let run=0;
   const chunks=root=>{
-    const c=root.cloneNode(true);c.querySelectorAll('button,script,style,nav,footer,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(x=>x.remove());
+    const c=root.cloneNode(true);c.querySelectorAll('.skillAbility').forEach(button=>{const text=document.createElement('span');text.className='readCapability';text.textContent=button.textContent;button.replaceWith(text)});c.querySelectorAll('button,script,style,nav,footer,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(x=>x.remove());
     const a=[],seen=new Set();
-    c.querySelectorAll('h1,h2,h3,h4,.highlight>span:first-child,.roleExperience>span:first-child,.skillsHeaderTitle,p,li,.rdTags a,.rdActions a,article strong,article span').forEach(el=>{
+    c.querySelectorAll('h1,h2,h3,h4,.highlight>span:first-child,.roleExperience>span:first-child,.skillsHeaderTitle,p,li,.readCapability,.rdTags a,.rdActions a,article strong,article span').forEach(el=>{
       const t=(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();if(!t||seen.has(t))return;seen.add(t);
       split(map(t)).forEach((part,index)=>a.push({t:part,p:/^H[1-4]$/.test(el.tagName)?1000:(index?500:420)}));
     });
@@ -396,6 +396,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   const build=()=>{
     const main=document.querySelector('main'),page=location.pathname.split('/').pop()||'index.html';if(!main)return[];
     const role={'product.html':'מנהל מוצר','project.html':'מנהל פרויקט','system.html':'מנתח מערכות','magic.html':"מתכנת מג'יק",'customer.html':'קאסטומר סקסס'};
+    if(page==='skills.html')return [{t:'יכולות מקצועיות',p:1100},...chunks(main)];
     if(role[page])return [{t:role[page],p:1100},...chunks(main)];
     if(page!=='index.html')return[];
     const blocks=[main.querySelector('.rdHeroCopy'),main.querySelector('.rdStats'),main.querySelector('.lifecycleSection'),small(main,'חמישה עולמות מקצועיים שמתחברים לתמונה אחת'),small(main,'הערך שאני מביא לארגון')].filter(Boolean);
