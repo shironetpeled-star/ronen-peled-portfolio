@@ -1,6 +1,6 @@
 (function(){
   const current=()=>location.pathname.split('/').pop()||'index.html';
-  const unifiedHeNav=[['index.html','בית'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html',"מתכנת מג'יק"],['customer.html','Customer Success'],['experience.html','ניסיון'],['projects.html','עבודות'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['military.html','שירות צבאי'],['skills.html','יכולות'],['advantages.html','היתרונות שלי'],['contact.html','צור איתי קשר'],['index-en.html','EN']];
+  const unifiedHeNav=[['index.html','בית'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html',"מתכנת מג'יק"],['customer.html','Customer Success'],['experience.html','ניסיון'],['projects.html','עבודות ופרויקטים'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['military.html','שירות צבאי'],['skills.html','יכולות'],['advantages.html','היתרונות שלי'],['contact.html','צור איתי קשר'],['index-en.html','EN']];
   function normalizeHebrewTopbar(){
     if(document.documentElement.lang!=='he')return;
     if(current()==='advantages.html')document.body.classList.add('advantages-page');
@@ -59,7 +59,7 @@
         html[lang="he"] .top nav>a:nth-child(15){grid-row:2!important;grid-column:46/span 9!important;justify-self:end!important}
         html[lang="he"] .top nav>a[href="index.html"]{grid-row:1!important;grid-column:1/span 6!important;justify-self:start!important}
         html[lang="he"] body:not(.home-redesign) .top nav>a[href="experience.html"]{grid-row:1!important;grid-column:7/span 6!important}
-        html[lang="he"] .top nav>a[href="projects.html"]{grid-row:1!important;grid-column:13/span 6!important}
+        html[lang="he"] .top nav>a[href="projects.html"]{grid-row:1!important;grid-column:13/span 6!important;font-size:clamp(8px,.8vw,11px)!important;padding-left:3px!important;padding-right:3px!important;white-space:nowrap!important}
         html[lang="he"] .top nav>a[href="work-environments.html"]{grid-row:1!important;grid-column:19/span 6!important}
         html[lang="he"] .top nav>a[href="education.html"]{grid-row:1!important;grid-column:25/span 6!important}
         html[lang="he"] .top nav>a[href="military.html"]{grid-row:1!important;grid-column:31/span 6!important}

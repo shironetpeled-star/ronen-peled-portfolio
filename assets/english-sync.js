@@ -1,7 +1,7 @@
 (()=>{
 const page=()=>location.pathname.split('/').pop()||'index-en.html';
 const enNav=[
- ['index-en.html','Home'],['skills-en.html','Skills'],['product-en.html','Product Manager'],['project-en.html','Project Manager'],['system-en.html','System Analyst'],['en-05.html','MAGIC Developer'],['en-06.html','Customer Success'],['history-en.html','Experience'],['role-magic-en.html','Projects'],['work-environments-en.html','System Types'],['role-customer-en.html','Education'],['service-page-en.html','Military Service'],['advantages-en.html','My Advantages'],['contact-en.html','Contact Me'],['index.html','HE']
+ ['index-en.html','Home'],['skills-en.html','Skills'],['product-en.html','Product Manager'],['project-en.html','Project Manager'],['system-en.html','System Analyst'],['en-05.html','MAGIC Developer'],['en-06.html','Customer Success'],['history-en.html','Experience'],['role-magic-en.html','Work & Projects'],['work-environments-en.html','System Types'],['role-customer-en.html','Education'],['service-page-en.html','Military Service'],['advantages-en.html','My Advantages'],['contact-en.html','Contact Me'],['index.html','HE']
 ];
 const rolePages=['product-en.html','project-en.html','system-en.html','en-05.html','en-06.html'];
 const roleQuick=[['history-en.html','Experience Details'],['role-magic-en.html','Project List'],['work-environments-en.html','System Types'],['role-customer-en.html','Education']];
