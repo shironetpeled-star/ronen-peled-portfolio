@@ -119,7 +119,7 @@
     const cleanText=el=>{
       if(!el)return '';
       const clone=el.cloneNode(true);
-      clone.querySelectorAll('button,script,style,nav,footer,#pageReadButton').forEach(x=>x.remove());
+      clone.querySelectorAll('button,script,style,nav,footer,#sharedBottomNavigation,.sharedBottomNavigation,#englishSharedBottom,#centralMilitaryQuickNav,.milBottom,.professionBottomNav,.professionBottomNavRow,.enRoleNavigation,#roleProfessionNavigation,.sbnTitle,.sbnRow,.esbTitle,.esbRow,.milQuickTitle,.milGroups,.cqnGroups,#pageReadButton').forEach(x=>x.remove());
       return (clone.innerText||clone.textContent||'').replace(/\s+/g,' ').trim();
     };
     const findSmallestSection=needle=>{
@@ -135,7 +135,7 @@
       if(isRole||isAdvantages||isSkills){
         const clone=(document.querySelector('main')||main).cloneNode(true);
         if(isSkills)clone.querySelectorAll('.skillAbility').forEach(button=>button.replaceWith(document.createTextNode(button.textContent+' ')));
-        clone.querySelectorAll('button,script,style,nav,footer,.nextStep,.sharedBottomNavigation,#sharedBottomNavigation,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(el=>el.remove());
+        clone.querySelectorAll('button,script,style,nav,footer,#sharedBottomNavigation,.sharedBottomNavigation,#englishSharedBottom,#centralMilitaryQuickNav,.milBottom,.professionBottomNav,.professionBottomNavRow,.enRoleNavigation,#roleProfessionNavigation,.sbnTitle,.sbnRow,.esbTitle,.esbRow,.milQuickTitle,.milGroups,.cqnGroups,.nextStep,.sharedBottomNavigation,#sharedBottomNavigation,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(el=>el.remove());
         text=(clone.innerText||clone.textContent||'').replace(/\s+/g,' ').trim();
       }else{
         const blocks=[
@@ -384,7 +384,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   };
   let run=0;
   const chunks=root=>{
-    const c=root.cloneNode(true);c.querySelectorAll('.skillAbility').forEach(button=>{const text=document.createElement('span');text.className='readCapability';text.textContent=button.textContent;button.replaceWith(text)});c.querySelectorAll('button,script,style,nav,footer,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(x=>x.remove());
+    const c=root.cloneNode(true);c.querySelectorAll('.skillAbility').forEach(button=>{const text=document.createElement('span');text.className='readCapability';text.textContent=button.textContent;button.replaceWith(text)});c.querySelectorAll('button,script,style,nav,footer,#sharedBottomNavigation,.sharedBottomNavigation,#englishSharedBottom,#centralMilitaryQuickNav,.milBottom,.professionBottomNav,.professionBottomNavRow,.enRoleNavigation,#roleProfessionNavigation,.sbnTitle,.sbnRow,.esbTitle,.esbRow,.milQuickTitle,.milGroups,.cqnGroups,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(x=>x.remove());
     const a=[],seen=new Set();
     c.querySelectorAll('h1,h2,h3,h4,.highlight>span:first-child,.roleExperience>span:first-child,.skillsHeaderTitle,p,li,.readCapability,.rdTags a,.rdActions a,article strong,article span').forEach(el=>{
       const t=(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();if(!t||seen.has(t))return;seen.add(t);
@@ -523,7 +523,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
 
   const extract=root=>{
     const clone=root.cloneNode(true);
-    clone.querySelectorAll('button,script,style,nav,footer,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton,#englishPageReadButton').forEach(x=>x.remove());
+    clone.querySelectorAll('button,script,style,nav,footer,#sharedBottomNavigation,.sharedBottomNavigation,#englishSharedBottom,#centralMilitaryQuickNav,.milBottom,.professionBottomNav,.professionBottomNavRow,.enRoleNavigation,#roleProfessionNavigation,.sbnTitle,.sbnRow,.esbTitle,.esbRow,.milQuickTitle,.milGroups,.cqnGroups,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton,#englishPageReadButton').forEach(x=>x.remove());
     const out=[];
     const seen=new Set();
     clone.querySelectorAll('h1,h2,h3,h4,.highlight>span:first-child,.roleExperience>span:first-child,.skillsHeaderTitle,p,li,article strong,article span,.rdTags a,.rdActions a').forEach(el=>{
