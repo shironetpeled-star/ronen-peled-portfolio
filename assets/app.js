@@ -385,7 +385,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   };
   let run=0;
   let topicList=[],topicStarts=[],topicIndex=0;
-  const rememberTopics=list=>{topicList=list;topicStarts=list.map((item,i)=>item.t&&item.p>=900?i:-1).filter(i=>i>=0);if(!topicStarts.length||topicStarts[0]!==0)topicStarts.unshift(0);topicIndex=0;};
+  const rememberTopics=list=>{topicList=list;const seen=new Set();topicStarts=list.map((item,i)=>{const key=(item.t||'').replace(/[.\s]+$/g,'');if(!item.t||item.p<900||seen.has(key))return -1;seen.add(key);return i}).filter(i=>i>=0);if(!topicStarts.length||topicStarts[0]!==0)topicStarts.unshift(0);topicIndex=0;};
   window.addEventListener('portfolioReadSkip',event=>{
     if(document.documentElement.lang!=='he')return;
     const btn=document.getElementById('pageReadButton');if(!btn)return;
@@ -429,7 +429,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   const stop=btn=>{run++;stopAudio();speechSynthesis.cancel();if(btn){btn.dataset.reading='0';btn.textContent='🔊 הקרא את הדף'}};
   const speak=(btn,list)=>{
     const id=++run;btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';let i=0,spoken=0;
-    const next=()=>{if(id!==run)return;if(i>=list.length){stop(btn);return}const x=list[i++];if(x.pause){setTimeout(next,x.pause);return}
+    const next=()=>{if(id!==run)return;if(i>=list.length){stop(btn);return}const x=list[i++];const position=topicList.indexOf(x);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);if(x.pause){setTimeout(next,x.pause);return}
       const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+x.t);u.lang='he-IL';u.rate=.78;u.pitch=1;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>{if(id===run)setTimeout(next,x.p||420)};speechSynthesis.speak(u)};
     setTimeout(next,550);
   };
@@ -438,14 +438,14 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   const speakWithEleven=async(btn,list,context)=>{
     const requestId=++run;
     const categoryAudio=location.pathname.split('/').pop()==='skills.html';
-    const groups=[];let group=[];list.forEach(item=>{if(item.pause){if(group.length)groups.push(group);group=[]}else if(item.t)group.push(item.t)});if(group.length)groups.push(group);
-    const parts=categoryAudio?groups.map(values=>values.join('. ')):packForAudio(list.filter(x=>x.t).map(x=>x.t),1100).slice(0,5);
+    const groups=[];let group=[];list.forEach(item=>{if(item.pause||(item.t&&item.p>=900&&group.length)){if(group.length)groups.push(group);group=[]}if(item.t)group.push(item)});if(group.length)groups.push(group);
+    const parts=groups.map(values=>values.map(x=>x.t).join('. '));
     if(!parts.length)throw new Error('No text');
     btn.dataset.reading='1';btn.textContent='⏳ מכין הקראה…';
     const first=await fetchAudioPart(parts[0],'he');
     if(requestId!==run)return;
     if(!context)throw new Error('Web Audio unavailable');
-    const playPart=async(index,blob)=>{if(requestId!==run)return;const next=index+1<parts.length?fetchAudioPart(parts[index+1],'he'):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==run)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ עצור הקראה';
+    const playPart=async(index,blob)=>{if(requestId!==run)return;const position=topicList.indexOf(groups[index][0]);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchAudioPart(parts[index+1],'he'):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==run)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ עצור הקראה';
       source.onended=async()=>{if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{if(categoryAudio)await new Promise(resolve=>setTimeout(resolve,1800));if(requestId!==run)return;await playPart(index+1,await next)}catch{stop(btn)}};
       source.start(0)};
     await playPart(0,first);
@@ -586,7 +586,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
         btn.textContent='🔊 Read this page';
         return;
       }
-      const item=items[i++];
+      const item=items[i++];const position=englishTopics.indexOf(item);if(position>=0)englishTopicIndex=Math.max(0,englishStarts.filter(start=>start<=position).length-1);
       if(item.pause&&!item.text){setTimeout(next,item.pause);return;}
       if(!item.text){next();return;}
       const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+item.text);
@@ -605,13 +605,13 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   const fetchEnglishAudio=async text=>{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,language:'en'})});if(!response.ok)throw new Error('TTS unavailable');return response.blob()};
   const speakEnglishWithEleven=async(items,btn,context)=>{
     const requestId=++runId;
-    const parts=packEnglishAudio(items.filter(item=>item.text).map(item=>item.text),1100).slice(0,5);
+    const groups=[];let group=[];items.forEach(item=>{if((item.pause&&!item.text)||(item.text&&item.pause>=1000&&group.length)){if(group.length)groups.push(group);group=[]}if(item.text)group.push(item)});if(group.length)groups.push(group);const parts=groups.map(values=>values.map(x=>x.text).join('. '));
     if(!parts.length)throw new Error('No text');
     btn.dataset.reading='1';btn.textContent='⏳ Preparing audio…';
     const first=await fetchEnglishAudio(parts[0]);
     if(requestId!==runId)return;
     if(!context)throw new Error('Web Audio unavailable');
-    const playPart=async(index,blob)=>{if(requestId!==runId)return;const next=index+1<parts.length?fetchEnglishAudio(parts[index+1]):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==runId)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ Stop reading';
+    const playPart=async(index,blob)=>{if(requestId!==runId)return;const position=englishTopics.indexOf(groups[index][0]);if(position>=0)englishTopicIndex=Math.max(0,englishStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchEnglishAudio(parts[index+1]):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==runId)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ Stop reading';
       source.onended=async()=>{if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==runId)return;if(!next){stop(btn);return}btn.textContent='⏳ Preparing the next part…';try{await playPart(index+1,await next)}catch{stop(btn)}};
       source.start(0)};
     await playPart(0,first);
