@@ -1,3 +1,58 @@
+// Keep narration anchored to the reader's selected text or current view.
+window.__portfolioReadPosition=(()=>{
+  let clicked=null;
+  document.addEventListener('pointerup',event=>{
+    if(!event.target.closest('main')||event.target.closest('button,a,input,select,textarea,summary'))return;
+    const caret=document.caretPositionFromPoint?.(event.clientX,event.clientY);
+    const range=!caret&&document.caretRangeFromPoint?.(event.clientX,event.clientY);
+    const node=caret?.offsetNode||range?.startContainer;
+    const offset=caret?.offset??range?.startOffset;
+    if(node&&document.querySelector('main')?.contains(node))clicked={node,offset,scrollY:window.scrollY};
+  });
+  const mapSources=(root,clone)=>{
+    const originals=[root,...root.querySelectorAll('*')];
+    const copies=[clone,...clone.querySelectorAll('*')];
+    return new Map(copies.map((element,index)=>[element,originals[index]]));
+  };
+  const start=(items,key,normalize)=>{
+    const selection=window.getSelection();
+    const selected=selection?.rangeCount?selection.getRangeAt(0):null;
+    let point=selected&&!selection.isCollapsed&&document.querySelector('main')?.contains(selected.startContainer)?{node:selected.startContainer,offset:selected.startOffset}:null;
+    if(!point&&clicked&&Math.abs(clicked.scrollY-window.scrollY)<2)point=clicked;
+    if(point){
+      const element=point.node.nodeType===1?point.node:point.node.parentElement;
+      const index=items.findIndex(item=>item.source&&(item.source===element||item.source.contains(element)));
+      if(index>=0){
+        const source=items[index].source;
+        const range=document.createRange();range.selectNodeContents(source);
+        range.setEnd(point.node,point.offset);
+        const prefix=normalize(range.toString());
+        const full=normalize(source.innerText||source.textContent||'');
+        let searchFrom=0,chosen=index,cut=0;
+        for(let i=index;i<items.length&&items[i].source===source;i++){
+          const at=full.indexOf(items[i][key],searchFrom);
+          if(at<0)continue;
+          chosen=i;cut=Math.max(0,prefix.length-at);
+          searchFrom=at+items[i][key].length;
+          if(prefix.length<searchFrom)break;
+        }
+        const result=items.slice(chosen);
+        if(cut>0&&cut<result[0][key].length)result[0]={...result[0],[key]:result[0][key].slice(cut).trimStart(),original:result[0]};
+        return {items:result,index:chosen};
+      }
+    }
+    const top=[...document.querySelectorAll('.top,#pageReadTopicControls')].reduce((bottom,element)=>getComputedStyle(element).position==='fixed'?Math.max(bottom,element.getBoundingClientRect().bottom):bottom,0);
+    const index=items.findIndex(item=>{
+      if(!item.source||!item[key]||!item.source.checkVisibility())return false;
+      const rect=item.source.getBoundingClientRect();
+      return rect.bottom>top&&rect.top<innerHeight;
+    });
+    return {items:items.slice(Math.max(0,index)),index:Math.max(0,index)};
+  };
+  return {mapSources,start};
+})();
+
+
 (function(){
   const current=()=>location.pathname.split('/').pop()||'index.html';
   const unifiedHeNav=[['index.html','בית'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html',"מתכנת מג'יק"],['customer.html','Customer Success'],['experience.html','ניסיון'],['projects.html','עבודות ופרויקטים'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['military.html','שירות צבאי'],['skills.html','יכולות'],['advantages.html','היתרונות שלי'],['contact.html','צור איתי קשר'],['index-en.html','EN']];
@@ -395,11 +450,11 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     const context=primeAudio();speakWithEleven(btn,list,context).catch(()=>{if(btn.dataset.reading==='1')speak(btn,list)});
   });
   const chunks=root=>{
-    const c=root.cloneNode(true);c.querySelectorAll('.skillAbility').forEach(button=>{const text=document.createElement('span');text.className='readCapability';text.textContent=button.textContent;button.replaceWith(text)});c.querySelectorAll('button,script,style,nav,footer,.rdActions,.rdTags,.homeExperienceBox,.rdValueAdvantages,.rdCTA>a,.rdRoles b,.skillsHeaderButton,.allAdvantagesLink,.enAllAdvantages,.sbnContact,.esbContact,.orgLink,.projectLinksRow,.projectLinks,.enQuickRow,.courseHighlights>summary,.workDetails>summary,.moreJobs>summary,a.btn,a.button,a[role="button"],input,select,textarea,#sharedBottomNavigation,.sharedBottomNavigation,#englishSharedBottom,#centralMilitaryQuickNav,.milBottom,.professionBottomNav,.professionBottomNavRow,.enRoleNavigation,#roleProfessionNavigation,.sbnTitle,.sbnRow,.esbTitle,.esbRow,.milQuickTitle,.milGroups,.cqnGroups,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(x=>x.remove());
+    const c=root.cloneNode(true),sources=window.__portfolioReadPosition.mapSources(root,c);c.querySelectorAll('.skillAbility').forEach(button=>{const text=document.createElement('span');text.className='readCapability';text.textContent=button.textContent;sources.set(text,sources.get(button));button.replaceWith(text)});c.querySelectorAll('button,script,style,nav,footer,.rdActions,.rdTags,.homeExperienceBox,.rdValueAdvantages,.rdCTA>a,.rdRoles b,.skillsHeaderButton,.allAdvantagesLink,.enAllAdvantages,.sbnContact,.esbContact,.orgLink,.projectLinksRow,.projectLinks,.enQuickRow,.courseHighlights>summary,.workDetails>summary,.moreJobs>summary,a.btn,a.button,a[role="button"],input,select,textarea,#sharedBottomNavigation,.sharedBottomNavigation,#englishSharedBottom,#centralMilitaryQuickNav,.milBottom,.professionBottomNav,.professionBottomNavRow,.enRoleNavigation,#roleProfessionNavigation,.sbnTitle,.sbnRow,.esbTitle,.esbRow,.milQuickTitle,.milGroups,.cqnGroups,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton').forEach(x=>x.remove());
     const a=[],seen=new Set();
     c.querySelectorAll('h1,h2,h3,h4,.highlight>span:first-child,.roleExperience>span:first-child,.skillsHeaderTitle,p,li,.readCapability,.rdTags a,.rdActions a,article strong,article span').forEach(el=>{
       const t=(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();if(!t||seen.has(t))return;seen.add(t);
-      split(map(t)).forEach((part,index)=>a.push({t:part,p:/^H[1-4]$/.test(el.tagName)?1000:(index?500:420)}));
+      split(map(t)).forEach((part,index)=>a.push({t:part,p:/^H[1-4]$/.test(el.tagName)?1000:(index?500:420),source:sources.get(el)}));
     });
     return a;
   };
@@ -414,9 +469,9 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
         const title=(heading.innerText||heading.textContent||'').replace(/^[^\p{L}\p{N}]+/u,'').trim();
         if(!title||seen.has(title))return;seen.add(title);
         if(out.length)out.push({pause:1800});
-        out.push({t:map(title),p:900});
+        out.push({t:map(title),p:900,source:heading});
         const labels=[...new Set([...card.querySelectorAll('.skillAbility')].map(button=>button.textContent.trim()).filter(Boolean))];
-        labels.forEach(label=>split(map(label)).forEach(part=>out.push({t:part,p:420})));
+        labels.forEach(label=>split(map(label)).forEach(part=>out.push({t:part,p:420,source:[...card.querySelectorAll('.skillAbility')].find(button=>button.textContent.trim()===label)})));
       });return out;
     }
     if(role[page])return [{t:role[page],p:1100},...chunks(main)];
@@ -429,7 +484,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   const stop=btn=>{run++;stopAudio();speechSynthesis.cancel();if(btn){btn.dataset.reading='0';btn.textContent='🔊 הקרא את הדף'}};
   const speak=(btn,list)=>{
     const id=++run;btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';let i=0,spoken=0;
-    const next=()=>{if(id!==run)return;if(i>=list.length){stop(btn);return}const x=list[i++];const position=topicList.indexOf(x);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);if(x.pause){setTimeout(next,x.pause);return}
+    const next=()=>{if(id!==run)return;if(i>=list.length){stop(btn);return}const x=list[i++];const position=topicList.indexOf(x.original||x);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);if(x.pause){setTimeout(next,x.pause);return}
       const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+x.t);u.lang='he-IL';u.rate=.78;u.pitch=1;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>{if(id===run)setTimeout(next,x.p||420)};speechSynthesis.speak(u)};
     setTimeout(next,550);
   };
@@ -445,7 +500,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     const first=await fetchAudioPart(parts[0],'he');
     if(requestId!==run)return;
     if(!context)throw new Error('Web Audio unavailable');
-    const playPart=async(index,blob)=>{if(requestId!==run)return;const position=topicList.indexOf(groups[index][0]);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchAudioPart(parts[index+1],'he'):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==run)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ עצור הקראה';
+    const playPart=async(index,blob)=>{if(requestId!==run)return;const position=topicList.indexOf(groups[index][0].original||groups[index][0]);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchAudioPart(parts[index+1],'he'):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==run)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ עצור הקראה';
       source.onended=async()=>{if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{if(categoryAudio)await new Promise(resolve=>setTimeout(resolve,1800));if(requestId!==run)return;await playPart(index+1,await next)}catch{stop(btn)}};
       source.start(0)};
     await playPart(0,first);
@@ -455,7 +510,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     e.preventDefault();e.stopImmediatePropagation();
     if(!('speechSynthesis' in window))return alert('הדפדפן אינו תומך בהקראת טקסט.');
     if(btn.dataset.reading==='1'){stop(btn);return}
-    stopAudio();speechSynthesis.cancel();const list=build();rememberTopics(list);if(list.length){const context=primeAudio();speakWithEleven(btn,list,context).catch(()=>{if(btn.dataset.reading==='1'){stopAudio();btn.textContent='⏹ עצור הקראה';setTimeout(()=>speak(btn,list),180)}})};
+    stopAudio();speechSynthesis.cancel();const all=build();rememberTopics(all);const start=window.__portfolioReadPosition.start(all,'t',map);topicIndex=Math.max(0,topicStarts.filter(index=>index<=start.index).length-1);const list=start.items;if(list.length){const context=primeAudio();speakWithEleven(btn,list,context).catch(()=>{if(btn.dataset.reading==='1'){stopAudio();btn.textContent='⏹ עצור הקראה';setTimeout(()=>speak(btn,list),180)}})};
   },true);
 })();
 
@@ -535,7 +590,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   };
 
   const extract=root=>{
-    const clone=root.cloneNode(true);
+    const clone=root.cloneNode(true),sources=window.__portfolioReadPosition.mapSources(root,clone);
     clone.querySelectorAll('button,script,style,nav,footer,.rdActions,.rdTags,.homeExperienceBox,.rdValueAdvantages,.rdCTA>a,.rdRoles b,.skillsHeaderButton,.allAdvantagesLink,.enAllAdvantages,.sbnContact,.esbContact,.orgLink,.projectLinksRow,.projectLinks,.enQuickRow,.courseHighlights>summary,.workDetails>summary,.moreJobs>summary,a.btn,a.button,a[role="button"],input,select,textarea,#sharedBottomNavigation,.sharedBottomNavigation,#englishSharedBottom,#centralMilitaryQuickNav,.milBottom,.professionBottomNav,.professionBottomNavRow,.enRoleNavigation,#roleProfessionNavigation,.sbnTitle,.sbnRow,.esbTitle,.esbRow,.milQuickTitle,.milGroups,.cqnGroups,.nextStep,#roleProfessionNavigation,.expQuick,.roleQuickLinks,#pageReadButton,#englishPageReadButton').forEach(x=>x.remove());
     const out=[];
     const seen=new Set();
@@ -544,7 +599,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       if(!raw||seen.has(raw))return;
       seen.add(raw);
       const isHeading=/^H[1-4]$/.test(el.tagName);
-      out.push({text:normalize(raw),pause:isHeading?1050:(el.tagName==='LI'?420:320)});
+      out.push({text:normalize(raw),pause:isHeading?1050:(el.tagName==='LI'?420:320),source:sources.get(el)});
     });
     return out;
   };
@@ -586,7 +641,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
         btn.textContent='🔊 Read this page';
         return;
       }
-      const item=items[i++];const position=englishTopics.indexOf(item);if(position>=0)englishTopicIndex=Math.max(0,englishStarts.filter(start=>start<=position).length-1);
+      const item=items[i++];const position=englishTopics.indexOf(item.original||item);if(position>=0)englishTopicIndex=Math.max(0,englishStarts.filter(start=>start<=position).length-1);
       if(item.pause&&!item.text){setTimeout(next,item.pause);return;}
       if(!item.text){next();return;}
       const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+item.text);
@@ -611,7 +666,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     const first=await fetchEnglishAudio(parts[0]);
     if(requestId!==runId)return;
     if(!context)throw new Error('Web Audio unavailable');
-    const playPart=async(index,blob)=>{if(requestId!==runId)return;const position=englishTopics.indexOf(groups[index][0]);if(position>=0)englishTopicIndex=Math.max(0,englishStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchEnglishAudio(parts[index+1]):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==runId)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ Stop reading';
+    const playPart=async(index,blob)=>{if(requestId!==runId)return;const position=englishTopics.indexOf(groups[index][0].original||groups[index][0]);if(position>=0)englishTopicIndex=Math.max(0,englishStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchEnglishAudio(parts[index+1]):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==runId)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ Stop reading';
       source.onended=async()=>{if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==runId)return;if(!next){stop(btn);return}btn.textContent='⏳ Preparing the next part…';try{await playPart(index+1,await next)}catch{stop(btn)}};
       source.start(0)};
     await playPart(0,first);
@@ -635,8 +690,8 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     btn.addEventListener('click',()=>{
       if(!('speechSynthesis' in window)){alert('Your browser does not support text-to-speech.');return;}
       if(btn.dataset.reading==='1'){stop(btn);return;}
-      const items=isHome?homeChunks(main):extract(document.querySelector('main')||main);
-      englishTopics=items;englishStarts=items.map((item,i)=>item.text&&item.pause>=1000?i:-1).filter(i=>i>=0);if(!englishStarts.length||englishStarts[0]!==0)englishStarts.unshift(0);englishTopicIndex=0;
+      const all=isHome?homeChunks(main):extract(document.querySelector('main')||main);
+      englishTopics=all;englishStarts=all.map((item,i)=>item.text&&item.pause>=1000?i:-1).filter(i=>i>=0);if(!englishStarts.length||englishStarts[0]!==0)englishStarts.unshift(0);const start=window.__portfolioReadPosition.start(all,'text',normalize);englishTopicIndex=Math.max(0,englishStarts.filter(index=>index<=start.index).length-1);const items=start.items;
       if(items.length){stopEnglishAudio();speechSynthesis.cancel();const context=primeEnglishAudio();speakEnglishWithEleven(items,btn,context).catch(()=>{if(btn.dataset.reading==='1'){stopEnglishAudio();btn.textContent='⏹ Stop reading';setTimeout(()=>speakQueue(items,btn),180)}});}
     });
     anchor.appendChild(btn);
