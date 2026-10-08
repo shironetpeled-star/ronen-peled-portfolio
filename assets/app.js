@@ -736,6 +736,17 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       });
       homeLink.replaceWith(navigation);
       navigation.append(topLink,homeLink);
+      const voiceButton=document.createElement('button');
+      voiceButton.type='button';
+      voiceButton.id='site_voice_nevegation';
+      voiceButton.name='site_voice_nevegation';
+      voiceButton.dataset.webhookName='site_voice_nevegation';
+      voiceButton.textContent=isHebrew?'ניווט קולי':'Voice navigation';
+      voiceButton.style.cssText='display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;margin-top:4px;border:1px solid currentColor;border-radius:6px;background:transparent;color:inherit;font:inherit;cursor:pointer';
+      voiceButton.addEventListener('click',function(){
+        window.alert('נלחץ כפתור');
+      });
+      navigation.appendChild(voiceButton);
       navigation.dir=isHebrew?'rtl':'ltr';
       [[topLink,'M12 19V5M5 12l7-7 7 7'],[homeLink,'m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8']].forEach(function(entry){
         const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');
