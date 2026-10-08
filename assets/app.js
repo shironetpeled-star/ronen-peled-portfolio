@@ -746,12 +746,13 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       const voiceReady=new Promise(function(resolve,reject){
         if(window.PortfolioVoiceNavigation){resolve();return;}
         const script=document.createElement('script');
-        script.src='/assets/voice-navigation.js?v=20261008-2';
+        script.src='/assets/voice-navigation.js?v=20261008-3';
         script.onload=resolve;script.onerror=reject;
         document.head.appendChild(script);
       });
       voiceReady.catch(function(){});
       voiceButton.addEventListener('click',function(){
+        if(window.PortfolioVoiceNavigation){window.PortfolioVoiceNavigation.open();return;}
         voiceReady.then(function(){window.PortfolioVoiceNavigation.open();}).catch(function(){window.alert('לא ניתן לפתוח את הניווט כרגע. נסו לרענן את העמוד.');});
       });
       navigation.appendChild(voiceButton);
