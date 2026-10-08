@@ -17,9 +17,9 @@
     ['advantages.html','היתרונות שלי',['יתרונות']],
     ['contact.html','צור איתי קשר',['יצירת קשר','צור קשר','קשר']]
   ];
-  const normalize=s=>String(s||'').toLowerCase().replace(/[\u0591-\u05c7]/g,'').replace(/[^a-z0-9\u05d0-\u05ea ]/g,' ').replace(/\s+/g,' ').trim();
+  const normalize=s=>String(s||'').toLowerCase().replace(/[\u0591-\u05c7]/g,'').replace(/[^a-z0-9\u05d0-\u05ea ]/g,' ').replace(/מ(?:א)?ג\s*י?\s*ק/g,'magic').replace(/\s+/g,' ').trim();
   const command=/נו{1,3}ט\s+(?:עכשיו|לשם)/g;
-  let dialog,field,status,hookStatus,options,matches,mic,recognition=null,timer,retryTimer,speechTimer;
+  let dialog,field,status,hookStatus,options,matches,mic,recognition=null,timer,retryTimer,speechTimer,commandTimer;
   let active=false,mode='listen',speaking=false,blocked=false,session='',generation=0,mapPromise,mapDate='',entries=[],lastFocus;
   const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const currentPage=()=>location.pathname.split('/').pop()||'index.html';
@@ -41,7 +41,8 @@
     const response=await fetch('/api/voice-navigation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,session_id:session,page:currentPage(),date:day(),...data}),signal:AbortSignal.timeout(15000)});
     const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Make unavailable');return result;
   }
-  function stopListening(){clearTimeout(retryTimer);if(recognition){const old=recognition;recognition=null;old.onend=null;old.onresult=null;old.onerror=null;try{old.abort();}catch{}}}
+  function stopListening(){clearTimeout(retryTimer);clearTimeout(commandTimer);if(recognition){const old=recognition;recognition=null;old.onend=null;old.onresult=null;old.onerror=null;try{old.abort();}catch{}}}
+  function hasCommand(text){command.lastIndex=0;return command.test(normalize(text));}
   function close(){generation++;active=false;clearTimeout(timer);clearTimeout(speechTimer);stopListening();window.speechSynthesis?.cancel();speaking=false;if(dialog?.open)dialog.close();lastFocus?.focus();}
   function say(text,after){
     stopListening();speaking=true;const id=generation;let finished=false;
@@ -60,18 +61,25 @@
     rec.onresult=e=>{
       if(!active||speaking||recognition!==rec)return;let words=[],allFinal=true;
       for(let i=0;i<e.results.length;i++){words.push(e.results[i][0].transcript);if(!e.results[i].isFinal)allFinal=false;}
-      const spoken=words.join(' ').trim();if(mode==='choices'){if(allFinal)chooseSpoken(spoken);return;}
-      field.value=[prefix,spoken].filter(Boolean).join(' ');if(allFinal){command.lastIndex=0;if(command.test(normalize(field.value)))navigate();}
+      const spoken=words.join(' ').trim();
+      if(mode==='choices'&&!hasCommand(spoken)){if(allFinal)chooseSpoken(spoken);return;}
+      field.value=[prefix,spoken].filter(Boolean).join(' ');
+      clearTimeout(commandTimer);
+      if(hasCommand(field.value)){
+        if(allFinal){navigate();return;}
+        const captured=field.value,id=generation;
+        commandTimer=setTimeout(()=>{if(active&&!speaking&&id===generation&&field.value===captured&&hasCommand(captured))navigate();},800);
+      }
     };
     rec.onerror=e=>{if(!active||recognition!==rec)return;if(['not-allowed','service-not-allowed','audio-capture'].includes(e.error)){blocked=true;stopListening();status.textContent='המיקרופון אינו זמין או שלא ניתנה הרשאה. אפשר להקליד את הבקשה.';}else if(e.error==='network'){blocked=true;stopListening();status.textContent='שירות הזיהוי הקולי אינו זמין כרגע. אפשר להקליד את הבקשה.';}};
-    rec.onend=()=>{if(recognition===rec){recognition=null;if(active&&!speaking&&!blocked&&mode!=='navigate')retryTimer=setTimeout(listen,350);}};
+    rec.onend=()=>{if(recognition===rec){recognition=null;if(active&&!speaking&&hasCommand(field.value)){navigate();return;}if(active&&!speaking&&!blocked&&mode!=='navigate')retryTimer=setTimeout(listen,350);}};
     try{rec.start();}catch{recognition=null;status.textContent='אפשר להקליד את הבקשה או ללחוץ על הפעל מיקרופון.';}
   }
   function begin(){
     generation++;mode='listen';blocked=false;field.value='';matches.replaceChildren();options.hidden=true;clearTimeout(timer);status.textContent='האזינו להנחיות, ואז אמרו לאן תרצו לעבור.';
     say('יש להגיד את הלשונית או הנושא שאליו רוצים לעבור. בסיום תגידו נווט לשם, או נווט עכשיו.',()=>{listen();timer=setTimeout(showChoices,30000);});
   }
-  function showChoices(){if(!active||mode==='navigate')return;mode='choices';options.hidden=false;status.textContent='בחרו אפשרות ואמרו מספר מ־1 עד 3.';say('בחרו אחת משלוש אפשרויות ואמרו את המספר. אחת, תתחיל מחדש. שתיים, נווט לפי מה שנאמר. שלוש, סגור ניווט.',()=>{listen();timer=setTimeout(close,60000);});}
+  function showChoices(){if(!active||mode==='navigate')return;if(hasCommand(field.value)){navigate();return;}mode='choices';options.hidden=false;status.textContent=field.value.trim()?'נקלטה הבקשה: '+field.value+'. בחרו 2 כדי לנווט לפיה, או אפשרות אחרת.':'לא נקלטה בקשה. בחרו אפשרות ואמרו מספר מ־1 עד 3.';say('בחרו אחת משלוש אפשרויות ואמרו את המספר. אחת, תתחיל מחדש. שתיים, נווט לפי מה שנאמר. שלוש, סגור ניווט.',()=>{listen();timer=setTimeout(close,60000);});}
   function chooseSpoken(text){const value=normalize(text);if(/(?:^|\s)(1|אחת|אחד|ראשונה)(?:\s|$)/.test(value))begin();else if(/(?:^|\s)(2|שתיים|שתים|שניים|שנים|שנייה)(?:\s|$)/.test(value))navigate();else if(/(?:^|\s)(3|שלוש|שלושה|שלישית)(?:\s|$)/.test(value))close();}
   function resolve(text){
     command.lastIndex=0;const query=normalize(text).replace(command,' ').replace(/(?:^|\s)(?:נו{1,3}ט|תעבור|עבור|לעבור|בבקשה|אל)(?=\s|$)/g,' ').replace(/\s+/g,' ').trim();
@@ -84,7 +92,7 @@
     if(!active||mode==='navigate')return;clearTimeout(timer);stopListening();window.speechSynthesis?.cancel();speaking=false;mode='navigate';options.hidden=true;const id=generation;
     status.textContent='מחפש את העמוד או הנושא…';await siteMap();if(!active||id!==generation)return;
     const targets=chosen?[chosen]:resolve(field.value);
-    if(targets.length!==1){mode='listen';matches.replaceChildren();if(!targets.length){status.textContent='לא נמצא יעד ברור. אמרו או הקלידו שם לשונית או נושא.';}else{status.textContent='נמצאו כמה יעדים. בחרו לאן לעבור:';targets.forEach(target=>{const b=document.createElement('button');b.type='button';b.textContent=target.title;b.addEventListener('click',()=>navigate(target));matches.appendChild(b);});}listen();timer=setTimeout(showChoices,30000);return;}
+    if(targets.length!==1){command.lastIndex=0;field.value=normalize(field.value).replace(command,' ').trim();mode='listen';matches.replaceChildren();if(!targets.length){status.textContent='לא נמצא יעד ברור. אמרו או הקלידו שם לשונית או נושא.';}else{status.textContent='נמצאו כמה יעדים. בחרו לאן לעבור:';targets.forEach(target=>{const b=document.createElement('button');b.type='button';b.textContent=target.title;b.addEventListener('click',()=>navigate(target));matches.appendChild(b);});}listen();timer=setTimeout(showChoices,30000);return;}
     const target=targets[0];status.textContent='מעביר אל '+target.title+'…';
     try{await webhook('navigate',{transcript:field.value,target:target.path});hookStatus.textContent='Make קיבל את בקשת הניווט.';}catch{hookStatus.textContent='Make לא אישר את הבקשה. הניווט באתר יתבצע לפי היעד שנמצא.';}
     if(!active||id!==generation)return;const url=new URL(target.path,location.origin);if(url.origin!==location.origin)return;
