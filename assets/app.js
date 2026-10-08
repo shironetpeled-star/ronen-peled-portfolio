@@ -743,8 +743,16 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       voiceButton.dataset.webhookName='site_voice_nevegation';
       voiceButton.textContent=isHebrew?'ניווט קולי':'Voice navigation';
       voiceButton.style.cssText='display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;margin-top:4px;border:1px solid currentColor;border-radius:6px;background:transparent;color:inherit;font:inherit;cursor:pointer';
+      const voiceReady=new Promise(function(resolve,reject){
+        if(window.PortfolioVoiceNavigation){resolve();return;}
+        const script=document.createElement('script');
+        script.src='/assets/voice-navigation.js?v=20261008-1';
+        script.onload=resolve;script.onerror=reject;
+        document.head.appendChild(script);
+      });
+      voiceReady.catch(function(){});
       voiceButton.addEventListener('click',function(){
-        window.alert('נלחץ כפתור');
+        voiceReady.then(function(){window.PortfolioVoiceNavigation.open();}).catch(function(){window.alert('לא ניתן לפתוח את הניווט כרגע. נסו לרענן את העמוד.');});
       });
       navigation.appendChild(voiceButton);
       navigation.dir=isHebrew?'rtl':'ltr';
