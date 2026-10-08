@@ -43,7 +43,6 @@
   let active=false,mode='listen',speaking=false,blocked=false,session='',generation=0,mapPromise,mapDate='',entries=[],lastFocus;
   let microphoneStream=null,microphonePending=null,voiceContext=null,voiceSource=null,voiceRequest=null,speechRun=0;
   let draft='';try{draft=sessionStorage.getItem('portfolioVoiceDraft')||'';}catch{}
-  let recorder=null,captureTimer=null,captureSource=null,captureHasSpeech=false,transcribing=false,heardSpeech=false;
   function saveDraft(value){draft=String(value||'').slice(0,1500);if(field)field.value=draft;try{sessionStorage.setItem('portfolioVoiceDraft',draft);}catch{}}
   const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const currentPage=()=>location.pathname.split('/').pop()||'index.html';
@@ -65,24 +64,7 @@
     const response=await fetch('/api/voice-navigation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,session_id:session,page:currentPage(),date:day(),...data}),signal:AbortSignal.timeout(15000)});
     const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Make unavailable');return result;
   }
-  function stopCapture(){clearInterval(captureTimer);captureSource?.disconnect();captureSource=null;if(recorder){const old=recorder;recorder=null;old.onstop=null;if(old.state!=='inactive')try{old.stop();}catch{}}}
-  function stopListening(){clearTimeout(retryTimer);clearTimeout(commandTimer);stopCapture();if(recognition){const old=recognition;recognition=null;old.onend=null;old.onresult=null;old.onerror=null;try{old.abort();}catch{}}}
-  function captureSpeech(){
-    if(recorder||transcribing||!microphoneStream||!window.MediaRecorder||!voiceContext?.createMediaStreamSource)return;
-    try{
-      const rec=new MediaRecorder(microphoneStream,{audioBitsPerSecond:64000});recorder=rec;captureHasSpeech=false;const chunks=[],id=generation,prefix=field.value.trim();let lastSound=0;
-      captureSource=voiceContext.createMediaStreamSource(microphoneStream);const analyser=voiceContext.createAnalyser();analyser.fftSize=1024;captureSource.connect(analyser);const samples=new Float32Array(analyser.fftSize);
-      rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
-      rec.onstop=async()=>{
-        clearInterval(captureTimer);captureSource?.disconnect();captureSource=null;if(recorder===rec)recorder=null;if(!active||id!==generation||speaking||!captureHasSpeech)return;
-        if(field.value.trim()&&hasCommand(field.value)){navigate();return;}
-        const blob=new Blob(chunks,{type:rec.mimeType});if(blob.size<100)return;transcribing=true;status.textContent='הקול נקלט. מתמלל את הבקשה…';
-        const original=field.value;
-        try{const audio=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=reject;reader.readAsDataURL(blob);});const response=await fetch('/api/voice-transcript',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio,type:rec.mimeType.split(';')[0]}),signal:AbortSignal.timeout(25000)});if(!response.ok)throw Error();const result=await response.json();if(!active||id!==generation||speaking||field.value!==original)return;if(result.text?.trim()){if(mode==='choices'&&/^(?:אפשרות\s*)?(?:1|2|3|אחד|אחת|שתיים|שתים|שניים|שלוש|שלושה)[.!\s]*$/.test(result.text.trim())){chooseSpoken(result.text);return;}saveDraft([prefix,result.text].filter(Boolean).join(' '));if(mode==='choices'){mode='listen';options.hidden=true;}if(hasCommand(field.value)||resolve(field.value).length===1){transcribing=false;navigate();return;}status.textContent='נקלטה ונשמרה הבקשה: '+field.value;}else status.textContent='לא זוהה טקסט בקול שנקלט. אפשר להקליד את הבקשה.';}catch{if(active&&id===generation)status.textContent='הקול נקלט, אך התמלול לא הצליח. אפשר להקליד את היעד.';}finally{transcribing=false;if(active&&id===generation&&!speaking&&mode!=='navigate')captureSpeech();}
-      };
-      rec.start();captureTimer=setInterval(()=>{if(!active||speaking||id!==generation){stopCapture();return;}analyser.getFloatTimeDomainData(samples);const level=Math.sqrt(samples.reduce((sum,n)=>sum+n*n,0)/samples.length);if(level>0.025){captureHasSpeech=true;heardSpeech=true;lastSound=Date.now();}if(captureHasSpeech&&Date.now()-lastSound>1500&&rec.state==='recording')rec.stop();},150);
-    }catch{stopCapture();}
-  }
+  function stopListening(){clearTimeout(retryTimer);clearTimeout(commandTimer);if(recognition){const old=recognition;recognition=null;old.onend=null;old.onresult=null;old.onerror=null;try{old.abort();}catch{}}}
   function hasCommand(text){command.lastIndex=0;return command.test(normalize(text));}
   function stopSpeech(){speechRun++;clearTimeout(speechTimer);voiceRequest?.abort();voiceRequest=null;if(voiceSource){voiceSource.onended=null;try{voiceSource.stop();}catch{}voiceSource=null;}window.speechSynthesis?.cancel();speaking=false;}
   function requestMicrophone(){
@@ -103,9 +85,8 @@
   function listen(){
     if(!active||speaking||blocked||mode==='navigate')return;
     if(microphonePending){microphonePending.then(()=>{if(active&&!speaking)listen();});return;}
-    captureSpeech();
     const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
-    if(!Speech){status.textContent=recorder?'המיקרופון פעיל. אמרו את היעד וסיימו ב״נווט עכשיו״.':'זיהוי קולי אינו זמין בדפדפן הזה. אפשר להקליד את הבקשה וללחוץ על נווט עכשיו.';return;}
+    if(!Speech){status.textContent='זיהוי קולי אינו זמין בדפדפן הזה. אפשר להקליד את הבקשה וללחוץ על נווט עכשיו.';return;}
     clearTimeout(retryTimer);if(recognition){const old=recognition;recognition=null;old.onend=null;old.onresult=null;old.onerror=null;try{old.abort();}catch{}}const rec=new Speech();recognition=rec;rec.lang='he-IL';rec.continuous=true;rec.interimResults=true;
     const prefix=mode==='clarify'?'':field.value.trim();
     rec.onstart=()=>{if(active){mic.textContent='חדש האזנה';status.textContent=mode==='choices'?'המיקרופון פעיל ומקשיב לבחירה: 1, 2 או 3':'המיקרופון פעיל ומקשיב. בסיום אמרו ״נווט עכשיו״.';}};
@@ -114,7 +95,7 @@
       for(let i=0;i<e.results.length;i++){words.push(e.results[i][0].transcript);if(!e.results[i].isFinal)allFinal=false;}
       const spoken=words.join(' ').trim();
       if(mode==='choices'&&!hasCommand(spoken)){if(allFinal)chooseSpoken(spoken);return;}
-      if(spoken){heardSpeech=true;saveDraft([prefix,spoken].filter(Boolean).join(' '));}
+      if(spoken){saveDraft([prefix,spoken].filter(Boolean).join(' '));}
       clearTimeout(commandTimer);
       if(hasCommand(field.value)){
         if(allFinal){navigate();return;}
@@ -122,15 +103,15 @@
         commandTimer=setTimeout(()=>{if(active&&!speaking&&id===generation&&field.value===captured&&hasCommand(captured))navigate();},800);
       }
     };
-    rec.onerror=e=>{if(!active||recognition!==rec)return;if(['not-allowed','service-not-allowed','audio-capture','network'].includes(e.error)){rec.onend=null;recognition=null;if(recorder){status.textContent='המיקרופון פעיל. הקול יתומלל בסיום הדיבור.';}else{blocked=true;status.textContent='שירות הזיהוי הקולי אינו זמין. אפשר להקליד את הבקשה.';}}};
+    rec.onerror=e=>{if(!active||recognition!==rec)return;if(['not-allowed','service-not-allowed','audio-capture'].includes(e.error)){blocked=true;stopListening();status.textContent='המיקרופון אינו זמין או שלא ניתנה הרשאה. אפשר להקליד את הבקשה.';}else if(e.error==='network'){blocked=true;stopListening();status.textContent='שירות הזיהוי הקולי אינו זמין כרגע. אפשר להקליד את הבקשה.';}};
     rec.onend=()=>{if(recognition===rec){recognition=null;if(active&&!speaking&&mode!=='clarify'&&hasCommand(field.value)){navigate();return;}if(active&&!speaking&&!blocked&&mode!=='navigate')retryTimer=setTimeout(listen,350);}};
     try{rec.start();}catch{recognition=null;status.textContent='אפשר להקליד את הבקשה או ללחוץ על הפעל מיקרופון.';}
   }
   function begin(reset=true){
-    generation++;mode='listen';blocked=false;heardSpeech=false;if(reset)saveDraft('');else saveDraft(draft);matches.replaceChildren();options.hidden=true;clearTimeout(timer);status.textContent='האזינו להנחיות, ואז אמרו לאן תרצו לעבור.';
+    generation++;mode='listen';blocked=false;if(reset)saveDraft('');else saveDraft(draft);matches.replaceChildren();options.hidden=true;clearTimeout(timer);status.textContent='האזינו להנחיות, ואז אמרו לאן תרצו לעבור.';
     say('יש להגיד את הלשונית או הנושא שאליו רוצים לעבור. בסיום תגידו נווט לשם, או נווט עכשיו.',()=>{listen();timer=setTimeout(showChoices,30000);});
   }
-  function showChoices(){if(!active||mode==='navigate')return;if(transcribing){timer=setTimeout(showChoices,1000);return;}if(recorder&&captureHasSpeech){if(recorder.state==='recording')recorder.stop();timer=setTimeout(showChoices,1000);return;}if(field.value.trim()){saveDraft(field.value);navigate();return;}if(heardSpeech){mode='clarify';options.hidden=true;status.textContent='הקול נקלט אך לא זוהה יעד ברור. נסו לומר שוב את הלשונית או החלק, או הקלידו.';return;}mode='choices';options.hidden=false;status.textContent='לא נקלט יעד לניווט. בחרו אפשרות ואמרו מספר מ־1 עד 3.';say('לא נקלט יעד לניווט. בחרו אחת משלוש אפשרויות ואמרו את המספר. אחת, תתחיל מחדש. שתיים, נווט לפי מה שנאמר. שלוש, סגור ניווט.',()=>{listen();timer=setTimeout(()=>spokenClose('לא נבחרה אפשרות. חלון הניווט נסגר.'),60000);});}
+  function showChoices(){if(!active||mode==='navigate')return;if(field.value.trim()){saveDraft(field.value);navigate();return;}mode='choices';options.hidden=false;status.textContent='לא נקלט יעד לניווט. בחרו אפשרות ואמרו מספר מ־1 עד 3.';say('לא נקלט יעד לניווט. בחרו אחת משלוש אפשרויות ואמרו את המספר. אחת, תתחיל מחדש. שתיים, נווט לפי מה שנאמר. שלוש, סגור ניווט.',()=>{listen();timer=setTimeout(()=>spokenClose('לא נבחרה אפשרות. חלון הניווט נסגר.'),60000);});}
   function chooseSpoken(text){const value=normalize(text);if(/(?:^|\s)(1|אחת|אחד|ראשונה)(?:\s|$)/.test(value))begin();else if(/(?:^|\s)(2|שתיים|שתים|שניים|שנים|שנייה)(?:\s|$)/.test(value))navigate();else if(/(?:^|\s)(3|שלוש|שלושה|שלישית)(?:\s|$)/.test(value))spokenClose();}
   function resolve(text){
     command.lastIndex=0;const query=normalize(text).replace(command,' ').replace(/(?:^|\s)(?:נו{1,3}ט|תעבור|עבור|לעבור|בבקשה|אל)(?=\s|$)/g,' ').replace(/\s+/g,' ').trim();
