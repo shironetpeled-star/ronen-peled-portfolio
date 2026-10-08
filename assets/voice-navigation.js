@@ -42,6 +42,7 @@
   let dialog,field,status,hookStatus,options,matches,mic,recognition=null,timer,retryTimer,speechTimer,commandTimer;
   let active=false,mode='listen',speaking=false,blocked=false,session='',generation=0,mapPromise,mapDate='',entries=[],lastFocus;
   let microphoneStream=null,microphonePending=null,voiceContext=null,voiceSource=null,voiceRequest=null,speechRun=0;
+  let candidates=[];
   let draft='';try{draft=sessionStorage.getItem('portfolioVoiceDraft')||'';}catch{}
   function saveDraft(value){draft=String(value||'').slice(0,1500);if(field)field.value=draft;try{sessionStorage.setItem('portfolioVoiceDraft',draft);}catch{}}
   const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
@@ -70,7 +71,7 @@
   function requestMicrophone(){
     if(microphoneStream||microphonePending||!navigator.mediaDevices?.getUserMedia)return;
     const token=session;
-    microphonePending=navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{if(!active||session!==token){stream.getTracks().forEach(track=>track.stop());return;}microphoneStream=stream;mic.textContent='חדש האזנה';}).catch(()=>{if(active&&session===token){blocked=true;status.textContent='יש לאשר גישה למיקרופון כדי לנווט בקול. אפשר גם להקליד.';}}).finally(()=>{microphonePending=null;});
+    microphonePending=navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{if(!active||session!==token){stream.getTracks().forEach(track=>track.stop());return;}microphoneStream=stream;mic.textContent='חדש האזנה';}).catch(()=>{if(active&&session===token){blocked=true;status.textContent='יש לאשר גישה למיקרופון כדי לנווט בקול.';say(status.textContent);}}).finally(()=>{microphonePending=null;});
   }
   function close(){generation++;active=false;clearTimeout(timer);stopListening();stopSpeech();microphoneStream?.getTracks().forEach(track=>track.stop());microphoneStream=null;if(dialog?.open)dialog.close();lastFocus?.focus();}
   function spokenClose(text='חלון הניווט נסגר.'){clearTimeout(timer);mode='navigate';say(text,close);}
@@ -86,14 +87,15 @@
     if(!active||speaking||blocked||mode==='navigate')return;
     if(microphonePending){microphonePending.then(()=>{if(active&&!speaking)listen();});return;}
     const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
-    if(!Speech){status.textContent='זיהוי קולי אינו זמין בדפדפן הזה. אפשר להקליד את הבקשה וללחוץ על נווט עכשיו.';return;}
+    if(!Speech){blocked=true;status.textContent='זיהוי קולי אינו זמין בדפדפן הזה. יש לפתוח את האתר בדפדפן שתומך בזיהוי קולי.';say(status.textContent);return;}
     clearTimeout(retryTimer);if(recognition){const old=recognition;recognition=null;old.onend=null;old.onresult=null;old.onerror=null;try{old.abort();}catch{}}const rec=new Speech();recognition=rec;rec.lang='he-IL';rec.continuous=true;rec.interimResults=true;
-    const prefix=mode==='clarify'?'':field.value.trim();
+    const prefix=['clarify','targets'].includes(mode)?'':field.value.trim();
     rec.onstart=()=>{if(active){mic.textContent='חדש האזנה';status.textContent=mode==='choices'?'המיקרופון פעיל ומקשיב לבחירה: 1, 2 או 3':'המיקרופון פעיל ומקשיב. בסיום אמרו ״נווט עכשיו״.';}};
     rec.onresult=e=>{
       if(!active||speaking||recognition!==rec)return;let words=[],allFinal=true;
       for(let i=0;i<e.results.length;i++){words.push(e.results[i][0].transcript);if(!e.results[i].isFinal)allFinal=false;}
       const spoken=words.join(' ').trim();
+      if(allFinal&&handleVoiceChoice(spoken))return;
       if(mode==='choices'&&!hasCommand(spoken)){if(allFinal)chooseSpoken(spoken);return;}
       if(spoken){saveDraft([prefix,spoken].filter(Boolean).join(' '));}
       clearTimeout(commandTimer);
@@ -103,15 +105,17 @@
         commandTimer=setTimeout(()=>{if(active&&!speaking&&id===generation&&field.value===captured&&hasCommand(captured))navigate();},800);
       }
     };
-    rec.onerror=e=>{if(!active||recognition!==rec)return;if(['not-allowed','service-not-allowed','audio-capture'].includes(e.error)){blocked=true;stopListening();status.textContent='המיקרופון אינו זמין או שלא ניתנה הרשאה. אפשר להקליד את הבקשה.';}else if(e.error==='network'){blocked=true;stopListening();status.textContent='שירות הזיהוי הקולי אינו זמין כרגע. אפשר להקליד את הבקשה.';}};
-    rec.onend=()=>{if(recognition===rec){recognition=null;if(active&&!speaking&&mode!=='clarify'&&hasCommand(field.value)){navigate();return;}if(active&&!speaking&&!blocked&&mode!=='navigate')retryTimer=setTimeout(listen,350);}};
-    try{rec.start();}catch{recognition=null;status.textContent='אפשר להקליד את הבקשה או ללחוץ על הפעל מיקרופון.';}
+    rec.onerror=e=>{if(!active||recognition!==rec)return;if(['not-allowed','service-not-allowed','audio-capture'].includes(e.error)){blocked=true;stopListening();status.textContent='המיקרופון אינו זמין או שלא ניתנה הרשאה. אשרו מיקרופון בדפדפן ואז הפעילו מחדש.';say(status.textContent);}else if(e.error==='network'){blocked=true;stopListening();status.textContent='שירות הזיהוי הקולי אינו זמין כרגע. נסו לפתוח את האתר בדפדפן אחר או לחדש האזנה.';say(status.textContent);}};
+    rec.onend=()=>{if(recognition===rec){recognition=null;if(active&&!speaking&&!['clarify','targets'].includes(mode)&&hasCommand(field.value)){navigate();return;}if(active&&!speaking&&!blocked&&mode!=='navigate')retryTimer=setTimeout(listen,350);}};
+    try{rec.start();}catch{recognition=null;status.textContent='לא ניתן להתחיל האזנה. אשרו מיקרופון ונסו שוב.';say(status.textContent);}
   }
   function begin(reset=true){
-    generation++;mode='listen';blocked=false;if(reset)saveDraft('');else saveDraft(draft);matches.replaceChildren();options.hidden=true;clearTimeout(timer);status.textContent='האזינו להנחיות, ואז אמרו לאן תרצו לעבור.';
+    generation++;mode='listen';candidates=[];blocked=false;if(reset)saveDraft('');else saveDraft(draft);matches.replaceChildren();options.hidden=true;clearTimeout(timer);status.textContent='האזינו להנחיות, ואז אמרו לאן תרצו לעבור.';
     say('יש להגיד את הלשונית או הנושא שאליו רוצים לעבור. בסיום תגידו נווט לשם, או נווט עכשיו.',()=>{listen();timer=setTimeout(showChoices,30000);});
   }
   function showChoices(){if(!active||mode==='navigate')return;if(field.value.trim()){saveDraft(field.value);navigate();return;}mode='choices';options.hidden=false;status.textContent='לא נקלט יעד לניווט. בחרו אפשרות ואמרו מספר מ־1 עד 3.';say('לא נקלט יעד לניווט. בחרו אחת משלוש אפשרויות ואמרו את המספר. אחת, תתחיל מחדש. שתיים, נווט לפי מה שנאמר. שלוש, סגור ניווט.',()=>{listen();timer=setTimeout(()=>spokenClose('לא נבחרה אפשרות. חלון הניווט נסגר.'),60000);});}
+  function voiceNumber(text){const value=normalize(text);const names=[['1','אחת','אחד','ראשונה','ראשון'],['2','שתיים','שתים','שניים','שנים','שנייה','שניה','שני'],['3','שלוש','שלושה','שלישית','שלישי'],['4','ארבע','ארבעה','רביעית'],['5','חמש','חמישה','חמישית']];return names.findIndex(group=>group.some(word=>value.split(' ').includes(word)))+1;}
+  function handleVoiceChoice(text){const value=normalize(text);if(/סגור(?: את)?(?: ה)?(?:ניווט|חלון)|סגור ניווט/.test(value)){spokenClose();return true;}if(/(?:תתחיל|התחל|תתחילי|להתחיל) מחדש/.test(value)){begin();return true;}const number=voiceNumber(text);if(mode==='targets'&&number>0){const target=candidates[number-1];if(target)navigate(target);else say('בחרו מספר מתוך האפשרויות שהקראתי.',listen);return true;}if(mode==='choices'&&number>0){chooseSpoken(text);return true;}return false;}
   function chooseSpoken(text){const value=normalize(text);if(/(?:^|\s)(1|אחת|אחד|ראשונה)(?:\s|$)/.test(value))begin();else if(/(?:^|\s)(2|שתיים|שתים|שניים|שנים|שנייה)(?:\s|$)/.test(value))navigate();else if(/(?:^|\s)(3|שלוש|שלושה|שלישית)(?:\s|$)/.test(value))spokenClose();}
   function resolve(text){
     command.lastIndex=0;const query=normalize(text).replace(command,' ').replace(/(?:^|\s)(?:נו{1,3}ט|תעבור|עבור|לעבור|בבקשה|אל)(?=\s|$)/g,' ').replace(/\s+/g,' ').trim();
@@ -125,21 +129,19 @@
     if(!active||mode==='navigate')return;clearTimeout(timer);stopListening();stopSpeech();mode='navigate';options.hidden=true;const id=generation;
     status.textContent='מחפש את העמוד או הנושא…';await siteMap();if(!active||id!==generation)return;
     const targets=chosen?[chosen]:resolve(field.value);
-    if(targets.length!==1){mode='clarify';matches.replaceChildren();if(!targets.length){status.textContent='הבקשה נשמרה, אך לא נמצא יעד ברור: '+field.value+'. אמרו או הקלידו שם לשונית או נושא.';}else{status.textContent='הבקשה נשמרה. נמצאו כמה יעדים, בחרו לאן לעבור:';targets.forEach(target=>{const b=document.createElement('button');b.type='button';b.textContent=target.title;b.addEventListener('click',()=>navigate(target));matches.appendChild(b);});}listen();return;}
+    if(targets.length!==1){candidates=targets;mode=targets.length?'targets':'clarify';matches.replaceChildren();status.textContent=targets.length?'נמצאו כמה יעדים מתאימים. '+targets.map((target,index)=>(index+1)+', '+target.title).join('. ')+'. אמרו את מספר היעד, או את שמו.':'לא מצאתי לשונית או חלק שמתאימים לבקשה. הבקשה נשמרה. אמרו שוב את היעד בניסוח אחר.';say(status.textContent,listen);return;}
     const target=targets[0];status.textContent='מעביר אל '+target.title+'…';
     try{await webhook('navigate',{transcript:field.value,target:target.path});hookStatus.textContent='Make קיבל את בקשת הניווט.';}catch{hookStatus.textContent='Make לא אישר את הבקשה. הניווט באתר יתבצע לפי היעד שנמצא.';}
     if(!active||id!==generation)return;const url=new URL(target.path,location.origin);if(url.origin!==location.origin)return;
-    saveDraft('');close();if(url.pathname===location.pathname&&url.hash){location.hash=url.hash;revealHash();}else if(url.pathname===location.pathname&&!url.hash){window.scrollTo({top:0,behavior:'instant'});}else location.assign(url.href);
+    await new Promise(resolve=>say('מעביר כעת אל '+target.title,resolve));if(!active||id!==generation)return;saveDraft('');close();if(url.pathname===location.pathname&&url.hash){location.hash=url.hash;revealHash();}else if(url.pathname===location.pathname&&!url.hash){window.scrollTo({top:0,behavior:'instant'});}else location.assign(url.href);
   }
   function makeDialog(){
     const style=document.createElement('style');style.id='portfolioVoiceNavigationStyle';style.textContent='#portfolioVoiceNavigation{direction:rtl;width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;overflow:auto;padding:24px;border:1px solid #d5e0ed;border-radius:18px;background:#fff;color:#102235;box-shadow:0 16px 60px #10223540;font-family:inherit}#portfolioVoiceNavigation::backdrop{background:#10223590}#portfolioVoiceNavigation h2{margin:0 0 12px;font-size:25px}#portfolioVoiceNavigation p{line-height:1.6;margin:10px 0}#portfolioVoiceNavigation textarea{box-sizing:border-box;width:100%;min-height:85px;padding:12px;border:1px solid #bbcddd;border-radius:10px;font:inherit;resize:vertical;color:#102235;background:#fff}#portfolioVoiceNavigation .voiceActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}#portfolioVoiceNavigation button{min-height:42px;padding:10px 14px;border:1px solid #ccd9e7;border-radius:9px;font:inherit;cursor:pointer;background:#edf3ff;color:#195ed8}#portfolioVoiceNavigation button:focus-visible,#portfolioVoiceNavigation textarea:focus-visible{outline:3px solid #195ed8;outline-offset:2px}#portfolioVoiceNavigation button.voicePrimary{background:#195ed8;color:#fff}#portfolioVoiceNavigation [hidden]{display:none!important}#voiceHookStatus{font-size:13px;color:#54677a}#voiceMatches{display:flex;gap:8px;flex-wrap:wrap}';document.head.appendChild(style);
-    dialog=document.createElement('dialog');dialog.id='portfolioVoiceNavigation';dialog.setAttribute('aria-labelledby','voiceNavigationTitle');dialog.innerHTML='<h2 id="voiceNavigationTitle">ניווט קולי</h2><p>אמרו את שם הלשונית או הנושא. בסיום אמרו <b>״נווט לשם״</b> או <b>״נווט עכשיו״</b>.</p><p id="voiceNavigationStatus" role="status" aria-live="polite"></p><label for="voiceNavigationText">הבקשה שלכם — אפשר גם להקליד</label><textarea id="voiceNavigationText" placeholder="למשל: נווט לעמוד הבית"></textarea><p id="voiceHookStatus" role="status"></p><div id="voiceMatches"></div><div class="voiceActions"><button type="button" class="voicePrimary" id="voiceNavigateNow">נווט עכשיו</button><button type="button" id="voiceMic">הפעל מיקרופון</button><button type="button" id="voiceRestart">התחל מחדש</button><button type="button" id="voiceClose">סגור ניווט</button></div><div id="voiceOptions" hidden><p>אמרו מספר אפשרות, או לחצו עליה. ללא בחירה החלון ייסגר לאחר דקה.</p><div class="voiceActions"><button type="button" data-choice="1">1 — תתחיל מחדש</button><button type="button" data-choice="2">2 — נווט לפי מה שנאמר</button><button type="button" data-choice="3">3 — סגור ניווט</button></div></div>';
-    document.body.appendChild(dialog);field=dialog.querySelector('textarea');status=dialog.querySelector('#voiceNavigationStatus');hookStatus=dialog.querySelector('#voiceHookStatus');options=dialog.querySelector('#voiceOptions');matches=dialog.querySelector('#voiceMatches');mic=dialog.querySelector('#voiceMic');
-    dialog.querySelector('#voiceNavigateNow').onclick=()=>navigate();dialog.querySelector('#voiceRestart').onclick=begin;dialog.querySelector('#voiceClose').onclick=close;
+    dialog=document.createElement('dialog');dialog.id='portfolioVoiceNavigation';dialog.setAttribute('aria-labelledby','voiceNavigationTitle');dialog.innerHTML='<h2 id="voiceNavigationTitle">ניווט קולי</h2><div class="voiceIndicator" aria-hidden="true">🎙️</div><input type="hidden" id="voiceNavigationText"><p id="voiceNavigationStatus" hidden></p><p id="voiceHookStatus" hidden></p><div id="voiceMatches" hidden></div><div class="voiceActions"><button type="button" id="voiceMic">חדש האזנה</button><button type="button" id="voiceRestart">התחל מחדש</button><button type="button" id="voiceClose">סגור ניווט</button></div><div id="voiceOptions" aria-hidden="true" hidden></div>';
+    const visual=document.createElement('style');visual.textContent='#portfolioVoiceNavigation .voiceIndicator{text-align:center;font-size:54px;margin:20px 0}#portfolioVoiceNavigation .voiceActions{justify-content:center}#portfolioVoiceNavigation #voiceOptions{display:none!important}';document.head.appendChild(visual);
+    document.body.appendChild(dialog);field=dialog.querySelector('input[type=hidden]');status=dialog.querySelector('#voiceNavigationStatus');hookStatus=dialog.querySelector('#voiceHookStatus');options=dialog.querySelector('#voiceOptions');matches=dialog.querySelector('#voiceMatches');mic=dialog.querySelector('#voiceMic');
+    dialog.querySelector('#voiceRestart').onclick=()=>begin();dialog.querySelector('#voiceClose').onclick=()=>spokenClose();
     mic.onclick=()=>{blocked=false;stopSpeech();requestMicrophone();listen();};
-    options.querySelectorAll('button').forEach(b=>b.onclick=()=>b.dataset.choice==='1'?begin():b.dataset.choice==='2'?navigate():spokenClose());
-    field.addEventListener('focus',()=>{stopListening();stopSpeech();});
-    field.addEventListener('input',()=>{saveDraft(field.value);if(mode==='choices'||mode==='clarify'){mode='listen';options.hidden=true;}clearTimeout(timer);timer=setTimeout(showChoices,30000);if(hasCommand(field.value))navigate();});
     dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
   }
   function open(){
