@@ -742,7 +742,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       voiceButton.name='site_voice_nevegation';
       voiceButton.dataset.webhookName='site_voice_nevegation';
       voiceButton.textContent=isHebrew?'ניווט קולי':'Voice navigation';
-      voiceButton.style.cssText='display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;margin-top:4px;border:1px solid currentColor;border-radius:6px;background:transparent;color:inherit;font:inherit;cursor:pointer';
+      voiceButton.style.cssText='position:fixed;top:50%;left:12px;transform:translateY(-50%);z-index:99998;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;margin:0;border:1px solid #4c7fc8;border-radius:10px;background:#74e8dd;color:#1f5fbf;font:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(13,41,70,.18)';
       const voiceReady=new Promise(function(resolve,reject){
         if(window.PortfolioVoiceNavigation){resolve();return;}
         const script=document.createElement('script');
@@ -755,7 +755,19 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
         if(window.PortfolioVoiceNavigation){window.PortfolioVoiceNavigation.open();return;}
         voiceReady.then(function(){window.PortfolioVoiceNavigation.open();}).catch(function(){window.alert('לא ניתן לפתוח את הניווט כרגע. נסו לרענן את העמוד.');});
       });
-      navigation.appendChild(voiceButton);
+      document.body.appendChild(voiceButton);
+      function alignVoiceButton(){
+        const positions=[...document.querySelectorAll('header.top nav a')].map(function(link){return link.getBoundingClientRect();}).filter(function(rect){return rect.width>0&&rect.height>0;});
+        const edge=positions.length?Math.min(...positions.map(function(rect){return rect.left;})):12;
+        voiceButton.style.left=Math.max(12,Math.min(edge,window.innerWidth-voiceButton.offsetWidth-12))+'px';
+      }
+      let alignmentFrame;
+      function scheduleVoiceAlignment(){cancelAnimationFrame(alignmentFrame);alignmentFrame=requestAnimationFrame(alignVoiceButton);}
+      window.addEventListener('resize',scheduleVoiceAlignment);
+      window.addEventListener('load',scheduleVoiceAlignment);
+      const voiceHeader=document.querySelector('header.top');
+      if(voiceHeader){new MutationObserver(scheduleVoiceAlignment).observe(voiceHeader,{childList:true,subtree:true});if(window.ResizeObserver)new ResizeObserver(scheduleVoiceAlignment).observe(voiceHeader);}
+      scheduleVoiceAlignment();
       navigation.dir=isHebrew?'rtl':'ltr';
       [[topLink,'M12 19V5M5 12l7-7 7 7'],[homeLink,'m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8']].forEach(function(entry){
         const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');
