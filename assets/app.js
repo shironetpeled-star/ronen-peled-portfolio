@@ -746,7 +746,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       const voiceReady=new Promise(function(resolve,reject){
         if(window.PortfolioVoiceNavigation){resolve();return;}
         const script=document.createElement('script');
-        script.src='/assets/voice-navigation.js?v=20261009-9';
+        script.src='/assets/voice-navigation.js?v=20261009-10';
         script.onload=resolve;script.onerror=reject;
         document.head.appendChild(script);
       });
@@ -846,7 +846,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   let read=document.querySelector('#pageReadButton,#englishPageReadButton')||savedRead;
   if(!read)return;savedRead=read;const en=document.documentElement.lang==='en';
   if(!row){row=document.createElement('div');row.id='pageReadTopicControls';row.setAttribute('aria-label',en?'Page narration controls':'כפתורי הקראת הדף');
-   [[-1,en?'◀ Previous topic':'◀ הנושא הקודם'],[1,en?'Next topic ▶':'הנושא הבא ▶']].forEach(([step,label])=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('portfolioReadSkip',{detail:step})));row.appendChild(b)});
+   [[-1,en?'◀ Previous topic':'◀ הנושא הקודם'],[1,en?'Next topic ▶':'הנושא הבא ▶']].forEach(([step,label])=>{const b=document.createElement('button');b.type='button';b.dataset.readStep=String(step);b.textContent=label;b.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('portfolioReadSkip',{detail:step})));row.appendChild(b)});
   }
   if(!row.isConnected)document.body.appendChild(row);
   if(read.parentElement!==row)row.insertBefore(read,row.lastElementChild);
