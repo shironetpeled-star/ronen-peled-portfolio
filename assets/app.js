@@ -484,9 +484,9 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   const stop=btn=>{run++;stopAudio();speechSynthesis.cancel();if(btn){btn.dataset.reading='0';btn.textContent='🔊 הקרא את הדף'}};
   const speak=(btn,list)=>{
     const id=++run;btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';let i=0,spoken=0;
-    const next=()=>{if(id!==run)return;if(i>=list.length){stop(btn);return}const x=list[i++];const position=topicList.indexOf(x.original||x);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);if(x.pause){setTimeout(next,x.pause);return}
-      const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+x.t);u.lang='he-IL';u.rate=.78;u.pitch=1;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>{if(id===run)setTimeout(next,x.p||420)};speechSynthesis.speak(u)};
-    setTimeout(next,550);
+    const next=()=>{if(id!==run)return;if(i>=list.length){stop(btn);return}const x=list[i++];const position=topicList.indexOf(x.original||x);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);if(x.pause){setTimeout(next,Math.min(x.pause,250));return}
+      const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+x.t);u.lang='he-IL';u.rate=.78;u.pitch=1;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>{if(id===run)setTimeout(next,Math.min(x.p||150,250))};speechSynthesis.speak(u)};
+    setTimeout(next,120);
   };
   const packForAudio=(values,max)=>{const parts=[];let part='';values.forEach(value=>{if(!value)return;const next=part?part+'. '+value:value;if(next.length>max&&part){parts.push(part);part=value}else part=next});if(part)parts.push(part);return parts};
   const fetchAudioPart=async(text,language)=>{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,language:language})});if(!response.ok)throw new Error('TTS unavailable');return response.blob()};
@@ -501,7 +501,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     if(requestId!==run)return;
     if(!context)throw new Error('Web Audio unavailable');
     const playPart=async(index,blob)=>{if(requestId!==run)return;const position=topicList.indexOf(groups[index][0].original||groups[index][0]);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchAudioPart(parts[index+1],'he'):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==run)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ עצור הקראה';
-      source.onended=async()=>{if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{if(categoryAudio)await new Promise(resolve=>setTimeout(resolve,1800));if(requestId!==run)return;await playPart(index+1,await next)}catch{stop(btn)}};
+      source.onended=async()=>{if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{if(categoryAudio)await new Promise(resolve=>setTimeout(resolve,250));if(requestId!==run)return;await playPart(index+1,await next)}catch{stop(btn)}};
       source.start(0)};
     await playPart(0,first);
   };
@@ -642,7 +642,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
         return;
       }
       const item=items[i++];const position=englishTopics.indexOf(item.original||item);if(position>=0)englishTopicIndex=Math.max(0,englishStarts.filter(start=>start<=position).length-1);
-      if(item.pause&&!item.text){setTimeout(next,item.pause);return;}
+      if(item.pause&&!item.text){setTimeout(next,Math.min(item.pause,250));return;}
       if(!item.text){next();return;}
       const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+item.text);
       u.lang='en-US';
@@ -650,7 +650,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       u.pitch=1;
       const v=pickVoice();
       if(v)u.voice=v;
-      u.onend=()=>setTimeout(next,item.pause||320);
+      u.onend=()=>setTimeout(next,Math.min(item.pause||150,250));
       u.onerror=()=>setTimeout(next,250);
       speechSynthesis.speak(u);
     };
@@ -746,7 +746,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       const voiceReady=new Promise(function(resolve,reject){
         if(window.PortfolioVoiceNavigation){resolve();return;}
         const script=document.createElement('script');
-        script.src='/assets/voice-navigation.js?v=20261009-16';
+        script.src='/assets/voice-navigation.js?v=20261009-17';
         script.onload=resolve;script.onerror=reject;
         document.head.appendChild(script);
       });
@@ -849,11 +849,32 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
    [[-1,en?'◀ Previous topic':'◀ הנושא הקודם'],[1,en?'Next topic ▶':'הנושא הבא ▶']].forEach(([step,label])=>{const b=document.createElement('button');b.type='button';b.dataset.readStep=String(step);b.textContent=label;b.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('portfolioReadSkip',{detail:step})));row.appendChild(b)});
   }
   if(!row.isConnected)document.body.appendChild(row);
-  if(read.parentElement!==row)row.insertBefore(read,row.lastElementChild);
+  if(read.parentElement!==row)row.insertBefore(read,row.querySelector('[data-read-step="1"]')||row.lastElementChild);
   const style='position:static!important;display:inline-flex!important;visibility:visible!important;opacity:1!important;margin:0!important;inset:auto!important;transform:none!important;align-items:center!important;justify-content:center!important;gap:5px!important;min-height:42px!important;padding:9px 10px!important;border-radius:11px!important;border:1px solid #195ed8!important;background:#edf3ff!important;color:#195ed8!important;font-size:13px!important;font-weight:900!important;min-width:0!important;max-width:none!important;white-space:nowrap!important;cursor:pointer!important';
   row.querySelectorAll('button').forEach(b=>{if(b.style.cssText!==style)b.style.cssText=style;b.hidden=false});
  }
  const css=document.createElement('style');css.textContent='#pageReadTopicControls{direction:ltr!important;position:fixed!important;top:126px!important;right:20px!important;left:auto!important;z-index:99999!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;width:max-content!important;max-width:calc(100vw - 24px)!important;padding:6px!important;margin:0!important;border-radius:14px;background:#fff;box-shadow:0 4px 16px rgba(13,34,54,.18)}@media(max-width:950px){#pageReadTopicControls{top:90px!important;right:12px!important}#pageReadTopicControls button{font-size:11px!important;padding:8px 7px!important}}';document.head.appendChild(css);
  const observer=new MutationObserver(()=>{if(queued)return;queued=true;setTimeout(()=>{queued=false;maintain()},100)});observer.observe(document.body,{childList:true,subtree:true});
  maintain();setTimeout(maintain,1200);setTimeout(maintain,5000);
+})();
+
+/* Pause uses the existing narration player and keeps command listening active. */
+(function(){
+  window.__portfolioNarrationPaused=false;
+  function pauseNarration(paused){
+    const reader=document.querySelector('#pageReadButton[data-reading="1"],#englishPageReadButton[data-reading="1"]');
+    paused=!!paused&&!!reader;window.__portfolioNarrationPaused=paused;
+    const context=window.__ronenAudioContext;
+    if(paused){context?.suspend?.().catch(()=>{});window.__ronenPageAudio?.pause();window.speechSynthesis?.pause?.();}
+    else{context?.resume?.().catch(()=>{});if(reader)window.__ronenPageAudio?.play()?.catch(()=>{});window.speechSynthesis?.resume?.();}
+    const button=document.getElementById('pageReadPauseButton');if(button){button.textContent=paused?(document.documentElement.lang==='en'?'Resume':'המשך הקראה'):(document.documentElement.lang==='en'?'Pause':'השהה');button.setAttribute('aria-pressed',String(paused));}
+  }
+  window.addEventListener('portfolioReadPause',event=>pauseNarration(event.detail===undefined?!window.__portfolioNarrationPaused:event.detail));
+  window.addEventListener('portfolioReadSkip',()=>pauseNarration(false));
+  function maintainPause(){
+    const row=document.getElementById('pageReadTopicControls');if(!row)return;
+    if(!document.getElementById('pageReadPauseButton')){const button=document.createElement('button');button.id='pageReadPauseButton';button.type='button';button.textContent=document.documentElement.lang==='en'?'Pause':'השהה';button.setAttribute('aria-pressed','false');button.addEventListener('click',()=>pauseNarration(!window.__portfolioNarrationPaused));row.appendChild(button);}
+    if(window.__portfolioNarrationPaused&&!document.querySelector('#pageReadButton[data-reading="1"],#englishPageReadButton[data-reading="1"]'))pauseNarration(false);
+  }
+  new MutationObserver(maintainPause).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-reading']});maintainPause();
 })();
