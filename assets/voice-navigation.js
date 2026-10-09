@@ -155,8 +155,8 @@
     try{rec.start();}catch{recognition=null;status.textContent='לא ניתן להתחיל האזנה. אשרו מיקרופון ונסו שוב.';say(status.textContent);}
   }
   function begin(reset=true){
-    generation++;mode='listen';candidates=[];blocked=false;if(reset)saveDraft('');else saveDraft(draft);matches.replaceChildren();options.hidden=true;clearTimeout(timer);status.textContent='האזינו להנחיות, ואז אמרו לאן תרצו לעבור.';
-    say('יש להגיד את הלשונית או הנושא שאליו רוצים לעבור. בסיום תגידו נווט לשם, או נווט עכשיו.',()=>{listen();timer=setTimeout(showChoices,30000);});
+    generation++;mode='listen';candidates=[];blocked=false;if(reset)saveDraft('');else saveDraft(draft);matches.replaceChildren();options.hidden=true;clearTimeout(timer);status.textContent='לאן לנווט?';
+    say('לאן לנווט?',()=>{listen();timer=setTimeout(showChoices,30000);});
   }
   function showChoices(){if(!active||mode==='navigate')return;if(field.value.trim()){saveDraft(field.value);navigate();return;}mode='choices';options.hidden=false;status.textContent='לא נקלט יעד לניווט. בחרו אפשרות ואמרו מספר מ־1 עד 3.';say('לא נקלט יעד לניווט. בחרו אחת משלוש אפשרויות ואמרו את המספר. אחת, תתחיל מחדש. שתיים, נווט לפי מה שנאמר. שלוש, סגור ניווט.',()=>{listen();timer=setTimeout(()=>spokenClose('לא נבחרה אפשרות. חלון הניווט נסגר.'),60000);});}
   function voiceNumber(text){const value=normalize(text);const names=[['1','אחת','אחד','ראשונה','ראשון'],['2','שתיים','שתים','שניים','שנים','שנייה','שניה','שני'],['3','שלוש','שלושה','שלישית','שלישי'],['4','ארבע','ארבעה','רביעית'],['5','חמש','חמישה','חמישית']];return names.findIndex(group=>group.some(word=>value.split(' ').includes(word)))+1;}
