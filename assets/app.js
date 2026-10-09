@@ -746,7 +746,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       const voiceReady=new Promise(function(resolve,reject){
         if(window.PortfolioVoiceNavigation){resolve();return;}
         const script=document.createElement('script');
-        script.src='/assets/voice-navigation.js?v=20261009-17';
+        script.src='/assets/voice-navigation.js?v=20261009-18';
         script.onload=resolve;script.onerror=reject;
         document.head.appendChild(script);
       });
