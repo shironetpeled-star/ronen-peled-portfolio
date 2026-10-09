@@ -57,7 +57,7 @@
   }
   let wakeRecognition=null,wakeTimer=null,wakePermission=false;
   function stopWakeListening(){clearTimeout(wakeTimer);if(wakeRecognition){const rec=wakeRecognition;wakeRecognition=null;rec.onend=null;rec.onresult=null;rec.onerror=null;try{rec.abort();}catch{}}}
-  function startRecognition(rec){const track=microphoneStream?.getAudioTracks?.().find(track=>track.kind==='audio'&&track.readyState==='live');if(track){try{rec.start(track);return;}catch(error){if(!['TypeError','NotSupportedError'].includes(error.name))throw error;}}rec.start();}
+  function startRecognition(rec){rec.start();}
   function startWakeListening(){
     syncToggle();
     if(active||voiceSessionEnded||!wakePermission||document.visibilityState==='hidden'||wakeRecognition)return;
