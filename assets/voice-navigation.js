@@ -38,7 +38,8 @@
   const tokens=text=>normalize(text).split(' ').filter(w=>w.length>1&&!['אני','רוצה','תראה','תציג','תפתח','אפשר','את','של','על','לי','הוא','רונן','לראות','נווט','עכשיו','לשם','עמוד','לשונית','בבקשה','תעבור','עבור'].includes(w)).map(w=>({מנתח:'ניתוח',מאפיין:'אפיון'}[w]||w)).map(stem);
   function distance(a,b){const row=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){let prev=row[0];row[0]=i;for(let j=1;j<=b.length;j++){const before=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=before;}}return row[b.length];}
   function sound(word){return word.replace(/[כקח]/g,'ק').replace(/[טת]/g,'ת').replace(/[סש]/g,'ס').replace(/[אעהוי]/g,'').replace(/(.)\1+/g,'$1');}
-  const command=/נו{1,3}ט\s+(?:עכשיו|לשם)/g;
+  const command=/(?:נו{1,3}ט|עבור|תעבור|לך|לכי|קח אותי|העבר אותי|תעביר אותי)\s+(?:עכשיו|לשם|למקום הזה)|(?:פתח|תפתח)\s+(?:את זה|את המקום הזה)/g;
+  const moveRequest=/(?:^|\s)(?:נו{1,3}ט|עבור|תעבור|לך|לכי|קח|העבר|תעביר|פתח|תפתח|הצג|תציג|תראה|להגיע|לעבור|להיכנס|לחזור)\s/;
   let dialog,field,status,hookStatus,options,matches,mic,recognition=null,timer,retryTimer,speechTimer,commandTimer;
   let active=false,mode='listen',speaking=false,blocked=false,session='',generation=0,mapPromise,mapDate='',entries=[],lastFocus;
   let microphoneStream=null,microphonePending=null,voiceContext=null,voiceSource=null,voiceRequest=null,speechRun=0;
@@ -75,7 +76,7 @@
   function saveDraft(value){draft=String(value||'').slice(0,1500);if(field)field.value=draft;try{sessionStorage.setItem('portfolioVoiceDraft',draft);}catch{}}
   const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const currentPage=()=>location.pathname.split('/').pop()||'index.html';
-  const mapVersion=3;
+  const mapVersion=4;
   function sectionAliases(title){
     const text=normalize(title),aliases=[];
     const groups=[
@@ -99,8 +100,18 @@
     const date=day();if(mapPromise&&mapDate===date)return mapPromise;
     mapDate=date;mapPromise=(async()=>{
       try{const cached=JSON.parse(localStorage.getItem('portfolioVoiceMap')||'null');if(cached?.version===mapVersion&&cached?.date===date&&Array.isArray(cached.entries)&&cached.entries.length){entries=cached.entries;refreshCurrentSections();return {entries,remap:false,date};}}catch{}
-      const collected=baseMap();let complete=true;
-      await Promise.all(pages.map(async([path])=>{try{let doc;if(path===currentPage())doc=document;else{const response=await fetch('/'+path,{signal:AbortSignal.timeout(6000)});if(!response.ok)throw Error();doc=new DOMParser().parseFromString(await response.text(),'text/html');}markSections(doc).forEach(h=>{if(h.title)collected.push({path:path+'#'+h.id,title:h.title,kind:'section',aliases:sectionAliases(h.title)})});}catch{complete=false;}}));
+      const collected=baseMap(),seen=new Set(),pending=[...pages.map(page=>page[0])];let complete=true;
+      const primary=new Set(pending);
+      if(!pending.includes(currentPage()))pending.push(currentPage());
+      async function mapPage(path){
+        try{
+          let doc;if(path===currentPage())doc=document;else{const response=await fetch('/'+path,{signal:AbortSignal.timeout(8000)});if(!response.ok)throw Error();doc=new DOMParser().parseFromString(await response.text(),'text/html');}
+          if(!primary.has(path)){const title=(path==='index-en.html'?'Home':doc.querySelector('main h1')?.textContent||doc.title||path).trim().replace(/\s*[|·]\s*.*$/,'');collected.push({path,title,aliases:[],kind:'page'});}
+          markSections(doc).forEach(h=>{if(h.title)collected.push({path:path+'#'+h.id,title:h.title,kind:'section',aliases:sectionAliases(h.title)});});
+          doc.querySelectorAll('header nav a[href],main a[href],footer a[href],a[hreflang][href]').forEach(link=>{try{const url=new URL(link.getAttribute('href'),location.origin+'/'+path),next=url.pathname.split('/').filter(Boolean).join('/');if(url.origin===location.origin&&next.endsWith('.html')&&/^[a-z0-9.-]+$/i.test(next)&&!seen.has(next)&&!pending.includes(next)&&seen.size+pending.length<80)pending.push(next);}catch{}});
+        }catch{if(primary.has(path))complete=false;}
+      }
+      while(pending.length){const batch=pending.splice(0,6).filter(path=>!seen.has(path));batch.forEach(path=>seen.add(path));await Promise.all(batch.map(mapPage));}
       entries=collected;if(complete)try{localStorage.setItem('portfolioVoiceMap',JSON.stringify({date,version:mapVersion,entries}));}catch{}
       return {entries,remap:true,date};
     })();return mapPromise;
@@ -110,7 +121,7 @@
     const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Make unavailable');return result;
   }
   function stopListening(){clearTimeout(retryTimer);clearTimeout(commandTimer);if(recognition){const old=recognition;recognition=null;old.onend=null;old.onresult=null;old.onerror=null;try{old.abort();}catch{}}}
-  function hasCommand(text){command.lastIndex=0;return command.test(normalize(text));}
+  function hasCommand(text){const value=normalize(text);if(/(?:אל|לא)\s+(?:תעבור|עבור|לך|תפתח|פתח|נווט|להגיע|לעבור)/.test(value))return false;command.lastIndex=0;if(command.test(value))return true;return moveRequest.test(value)&&tokens(value).some(word=>!['לך','לכי','קח','אותי','תעביר','העבר','פתח','תפתח','הצג','תציג','תראה','להגיע','לעבור','להיכנס','לחזור'].includes(word));}
   function stopSpeech(){speechRun++;clearTimeout(speechTimer);voiceRequest?.abort();voiceRequest=null;if(voiceSource){voiceSource.onended=null;try{voiceSource.stop();}catch{}voiceSource=null;}window.speechSynthesis?.cancel();speaking=false;}
   function requestMicrophone(){
     if(microphoneStream||microphonePending||!navigator.mediaDevices?.getUserMedia)return;
@@ -199,7 +210,7 @@
     if(/(?:^|\s)(?:ל?עמוד הבית|ל?דף הבית|ל?בית)(?:\s|$)/.test(query))return [{path:document.documentElement.lang==='en'?'index-en.html':'index.html',title:'עמוד הבית'}];
     if(!query)return [];
     const queryTokens=tokens(query),explicitPage=/(?:לשונית|טאב|עמוד|דף)\s/.test(query),sectionHints=queryTokens.filter(w=>['קורס','קורסים','השכלה','שכלה','ניסיון','כישורים','כישרורים','יכולות','הכשרה','יתרונות','השירות','השגים'].includes(w));
-    const ranked=entries.filter(entry=>!explicitPage||entry.kind==='page').map(entry=>{let score=0;const labels=[entry.title,...(entry.aliases||[]),...(entry.kind==='page'?intentions[entry.path]||[]:[])];for(const label of labels){const name=normalize(label);if(!name)continue;if(query===name||query==='ל'+name)score=Math.max(score,100+(entry.kind==='page'?10:0));else if(name.length>=3&&query.includes(name))score=Math.max(score,65+Math.min(name.length,25));else{const wanted=tokens(name);if(!wanted.length)continue;let hits=0;for(const word of wanted){if(queryTokens.some(q=>q===word))hits+=1;else if(word.length>=4&&queryTokens.some(q=>q.length>=4&&distance(q,word)<= (Math.max(q.length,word.length)>=7?2:1)))hits+=0.8;else if(word.length>=3&&queryTokens.some(q=>q.length>=3&&sound(q).length>=2&&sound(q)===sound(word)))hits+=0.75;}if(hits===wanted.length)score=Math.max(score,58+Math.min(wanted.length*6,24));else if(hits>=0.75&&hits/wanted.length>=0.65)score=Math.max(score,45+hits*6);}}if(score>0&&entry.kind==='section'){const heading=tokens(entry.title);if(sectionHints.some(h=>heading.includes(h)))score+=25;if(entry.path.split('#')[0]===currentPage())score+=8;}return {entry,score};}).filter(x=>x.score>=45).sort((a,b)=>b.score-a.score);
+    const ranked=entries.filter(entry=>!explicitPage||entry.kind==='page').map(entry=>{let score=0;const labels=[entry.title,...(entry.aliases||[]),...(entry.kind==='page'?intentions[entry.path]||[]:[])];for(const label of labels){const name=normalize(label);if(!name)continue;if(query===name||query==='ל'+name)score=Math.max(score,100+(entry.kind==='page'?10:0));else if(name.length>=3&&query.includes(name))score=Math.max(score,65+Math.min(name.length,25));else{const wanted=tokens(name);if(!wanted.length)continue;let hits=0;for(const word of wanted){if(queryTokens.some(q=>q===word))hits+=1;else if(word.length>=4&&queryTokens.some(q=>q.length>=4&&distance(q,word)<= (Math.max(q.length,word.length)>=7?2:1)))hits+=0.8;else if(word.length>=3&&queryTokens.some(q=>q.length>=3&&sound(q).length>=2&&sound(q)===sound(word)))hits+=0.75;}if(hits===wanted.length)score=Math.max(score,58+Math.min(wanted.length*6,24));else if(hits>=0.75&&hits/wanted.length>=0.65)score=Math.max(score,45+hits*6);}}if(score>0&&pages.some(([path])=>path===entry.path.split('#')[0]))score+=10;if(score>0&&entry.kind==='section'){const heading=tokens(entry.title);if(sectionHints.some(h=>heading.includes(h)))score+=25;if(entry.path.split('#')[0]===currentPage())score+=8;}return {entry,score};}).filter(x=>x.score>=45).sort((a,b)=>b.score-a.score);
     if(!ranked.length)return [];const local=!explicitPage?ranked.filter(item=>item.entry.kind==='section'&&item.entry.path.split('#')[0]===currentPage()&&item.score>=80):[];const search=local.length?local:ranked;const best=search[0].score;const unique=search.filter((x,i,a)=>a.findIndex(y=>y.entry.path===x.entry.path)===i);if(best>=55&&(!unique[1]||best-unique[1].score>=8))return [unique[0].entry];return unique.filter(x=>best-x.score<8).map(x=>x.entry).slice(0,5);
   }
   async function navigate(chosen){
