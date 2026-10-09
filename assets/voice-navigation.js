@@ -51,10 +51,12 @@
     const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;if(!Speech)return;
     const rec=new Speech();wakeRecognition=rec;rec.lang='he-IL';rec.continuous=true;rec.interimResults=false;
     rec.onresult=event=>{
-      if(active||wakeRecognition!==rec||document.visibilityState==='hidden'||window.speechSynthesis?.speaking)return;
-      const reading=document.querySelector('#pageReadButton[data-reading="1"],#englishPageReadButton[data-reading="1"]');if(reading)return;
+      if(active||wakeRecognition!==rec||document.visibilityState==='hidden' )return;
+      const reading=document.querySelector('#pageReadButton[data-reading="1"],#englishPageReadButton[data-reading="1"]');if(window.speechSynthesis?.speaking&&!reading)return;
       for(let i=event.resultIndex||0;i<event.results.length;i++){
         if(!event.results[i].isFinal)continue;const text=normalize(event.results[i][0].transcript);
+        if(handleNarrationCommand(text))return;
+        if(reading)continue;
         if(isReadPageRequest(text)){readCurrentPage();return;}
         if(/(?:אל|לא)\s+(?:תפעיל|הפעל|להפעיל)/.test(text))continue;
         if(/(?:^|\s)(?:הפעל|תפעיל|הפעילי|תפעילי)\s+(?:את\s+)?(?:ה)?ניווט\s+(?:ה)?קולי(?:$|\s)/.test(text)){
@@ -158,6 +160,23 @@
   }
   function showChoices(){if(!active||mode==='navigate')return;if(field.value.trim()){saveDraft(field.value);navigate();return;}mode='choices';options.hidden=false;status.textContent='לא נקלט יעד לניווט. בחרו אפשרות ואמרו מספר מ־1 עד 3.';say('לא נקלט יעד לניווט. בחרו אחת משלוש אפשרויות ואמרו את המספר. אחת, תתחיל מחדש. שתיים, נווט לפי מה שנאמר. שלוש, סגור ניווט.',()=>{listen();timer=setTimeout(()=>spokenClose('לא נבחרה אפשרות. חלון הניווט נסגר.'),60000);});}
   function voiceNumber(text){const value=normalize(text);const names=[['1','אחת','אחד','ראשונה','ראשון'],['2','שתיים','שתים','שניים','שנים','שנייה','שניה','שני'],['3','שלוש','שלושה','שלישית','שלישי'],['4','ארבע','ארבעה','רביעית'],['5','חמש','חמישה','חמישית']];return names.findIndex(group=>group.some(word=>value.split(' ').includes(word)))+1;}
+  let lastNarrationCommand='',lastNarrationTime=0;
+  function handleNarrationCommand(text){
+    const reader=document.querySelector('#pageReadButton[data-reading="1"],#englishPageReadButton[data-reading="1"]');if(!reader)return false;
+    const value=normalize(text);
+    if(/(?:אל|לא)\s+(?:תעבור|עבור|תדלג|דלג|תחזור|חזור|תתקדם|תמשיך)/.test(value))return false;
+    const next=/(?:^|\s)(?:ה?בא|ה?באה|קדימה|next)(?:\s|$)/.test(value);
+    const previous=/(?:^|\s)(?:ה?קודם|ה?קודמת|אחורה|previous|prev)(?:\s|$)/.test(value);
+    if(next===previous)return false;
+    const subject=/(?:^|\s)(?:ל?(?:ה)?פרק|ל?(?:ה)?נושא|ל?(?:ה)?חלק|ל?(?:ה)?קטע|chapter|topic|section)(?:\s|$)/.test(value);
+    const action=/(?:^|\s)(?:עבור|תעבור|העבר|תעביר|דלג|תדלג|המשך|תמשיך|תקדם|תתקדם|לעבור|להתקדם|לחזור|קפוץ|תחזור|חזור|חזרי|תחזרי|go|skip)(?:\s|$)/.test(value);
+    const short=/^(?:ה?פרק|ה?נושא|ה?חלק|ה?קטע)\s+(?:ה?בא|ה?באה|ה?קודם|ה?קודמת)$/.test(value)||/^(?:קדימה|אחורה|next topic|previous topic)$/.test(value);
+    if(!(subject&&(action||short))&&!(action&&/(?:קדימה|אחורה)/.test(value))&&!short)return false;
+    const now=Date.now();if(value===lastNarrationCommand&&now-lastNarrationTime<1200)return true;
+    const step=next?1:-1,row=document.getElementById('pageReadTopicControls');
+    const button=row?.querySelector('button[data-read-step="'+step+'"]')||[...(row?.querySelectorAll('button')||[])].find(b=>!['pageReadButton','englishPageReadButton'].includes(b.id)&&(step===1?/הנושא הבא|next topic/i:/הנושא הקודם|previous topic/i).test(b.textContent));
+    if(!button)return false;lastNarrationCommand=value;lastNarrationTime=now;button.click();return true;
+  }
   function isReadPageRequest(text){
     const value=normalize(text);
     if(/(?:אל|לא)\s+(?:תקרא|תקריא|הקרא|קרא|להקריא|תפעיל|השמע)/.test(value))return false;
@@ -172,7 +191,7 @@
     if(reader.dataset.reading!=='1')reader.click();
     startWakeListening();
   }
-  function handleVoiceChoice(text){if(isReadPageRequest(text)){readCurrentPage();return true;}const value=normalize(text);if(/סגור(?: את)?(?: ה)?(?:ניווט|חלון)|סגור ניווט/.test(value)){spokenClose();return true;}if(/(?:תתחיל|התחל|תתחילי|להתחיל) מחדש/.test(value)){begin();return true;}const number=voiceNumber(text);if(mode==='targets'&&number>0){const target=candidates[number-1];if(target)navigate(target);else say('בחרו מספר מתוך האפשרויות שהקראתי.',listen);return true;}if(mode==='choices'&&number>0){chooseSpoken(text);return true;}return false;}
+  function handleVoiceChoice(text){if(handleNarrationCommand(text))return true;if(isReadPageRequest(text)){readCurrentPage();return true;}const value=normalize(text);if(/סגור(?: את)?(?: ה)?(?:ניווט|חלון)|סגור ניווט/.test(value)){spokenClose();return true;}if(/(?:תתחיל|התחל|תתחילי|להתחיל) מחדש/.test(value)){begin();return true;}const number=voiceNumber(text);if(mode==='targets'&&number>0){const target=candidates[number-1];if(target)navigate(target);else say('בחרו מספר מתוך האפשרויות שהקראתי.',listen);return true;}if(mode==='choices'&&number>0){chooseSpoken(text);return true;}return false;}
   function chooseSpoken(text){const value=normalize(text);if(/(?:^|\s)(1|אחת|אחד|ראשונה)(?:\s|$)/.test(value))begin();else if(/(?:^|\s)(2|שתיים|שתים|שניים|שנים|שנייה)(?:\s|$)/.test(value))navigate();else if(/(?:^|\s)(3|שלוש|שלושה|שלישית)(?:\s|$)/.test(value))spokenClose();}
   function resolve(text){
     refreshCurrentSections();
