@@ -51,7 +51,7 @@ window.__portfolioReadPosition=(()=>{
     });
     return {items:items.slice(Math.max(0,index)),index:Math.max(0,index)};
   };
-  return {mapSources,start};
+  return {mapSources,start,reset(){clicked=null;window.getSelection()?.removeAllRanges();}};
 })();
 
 
@@ -748,7 +748,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       const voiceReady=new Promise(function(resolve,reject){
         if(window.PortfolioVoiceNavigation){resolve();return;}
         const script=document.createElement('script');
-        script.src='/assets/voice-navigation.js?v=20261009-19';
+        script.src='/assets/voice-navigation.js?v=20261013-20';
         script.onload=resolve;script.onerror=reject;
         document.head.appendChild(script);
       });
