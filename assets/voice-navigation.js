@@ -44,6 +44,17 @@
   let active=false,mode='listen',speaking=false,blocked=false,session='',generation=0,mapPromise,mapDate='',entries=[],lastFocus;
   let microphoneStream=null,microphonePending=null,voiceContext=null,voiceSource=null,voiceRequest=null,speechRun=0;
   let candidates=[];
+  let commandFeedback=null,feedbackTimer=null,feedbackSequence=0;
+  function showCommandFeedback(text='מעבד את בקשתך…',busy=true){
+    clearTimeout(feedbackTimer);feedbackSequence++;
+    if(!commandFeedback){commandFeedback=document.createElement('div');commandFeedback.id='voiceCommandFeedback';commandFeedback.setAttribute('role','status');commandFeedback.setAttribute('aria-live','polite');commandFeedback.style.cssText='position:fixed;right:16px;bottom:84px;z-index:100003;max-width:min(360px,calc(100vw - 32px));box-sizing:border-box;padding:12px 18px;border:1px solid #bcd6ea;border-radius:12px;background:#eef8ff;color:#102235;box-shadow:0 5px 20px #10223525;font:inherit;direction:rtl;pointer-events:none';document.body.appendChild(commandFeedback);}
+    commandFeedback.hidden=false;commandFeedback.textContent=text;commandFeedback.dataset.state=busy?'processing':'ready';commandFeedback.setAttribute('aria-busy',String(busy));
+    if(status&&active){status.hidden=false;status.textContent=text;}
+    if(!busy)feedbackTimer=setTimeout(()=>{if(commandFeedback)commandFeedback.hidden=true;},1600);
+  }
+  function readyForCommand(){showCommandFeedback('מקשיב לפקודה הבאה',false);}
+  function hideCommandFeedback(){clearTimeout(feedbackTimer);feedbackSequence++;if(commandFeedback)commandFeedback.hidden=true;}
+  function paintCommandFeedback(){return new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done)));}
   const captureState={recognition:'idle',error:'',audioStarted:false,speechDetected:false,resultReceived:false,microphoneSignal:false,level:0};
   let diagnosticRun=0,diagnosticBusy=false,diagnosticTimer=null;
   let microphoneMonitor=null,microphoneInput=null,microphoneAnalyser=null;
@@ -184,9 +195,10 @@
         if(continuousMicrophone&&hasCommand(text)){open(text);return;}
       }
     };
-    rec.onend=()=>{if(wakeRecognition===rec){wakeRecognition=null;if(!active&&wakePermission)wakeTimer=setTimeout(startWakeListening,700);}};
+    rec.onstart=()=>{captureState.recognition='started';if(commandFeedback?.dataset.state==='processing'&&commandFeedback?.dataset.kind==='navigation'&&!active)readyForCommand();};
+    rec.onend=()=>{if(wakeRecognition===rec){wakeRecognition=null;if(!active&&wakePermission)wakeTimer=setTimeout(startWakeListening,200);}};
     rec.onerror=event=>{if(wakeRecognition!==rec)return;captureState.error=event.error;captureState.recognition='error';stopWakeListening();if(['not-allowed','service-not-allowed','language-not-supported','language-unavailable'].includes(event.error)){wakePermission=false;return;}if(!voiceSessionEnded&&wakePermission){const delay=Math.min(10000,700*Math.pow(2,Math.min(reconnectAttempts++,4)));wakeTimer=setTimeout(()=>active?listen():startWakeListening(),delay);}};
-    try{startRecognition(rec);const button=document.getElementById('site_voice_nevegation');if(button)button.title='המיקרופון מאזין לפקודות קוליות עד לסיום מפורש';}catch{stopWakeListening();if(!voiceSessionEnded&&wakePermission)wakeTimer=setTimeout(startWakeListening,1000);}
+    try{startRecognition(rec);const button=document.getElementById('site_voice_nevegation');if(button)button.title='המיקרופון מאזין לפקודות קוליות עד לסיום מפורש';}catch(error){stopWakeListening();if(!voiceSessionEnded&&wakePermission)wakeTimer=setTimeout(startWakeListening,error.name==='InvalidStateError'?250:1000);}
   }
   async function checkWakePermission(){
     if(voiceSessionEnded)return;
@@ -266,7 +278,7 @@
     return /(?:סיים|סימי|תסיים|תסיימי|סיום|לסיים|סגור|תסגור|הפסק|תפסיק|עצור|תעצור|כבה)\s+(?:את\s+)?(?:ה)?ניווט(?:\s+(?:ה)?קולי)?(?:$|\s)|כבה(?: את)?(?: ה)?מיקרופון|(?:הפסק|תפסיק|עצור|תעצור)\s+(?:להאזין|להקשיב)|(?:סיים|תסיים)\s+(?:את\s+)?(?:ה)?האזנה/.test(value);
   }
   function finishVoiceSession(){
-    voiceSessionEnded=true;continuousMicrophone=false;wakePermission=false;stopMicrophoneMonitor();captureState.recognition='ended';
+    voiceSessionEnded=true;continuousMicrophone=false;wakePermission=false;hideCommandFeedback();try{sessionStorage.removeItem('portfolioVoiceTransition');}catch{}stopMicrophoneMonitor();captureState.recognition='ended';
     try{sessionStorage.setItem('portfolioContinuousMicrophone','0');sessionStorage.setItem('portfolioVoiceSessionEnded','1');}catch{}
     readRequestId++;readStartPending=false;saveDraft('');stopWakeListening();
     const reader=document.querySelector('#pageReadButton[data-reading="1"],#englishPageReadButton[data-reading="1"]');if(reader)reader.click();
@@ -290,7 +302,7 @@
     if(recognition&&recognition.navigationMode===mode)return;
     clearTimeout(retryTimer);if(recognition){const old=recognition;recognition=null;old.onend=null;old.onresult=null;old.onerror=null;try{old.abort();}catch{}}const rec=new Speech();recognition=rec;rec.navigationMode=mode;rec.lang='he-IL';rec.continuous=true;rec.interimResults=true;
     const prefix=['clarify','targets'].includes(mode)?'':field.value.trim(),heard=new Map();
-    rec.onstart=()=>{captureState.recognition='started';if(active){mic.textContent='חדש האזנה';status.textContent=mode==='choices'?'המיקרופון פעיל ומקשיב לבחירה: 1, 2 או 3':'המיקרופון פעיל ומקשיב. בסיום אמרו ״נווט עכשיו״.';}};
+    rec.onstart=()=>{captureState.recognition='started';if(active&&mode!=='navigate'){mic.textContent='חדש האזנה';status.textContent=mode==='choices'?'המיקרופון פעיל ומקשיב לבחירה: 1, 2 או 3':'המיקרופון פעיל ומקשיב. בסיום אמרו ״נווט עכשיו״.';}};
     rec.onresult=e=>{
       if(!active||recognition!==rec)return;let words=[],allFinal=true;
       for(let i=e.resultIndex||0;i<e.results.length;i++){const part=e.results[i][0].transcript;if(isOutputEcho(part)){heard.delete(i);continue;}heard.set(i,part);words.push(part);if(!e.results[i].isFinal)allFinal=false;}
@@ -307,8 +319,8 @@
       }
     };
     rec.onerror=e=>{if(!active||recognition!==rec)return;captureState.error=e.error;captureState.recognition='error';stopListening();if(['not-allowed','service-not-allowed','language-not-supported','language-unavailable'].includes(e.error)){blocked=true;clearTimeout(timer);status.textContent=captureFailureMessage();say(status.textContent);}else if(!voiceSessionEnded){blocked=false;const delay=Math.min(10000,700*Math.pow(2,Math.min(reconnectAttempts++,4)));retryTimer=setTimeout(listen,delay);}};
-    rec.onend=()=>{if(recognition===rec){recognition=null;if(active&&!speaking&&mode==='listen'&&hasCommand(field.value)){navigate();return;}if(active&&!blocked)retryTimer=setTimeout(listen,350);}};
-    try{startRecognition(rec);}catch(error){recognition=null;if(['NotAllowedError','NotSupportedError'].includes(error.name)){blocked=true;status.textContent='לא ניתן להתחיל האזנה. אשרו מיקרופון ונסו שוב.';say(status.textContent);}else if(active&&!voiceSessionEnded)retryTimer=setTimeout(listen,1000);}
+    rec.onend=()=>{if(recognition===rec){recognition=null;if(active&&!speaking&&mode==='listen'&&hasCommand(field.value)){navigate();return;}if(active&&!blocked)retryTimer=setTimeout(listen,150);}};
+    try{startRecognition(rec);}catch(error){recognition=null;if(['NotAllowedError','NotSupportedError'].includes(error.name)){blocked=true;status.textContent='לא ניתן להתחיל האזנה. אשרו מיקרופון ונסו שוב.';say(status.textContent);}else if(active&&!voiceSessionEnded)retryTimer=setTimeout(listen,error.name==='InvalidStateError'?250:1000);}
   }
   function begin(reset=true){
     generation++;mode='listen';candidates=[];blocked=false;if(reset)saveDraft('');else saveDraft(draft);matches.replaceChildren();options.hidden=true;clearTimeout(timer);status.textContent='לאן לנווט?';
@@ -395,7 +407,7 @@
     return action&&(value.split(' ').some(word=>/^(?:את)?(?:ל|ה|ת)?(?:דף|עמוד|אתר|תוכן)$/.test(word))||/מה שכתוב|בקול/.test(value));
   }
   async function readCurrentPage(){
-    if(readStartPending)return;readStartPending=true;const request=++readRequestId;
+    if(readStartPending)return;showCommandFeedback();commandFeedback.dataset.kind='reading';readStartPending=true;const request=++readRequestId;
     if(active){rememberContinuousMicrophone();close({keepMicrophone:true});}
     try{
       await Promise.resolve(microphonePending);
@@ -403,7 +415,7 @@
       let reader;for(let attempt=0;attempt<80;attempt++){reader=document.getElementById(document.documentElement.lang==='en'?'englishPageReadButton':'pageReadButton');if(reader)break;await new Promise(resolve=>setTimeout(resolve,50));if(request!==readRequestId)return;}
       if(!reader)return;
       primeSharedAudio();
-      if(reader.dataset.reading!=='1')reader.click();
+      if(reader.dataset.reading!=='1')reader.click();showCommandFeedback('הבקשה התקבלה. מכין את הקראת הדף…');const feedback=feedbackSequence;const checkPlayback=setInterval(()=>{if(feedback!==feedbackSequence||voiceSessionEnded){clearInterval(checkPlayback);return;}if(window.__ronenPageSource||window.__ronenPageAudio||window.speechSynthesis?.speaking){clearInterval(checkPlayback);readyForCommand();}else if(reader.dataset.reading!=='1'){clearInterval(checkPlayback);showCommandFeedback('ההקראה נעצרה. מקשיב לפקודה הבאה',false);}},100);
     }finally{if(request===readRequestId)readStartPending=false;startWakeListening();}
   }
   function handleVoiceChoice(text){if(handleBackRequest(text))return true;if(handlePageTopRequest(text))return true;if(handlePauseNarration(text))return true;if(isFinishVoiceRequest(text)){finishVoiceSession();return true;}if(stopCurrentNarration(text))return true;if(handleNarrationCommand(text))return true;if(isReadPageRequest(text)){readCurrentPage();return true;}const value=normalize(text);if(/סגור(?: את)?(?: ה)?(?:ניווט|חלון)|סגור ניווט/.test(value)){spokenClose();return true;}if(/(?:תתחיל|התחל|תתחילי|להתחיל) מחדש/.test(value)){begin();return true;}const number=voiceNumber(text);if(mode==='targets'&&number>0){const target=candidates[number-1];if(target)navigate(target);else say('בחרו מספר מתוך האפשרויות שהקראתי.',listen);return true;}if(mode==='choices'&&number>0){chooseSpoken(text);return true;}return false;}
@@ -428,8 +440,8 @@
     const local=!explicitPage?ranked.filter(item=>item.entry.kind==='section'&&item.entry.path.split('#')[0]===currentPage()&&item.score>=80):[];const search=local.length?local:ranked;const best=search[0].score;const unique=search.filter((x,i,a)=>a.findIndex(y=>y.entry.path===x.entry.path)===i);if(best>=55&&(!unique[1]||best-unique[1].score>=8))return [unique[0].entry];return unique.filter(x=>best-x.score<8).map(x=>x.entry).slice(0,5);
   }
   async function navigate(chosen){
-    if(!active||mode==='navigate')return;clearTimeout(timer);stopSpeech();mode='navigate';options.hidden=true;if(!recognition)listen();const id=generation;
-    status.textContent='מחפש את העמוד או הנושא…';
+    if(!active||mode==='navigate')return;showCommandFeedback();commandFeedback.dataset.kind='navigation';clearTimeout(timer);stopSpeech();mode='navigate';options.hidden=true;if(!recognition)listen();const id=generation;
+    status.textContent='מעבד את בקשתך… מחפש את העמוד או הנושא';
     if(!entries.length){entries=baseMap();refreshCurrentSections();}
     let targets=chosen?[chosen]:resolve(field.value);
     if(targets.length!==1){
@@ -440,11 +452,11 @@
       });
       if(!active||id!==generation)return;targets=chosen?[chosen]:resolve(field.value);
     }
-    if(targets.length!==1){candidates=targets;mode=targets.length?'targets':'clarify';matches.replaceChildren();status.textContent=targets.length?'נמצאו כמה יעדים מתאימים. '+targets.map((target,index)=>(index+1)+', '+target.title).join('. ')+'. אמרו את מספר היעד, או את שמו.':'לא מצאתי לשונית או חלק שמתאימים לבקשה. הבקשה נשמרה. אמרו שוב את היעד בניסוח אחר.';say(status.textContent,listen);return;}
-    const target=targets[0];status.textContent='מעביר אל '+target.title+'…';
+    if(targets.length!==1){candidates=targets;mode=targets.length?'targets':'clarify';matches.replaceChildren();status.textContent=targets.length?'נמצאו כמה יעדים מתאימים. '+targets.map((target,index)=>(index+1)+', '+target.title).join('. ')+'. אמרו את מספר היעד, או את שמו.':'לא מצאתי לשונית או חלק שמתאימים לבקשה. הבקשה נשמרה. אמרו שוב את היעד בניסוח אחר.';showCommandFeedback(status.textContent,false);say(status.textContent,listen);return;}
+    const target=targets[0];showCommandFeedback('הבקשה התקבלה. מעביר אל '+target.title+'…');
     webhook('navigate',{transcript:field.value,target:target.path}).catch(()=>{});
     if(!active||id!==generation)return;const url=new URL(target.path,location.origin);if(url.origin!==location.origin)return;
-    saveDraft('');rememberContinuousMicrophone();close({keepMicrophone:true});if(url.pathname===location.pathname&&url.hash){location.hash=url.hash;revealHash();}else if(url.pathname===location.pathname&&!url.hash){window.scrollTo({top:0,behavior:'instant'});}else location.assign(url.href);
+    await paintCommandFeedback();if(!active||id!==generation)return;try{sessionStorage.setItem('portfolioVoiceTransition',JSON.stringify({at:Date.now(),path:url.pathname}));}catch{}saveDraft('');rememberContinuousMicrophone();close({keepMicrophone:true});if(url.pathname===location.pathname&&url.hash){location.hash=url.hash;revealHash();}else if(url.pathname===location.pathname&&!url.hash){window.scrollTo({top:0,behavior:'instant'});}else location.assign(url.href);
   }
   function makeDialog(){
     const style=document.createElement('style');style.id='portfolioVoiceNavigationStyle';style.textContent='#portfolioVoiceNavigation{position:fixed;top:50%;left:50%;margin:0;transform:translate(-50%,-50%);z-index:99997;direction:rtl;width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;overflow:auto;padding:24px;border:1px solid #d5e0ed;border-radius:18px;background:#fff;color:#102235;box-shadow:0 16px 60px #10223540;font-family:inherit}#portfolioVoiceNavigation::backdrop{background:#10223590}#portfolioVoiceNavigation h2{margin:0 0 12px;font-size:25px}#portfolioVoiceNavigation p{line-height:1.6;margin:10px 0}#portfolioVoiceNavigation textarea{box-sizing:border-box;width:100%;min-height:85px;padding:12px;border:1px solid #bbcddd;border-radius:10px;font:inherit;resize:vertical;color:#102235;background:#fff}#portfolioVoiceNavigation .voiceActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}#portfolioVoiceNavigation button{min-height:42px;padding:10px 14px;border:1px solid #ccd9e7;border-radius:9px;font:inherit;cursor:pointer;background:#edf3ff;color:#195ed8}#portfolioVoiceNavigation button:focus-visible,#portfolioVoiceNavigation textarea:focus-visible{outline:3px solid #195ed8;outline-offset:2px}#portfolioVoiceNavigation button.voicePrimary{background:#195ed8;color:#fff}#portfolioVoiceNavigation [hidden]{display:none!important}#voiceHookStatus{font-size:13px;color:#54677a}#voiceMatches{display:flex;gap:8px;flex-wrap:wrap}';document.head.appendChild(style);
@@ -463,5 +475,6 @@
     if(typeof request==='string'&&request){generation++;mode='listen';saveDraft(request);navigate();}else begin(false);hookStatus.textContent='מחבר ל־Make…';const id=generation;
     siteMap().then(async mapping=>{let notified=false;try{notified=localStorage.getItem('portfolioVoiceMakeMapDate')===mapping.date;}catch{}const remap=mapping.remap||!notified;const response=await webhook('open',{remap,site_map:remap?mapping.entries:[],date:mapping.date});try{localStorage.setItem('portfolioVoiceMakeMapDate',mapping.date);}catch{}return response;}).then(()=>{if(active&&id===generation)hookStatus.textContent='Make קיבל את הלחיצה. הניווט מוכן.';}).catch(()=>{if(active&&id===generation)hookStatus.textContent='Make לא אישר את הלחיצה. אפשר עדיין לנווט באתר.';});
   }
+  try{const transition=JSON.parse(sessionStorage.getItem('portfolioVoiceTransition')||'null');sessionStorage.removeItem('portfolioVoiceTransition');if(transition&&Date.now()-transition.at<10000&&continuousMicrophone&&!voiceSessionEnded){showCommandFeedback('העמוד נפתח. מחדש האזנה…');commandFeedback.dataset.kind='navigation';}}catch{}
   window.PortfolioVoiceNavigation={open,close:finishVoiceSession,finish:finishVoiceSession,isActive:()=>active||continuousMicrophone,getDiagnostics:()=>({...captureState,microphoneOpen:Boolean(microphoneStream?.getTracks().some(track=>track.readyState!=='ended')),speechRecognitionSupported:Boolean(window.SpeechRecognition||window.webkitSpeechRecognition),sessionActive:active||continuousMicrophone})};
 })();
