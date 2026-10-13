@@ -58,6 +58,10 @@ module.exports = async function handler(req, res) {
     if (!response.ok) {
       const detail = await response.text();
       console.error('ElevenLabs TTS failed', response.status, detail.slice(0, 500));
+      try {
+        const providerError=JSON.parse(detail).detail;
+        if(response.status===401&&providerError?.status==='missing_permissions')return res.status(503).json({error:'Voice service permission is missing',code:'tts_permission_missing'});
+      } catch {}
       return res.status(502).json({ error: 'Voice generation failed' });
     }
     const audio = Buffer.from(await response.arrayBuffer());
