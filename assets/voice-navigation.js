@@ -44,7 +44,8 @@
   let active=false,mode='listen',speaking=false,blocked=false,session='',generation=0,mapPromise,mapDate='',entries=[],lastFocus;
   let microphoneStream=null,microphonePending=null,voiceContext=null,voiceSource=null,voiceRequest=null,speechRun=0;
   let candidates=[];
-  const captureState={recognition:'idle',error:'',audioStarted:false,speechDetected:false,resultReceived:false,microphoneSignal:false};
+  const captureState={recognition:'idle',error:'',audioStarted:false,speechDetected:false,resultReceived:false,microphoneSignal:false,level:0};
+  let diagnosticRun=0,diagnosticBusy=false,diagnosticTimer=null;
   let microphoneMonitor=null,microphoneInput=null,microphoneAnalyser=null;
   function stopMicrophoneMonitor(){clearInterval(microphoneMonitor);microphoneMonitor=null;try{microphoneInput?.disconnect();microphoneAnalyser?.disconnect();}catch{}microphoneInput=null;microphoneAnalyser=null;}
   function monitorMicrophone(){
@@ -55,14 +56,15 @@
       const values=new Float32Array(512);let frames=0;
       microphoneMonitor=setInterval(()=>{
         if(!microphoneAnalyser||voiceSessionEnded)return;
-        microphoneAnalyser.getFloatTimeDomainData(values);const level=Math.sqrt(values.reduce((sum,value)=>sum+value*value,0)/values.length);
+        microphoneAnalyser.getFloatTimeDomainData(values);const level=Math.sqrt(values.reduce((sum,value)=>sum+value*value,0)/values.length);captureState.level=level;
+        const meter=dialog?.querySelector('#voiceMicLevel');if(meter)meter.value=Math.min(1,level*8);
         const indicator=dialog?.querySelector('.voiceIndicator');if(indicator){indicator.style.transform='scale('+Math.min(1.2,1+level*3)+')';indicator.style.opacity=level>.012?'1':'.65';}
         if(!speaking&&!window.__portfolioNarrationOutput?.playing&&level>.012){if(++frames>=3)captureState.microphoneSignal=true;}else frames=0;
       },100);
     }catch{}
   }
   function trackRecognition(rec){
-    captureState.recognition='starting';
+    captureState.recognition='starting';captureState.audioStarted=false;
     rec.onaudiostart=()=>{captureState.audioStarted=true;captureState.recognition='listening';};
     rec.onspeechstart=()=>{captureState.speechDetected=true;};
   }
@@ -74,6 +76,59 @@
     if(captureState.microphoneSignal||captureState.speechDetected)return 'המיקרופון קולט קול, אבל שירות זיהוי הדיבור לא מחזיר מילים לאתר. לא מדובר ביעד שלא נבחר. נסו להפעיל מחדש את ההאזנה, או לפתוח את אותו אתר בגוגל כרום.';
     if(!captureState.audioStarted)return 'המיקרופון קיבל הרשאה, אבל זיהוי הדיבור עדיין לא התחיל לקלוט קול. לחצו על חדש האזנה.';
     return 'לא התקבל קול מזוהה מהמיקרופון. בדקו שהוא אינו מושתק ושהמיקרופון הנכון נבחר, ואז אמרו שוב לאן לעבור.';
+  }
+  function showMicrophoneHelp(text,manual=''){
+    const panel=dialog.querySelector('#voiceDiagnostics');panel.hidden=false;
+    panel.querySelector('#voiceDiagnosticMessage').textContent=text;
+    panel.querySelector('#voiceManualHelp').hidden=!manual;
+    panel.querySelector('#voiceManualInstructions').textContent=manual;
+  }
+  const permissionHelp='ב־Edge לחצו על המנעול ליד כתובת האתר, פתחו הרשאות לאתר ואפשרו מיקרופון. אם הוא חסום גם ב־Windows, פתחו את הגדרות הגישה למיקרופון בקישור למטה. לאחר השינוי חזרו ולחצו על בדוק מיקרופון.';
+  const soundHelp='פתחו את הגדרות הקול בקישור למטה, בחרו קלט ואת המיקרופון שבו אתם מדברים, ובדקו עוצמה והשתקה. סגרו יישום שמשתמש במיקרופון באופן בלעדי, ואז חזרו ולחצו על בדוק עוצמת מיקרופון.';
+  async function runMicrophoneCheck(volume=false){
+    if(!active||diagnosticBusy)return;
+    diagnosticBusy=true;const run=++diagnosticRun;clearTimeout(timer);stopSpeech();
+    const checkButton=dialog.querySelector('#voiceCheckMic'),volumeButton=dialog.querySelector('#voiceCheckLevel');checkButton.disabled=true;volumeButton.disabled=true;
+    showMicrophoneHelp('בודק את המיקרופון…');dialog.querySelector('#voiceMicMeter').hidden=!volume;
+    const valid=()=>active&&run===diagnosticRun&&!voiceSessionEnded;
+    try{
+      if(!navigator.mediaDevices?.getUserMedia){showMicrophoneHelp('גישה למיקרופון אינה זמינה בדפדפן הזה.','פתחו את האתר בדפדפן מעודכן בחיבור מאובטח.');return;}
+      let permission='unknown';try{permission=(await navigator.permissions?.query({name:'microphone'}))?.state||'unknown';}catch{}
+      if(!valid())return;
+      if(permission==='denied'){showMicrophoneHelp('המיקרופון חסום בהרשאות. האפליקציה אינה יכולה לשנות את ההרשאה בעצמה.',permissionHelp);say('המיקרופון חסום. יש לאפשר גישה למיקרופון בהרשאות האתר או בהגדרות ווינדוס. ההוראות מופיעות בחלון.');return;}
+      await microphonePending;if(!valid())return;
+      if(!microphoneStream?.getTracks().some(track=>track.kind!=='video'&&track.readyState!=='ended')){
+        const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+        if(!valid()){stream.getTracks().forEach(track=>track.stop());return;}
+        microphoneStream=stream;wakePermission=true;
+      }
+      const track=microphoneStream.getAudioTracks?.()[0]||microphoneStream.getTracks()[0];if(track&&track.enabled===false)track.enabled=true;
+      monitorMicrophone();
+      const supported=Boolean(window.SpeechRecognition||window.webkitSpeechRecognition);
+      if(!volume){
+        if(!supported){showMicrophoneHelp('המיקרופון נפתח, אך זיהוי דיבור אינו נתמך בדפדפן.','פתחו את אותו אתר בדפדפן שתומך בזיהוי דיבור בעברית.');say('המיקרופון נפתח, אבל הדפדפן אינו תומך בזיהוי דיבור.');return;}
+        if(!recognition||['error','idle'].includes(captureState.recognition)){blocked=false;captureState.error='';stopListening();listen();}
+        await new Promise(resolve=>setTimeout(resolve,1200));if(!valid())return;
+        if(captureState.error){const text=captureFailureMessage();showMicrophoneHelp(text,['not-allowed','service-not-allowed'].includes(captureState.error)?permissionHelp:soundHelp);say(text);}
+        else if(captureState.audioStarted){showMicrophoneHelp('המיקרופון נפתח ושירות זיהוי הדיבור התחיל לקלוט קול. אמרו: עבור לעמוד הבית. זיהוי מילים ייבדק כשאתם מדברים.');say('המיקרופון פתוח וזיהוי הדיבור התחיל לקלוט. אמרו עבור לעמוד הבית.');}
+        else{showMicrophoneHelp('המיקרופון נפתח. ההאזנה חודשה, אך שירות זיהוי הדיבור עדיין לא אישר קליטת קול. נסו לדבר; אם אין תגובה, בדקו את עוצמת המיקרופון.',soundHelp);say('המיקרופון נפתח וההאזנה חודשה. יש לבדוק גם את עוצמת הקול.');}
+        return;
+      }
+      if(!microphoneAnalyser){showMicrophoneHelp('מד עוצמת המיקרופון אינו זמין בדפדפן הזה.',soundHelp);return;}
+      captureState.resultReceived=false;showMicrophoneHelp('לאחר ההנחיה הקולית, דברו במשך שש שניות. המד מציג את עוצמת הקול המתקבלת מהמיקרופון.');
+      await new Promise(resolve=>say('אמרו כמה מילים לבדיקת עוצמת המיקרופון.',resolve));if(!valid())return;
+      showMicrophoneHelp('דברו כעת במשך שש שניות. המד מציג את עוצמת הקול המתקבלת מהמיקרופון.');let peak=0,samples=0;
+      await new Promise(resolve=>{
+        const began=Date.now();diagnosticTimer=setInterval(()=>{
+          if(!valid()){clearInterval(diagnosticTimer);resolve();return;}
+          if(!speaking){peak=Math.max(peak,captureState.level);samples++;}
+          if(Date.now()-began>=6000){clearInterval(diagnosticTimer);resolve();}
+        },100);
+      });if(!valid())return;
+      if(!samples||peak<.012){const text='לא התקבל קול ברור בבדיקה. ניסיתי לחדש את ההאזנה; יש לבדוק בחירת מיקרופון, השתקה ועוצמת קלט.';blocked=false;stopListening();listen();showMicrophoneHelp(text,soundHelp);say(text);}
+      else{const text=captureState.resultReceived?'עוצמת המיקרופון מספיקה ונקלטו מילים בזיהוי הדיבור.':'נקלט קול מהמיקרופון. עדיין לא נקלטו מילים בזיהוי הדיבור; ייתכן שהתקלה בשירות הזיהוי.';showMicrophoneHelp(text,captureState.resultReceived?'':'אם הדיבור אינו מזוהה גם אחרי חדש האזנה, נסו לפתוח את אותו אתר בדפדפן אחר.');say(text);}
+    }catch(error){if(valid()){const denied=['NotAllowedError','SecurityError'].includes(error.name);const text=denied?'לא ניתנה גישה למיקרופון.':error.name==='NotFoundError'?'לא נמצא מיקרופון מחובר.':'לא ניתן לפתוח את המיקרופון כרגע.';showMicrophoneHelp(text,denied?permissionHelp:soundHelp);say(text);}}
+    finally{if(run===diagnosticRun){diagnosticBusy=false;checkButton.disabled=false;volumeButton.disabled=false;if(active&&!blocked)timer=setTimeout(showChoices,30000);}}
   }
   let promptText='',promptEndedAt=0;
   function isOutputEcho(text){
@@ -196,7 +251,7 @@
     microphonePending=navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(stream=>{if(!active||session!==token){stream.getTracks().forEach(track=>track.stop());return;}microphoneStream=stream;monitorMicrophone();wakePermission=true;mic.textContent='חדש האזנה';}).catch(()=>{if(active&&session===token){blocked=true;status.textContent='יש לאשר גישה למיקרופון כדי לנווט בקול.';say(status.textContent);}}).finally(()=>{microphonePending=null;});
   }
   function syncToggle(){const button=document.getElementById('site_voice_nevegation');if(button){const he=document.documentElement.lang!=='en';const running=active||continuousMicrophone;button.textContent=running?(he?'סיים ניווט קולי':'End voice navigation'):(he?'ניווט קולי':'Voice navigation');button.setAttribute('aria-pressed',String(running));}}
-  function close({keepMicrophone=true}={}){generation++;active=false;clearTimeout(timer);stopListening();stopSpeech();if(!keepMicrophone){microphoneStream?.getTracks().forEach(track=>track.stop());microphoneStream=null;}if(dialog?.open)dialog.close();syncToggle();lastFocus?.focus();startWakeListening();}
+  function close({keepMicrophone=true}={}){diagnosticRun++;diagnosticBusy=false;dialog?.querySelectorAll('#voiceCheckMic,#voiceCheckLevel').forEach(button=>button.disabled=false);generation++;active=false;clearTimeout(timer);stopListening();stopSpeech();if(!keepMicrophone){microphoneStream?.getTracks().forEach(track=>track.stop());microphoneStream=null;}if(dialog?.open)dialog.close();syncToggle();lastFocus?.focus();startWakeListening();}
   function isFinishVoiceRequest(text){
     const value=normalize(text);
     if(/(?:אל|לא)\s+(?:תסיים|סיים|סימי|תסגור|סגור|הפסק|תפסיק|עצור|תעצור|כבה)/.test(value))return false;
@@ -367,9 +422,9 @@
   }
   function makeDialog(){
     const style=document.createElement('style');style.id='portfolioVoiceNavigationStyle';style.textContent='#portfolioVoiceNavigation{position:fixed;top:50%;left:50%;margin:0;transform:translate(-50%,-50%);z-index:99997;direction:rtl;width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;overflow:auto;padding:24px;border:1px solid #d5e0ed;border-radius:18px;background:#fff;color:#102235;box-shadow:0 16px 60px #10223540;font-family:inherit}#portfolioVoiceNavigation::backdrop{background:#10223590}#portfolioVoiceNavigation h2{margin:0 0 12px;font-size:25px}#portfolioVoiceNavigation p{line-height:1.6;margin:10px 0}#portfolioVoiceNavigation textarea{box-sizing:border-box;width:100%;min-height:85px;padding:12px;border:1px solid #bbcddd;border-radius:10px;font:inherit;resize:vertical;color:#102235;background:#fff}#portfolioVoiceNavigation .voiceActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}#portfolioVoiceNavigation button{min-height:42px;padding:10px 14px;border:1px solid #ccd9e7;border-radius:9px;font:inherit;cursor:pointer;background:#edf3ff;color:#195ed8}#portfolioVoiceNavigation button:focus-visible,#portfolioVoiceNavigation textarea:focus-visible{outline:3px solid #195ed8;outline-offset:2px}#portfolioVoiceNavigation button.voicePrimary{background:#195ed8;color:#fff}#portfolioVoiceNavigation [hidden]{display:none!important}#voiceHookStatus{font-size:13px;color:#54677a}#voiceMatches{display:flex;gap:8px;flex-wrap:wrap}';document.head.appendChild(style);
-    dialog=document.createElement('dialog');dialog.id='portfolioVoiceNavigation';dialog.setAttribute('aria-labelledby','voiceNavigationTitle');dialog.innerHTML='<h2 id="voiceNavigationTitle">ניווט קולי</h2><div class="voiceIndicator" aria-hidden="true">🎙️</div><input type="hidden" id="voiceNavigationText"><p id="voiceNavigationStatus" hidden></p><p id="voiceHookStatus" hidden></p><div id="voiceMatches" hidden></div><div class="voiceActions"><button type="button" id="voiceMic">חדש האזנה</button><button type="button" id="voiceRestart">התחל מחדש</button><button type="button" id="voiceClose">סיים ניווט קולי</button></div><div id="voiceOptions" aria-hidden="true" hidden></div>';
+    dialog=document.createElement('dialog');dialog.id='portfolioVoiceNavigation';dialog.setAttribute('aria-labelledby','voiceNavigationTitle');dialog.innerHTML='<h2 id="voiceNavigationTitle">ניווט קולי</h2><div class="voiceIndicator" aria-hidden="true">🎙️</div><input type="hidden" id="voiceNavigationText"><p id="voiceNavigationStatus" hidden></p><p id="voiceHookStatus" hidden></p><div id="voiceMatches" hidden></div><div class="voiceActions"><button type="button" id="voiceMic">חדש האזנה</button><button type="button" id="voiceRestart">התחל מחדש</button><button type="button" id="voiceClose">סיים ניווט קולי</button></div><div class="voiceActions"><button type="button" id="voiceCheckMic">בדוק מיקרופון</button><button type="button" id="voiceCheckLevel">בדוק עוצמת מיקרופון</button></div><section id="voiceDiagnostics" hidden><p id="voiceDiagnosticMessage" role="status" aria-live="polite"></p><div id="voiceMicMeter" hidden><label for="voiceMicLevel">עוצמת הקול הנקלטת</label><meter id="voiceMicLevel" min="0" max="1" value="0" aria-label="עוצמת המיקרופון"></meter></div><div id="voiceManualHelp" hidden><p id="voiceManualInstructions"></p><div class="voiceActions"><a href="ms-settings:sound">הגדרות קול ב־Windows</a><a href="ms-settings:privacy-microphone">גישה למיקרופון ב־Windows</a><a href="https://support.microsoft.com/en-us/windows/hardware/drivers/fix-microphone-problems" target="_blank" rel="noopener noreferrer">עזרה בפתרון בעיות מיקרופון</a></div></div></section><div id="voiceOptions" aria-hidden="true" hidden></div>';
     const visual=document.createElement('style');visual.textContent='#portfolioVoiceNavigation .voiceIndicator{text-align:center;font-size:54px;margin:20px 0}#portfolioVoiceNavigation .voiceActions{justify-content:center}#portfolioVoiceNavigation #voiceOptions{display:none!important}';document.head.appendChild(visual);
-    document.body.appendChild(dialog);field=dialog.querySelector('input[type=hidden]');status=dialog.querySelector('#voiceNavigationStatus');hookStatus=dialog.querySelector('#voiceHookStatus');options=dialog.querySelector('#voiceOptions');matches=dialog.querySelector('#voiceMatches');mic=dialog.querySelector('#voiceMic');
+    dialog.querySelector('#voiceCheckMic').onclick=()=>runMicrophoneCheck(false);dialog.querySelector('#voiceCheckLevel').onclick=()=>runMicrophoneCheck(true); visual.textContent+='#portfolioVoiceNavigation{right:auto;bottom:auto;z-index:100001;max-width:calc(100vw - 32px)}#voiceDiagnostics{padding:12px;margin-top:14px;border:1px solid #d5e0ed;border-radius:10px;background:#f6f9ff;font-size:14px}#voiceMicLevel{display:block;width:100%;height:24px;margin-top:6px}#voiceManualHelp a{color:#195ed8;text-decoration:underline}#portfolioVoiceNavigation button:disabled{opacity:.55;cursor:wait}'; document.body.appendChild(dialog);field=dialog.querySelector('input[type=hidden]');status=dialog.querySelector('#voiceNavigationStatus');hookStatus=dialog.querySelector('#voiceHookStatus');options=dialog.querySelector('#voiceOptions');matches=dialog.querySelector('#voiceMatches');mic=dialog.querySelector('#voiceMic');
     dialog.querySelector('#voiceRestart').onclick=()=>begin();dialog.querySelector('#voiceClose').onclick=finishVoiceSession;
     mic.onclick=()=>{blocked=false;captureState.error='';stopSpeech();stopListening();requestMicrophone();listen();clearTimeout(timer);timer=setTimeout(showChoices,30000);};
     dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
