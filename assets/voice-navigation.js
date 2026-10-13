@@ -17,7 +17,7 @@
     ['advantages.html','היתרונות שלי',['יתרונות']],
     ['contact.html','צור איתי קשר',['יצירת קשר','צור קשר','קשר']]
   ];
-  const normalize=s=>String(s||'').toLowerCase().replace(/[\u0591-\u05c7]/g,'').replace(/[^a-z0-9\u05d0-\u05ea ]/g,' ').replace(/מ(?:א)?ג\s*י?\s*ק/g,'magic').replace(/פרוייקט/g,'פרויקט').replace(/נסיון/g,'ניסיון').replace(/בקבילה/g,'בקהילה').replace(/\s+/g,' ').trim();
+  const normalize=s=>String(s||'').toLowerCase().replace(/[\u0591-\u05c7]/g,'').replace(/[^a-z0-9\u05d0-\u05ea ]/g,' ').replace(/מ(?:א)?ג\s*י?\s*ק/g,'magic').replace(/פרוייקט/g,'פרויקט').replace(/נסיון/g,'ניסיון').replace(/בקבילה/g,'בקהילה').replace(/(?:^|\s)(?:עסור|אבור)(?=\s|$)/g,' עבור').replace(/\s+/g,' ').trim();
   const intentions={
     'index.html':['עמוד ראשי','התחלה','חזור לבית','תחזור לבית','מסך ראשי','ראשי'],
     'experience.html':['איפה רונן עבד','איפה הוא עבד','איפה עבד','מקומות עבודה','קריירה','עבר מקצועי','רקע תעסוקתי','ניסיון מקצועי','תפקידים קודמים','תעסוקה'],
@@ -38,8 +38,8 @@
   const tokens=text=>normalize(text).split(' ').filter(w=>w.length>1&&!['אני','רוצה','תראה','תציג','תפתח','אפשר','את','של','על','לי','הוא','רונן','לראות','נווט','עכשיו','לשם','עמוד','לשונית','בבקשה','תעבור','עבור'].includes(w)).map(w=>({מנתח:'ניתוח',מאפיין:'אפיון'}[w]||w)).map(stem);
   function distance(a,b){const row=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){let prev=row[0];row[0]=i;for(let j=1;j<=b.length;j++){const before=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=before;}}return row[b.length];}
   function sound(word){return word.replace(/[כקח]/g,'ק').replace(/[טת]/g,'ת').replace(/[סש]/g,'ס').replace(/[אעהוי]/g,'').replace(/(.)\1+/g,'$1');}
-  const command=/(?:נו{1,3}ט|עבור|תעבור|לך|לכי|קח אותי|העבר אותי|תעביר אותי)\s+(?:עכשיו|לשם|למקום הזה)|(?:פתח|תפתח)\s+(?:את זה|את המקום הזה)/g;
-  const moveRequest=/(?:^|\s)(?:נו{1,3}ט|עבור|תעבור|לך|לכי|קח|העבר|תעביר|פתח|תפתח|הצג|תציג|תראה|להגיע|לעבור|להיכנס|לחזור)\s/;
+  const command=/(?:נו{1,3}ט|תנווט|עבור|תעבור|לך|לכי|קח אותי|העבר אותי|תעביר אותי)\s+(?:עכשיו|לשם|למקום הזה)|(?:פתח|תפתח)\s+(?:את זה|את המקום הזה)/g;
+  const moveRequest=/(?:^|\s)(?:נו{1,3}ט|תנווט|עבור|תעבור|לך|לכי|קח|העבר|תעביר|פתח|תפתח|הצג|תציג|תראה|להגיע|לעבור|להיכנס|לחזור|חזור|תחזור|תלך|ללכת|כנס|תיכנס|תגיע)\s/;
   let dialog,field,status,hookStatus,options,matches,mic,recognition=null,timer,retryTimer,speechTimer,commandTimer;
   let active=false,mode='listen',speaking=false,blocked=false,session='',generation=0,mapPromise,mapDate='',entries=[],lastFocus;
   let microphoneStream=null,microphonePending=null,voiceContext=null,voiceSource=null,voiceRequest=null,speechRun=0;
@@ -78,16 +78,17 @@
       for(let i=event.resultIndex||0;i<event.results.length;i++){
         if(!event.results[i].isFinal)continue;const text=normalize(event.results[i][0].transcript);if(isOutputEcho(text))continue;
         if(isFinishVoiceRequest(text)){finishVoiceSession();return;}
+        if(handlePageTopRequest(text))return;
         reconnectAttempts=0;
         if(handlePauseNarration(text))return;
         if(stopCurrentNarration(text))return;
         if(handleNarrationCommand(text))return;
         if(isReadPageRequest(text)){readCurrentPage();return;}
-        if(/(?:אל|לא)\s+(?:תפעיל|הפעל|להפעיל)/.test(text))continue;
+        if(/(?:אל|לא)\s+(?:תפעיל|הפעל|להפעיל|תעבור|עבור|לך|תפתח|פתח|נווט|להגיע|לעבור)/.test(text))continue;
         if(/(?:^|\s)(?:הפעל|תפעיל|הפעילי|תפעילי)\s+(?:את\s+)?(?:ה)?ניווט\s+(?:ה)?קולי(?:$|\s)/.test(text)){
           stopWakeListening();open();return;
         }
-        if(continuousMicrophone&&(hasCommand(text)||/(?:דף|לשונית|עמוד|חלק|נושא)\s/.test(text)||resolve(text).length)){open(text);return;}
+        if(continuousMicrophone&&hasCommand(text)){open(text);return;}
       }
     };
     rec.onend=()=>{if(wakeRecognition===rec){wakeRecognition=null;if(!active&&wakePermission)wakeTimer=setTimeout(startWakeListening,700);}};
@@ -152,7 +153,7 @@
     })();return mapPromise;
   }
   async function webhook(action,data={}){
-    const response=await fetch('/api/voice-navigation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,session_id:session,page:currentPage(),date:day(),...data}),signal:AbortSignal.timeout(15000)});
+    const response=await fetch('/api/voice-navigation',{method:'POST',keepalive:action==='navigate',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,session_id:session,page:currentPage(),date:day(),...data}),signal:AbortSignal.timeout(15000)});
     const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Make unavailable');return result;
   }
   function stopListening(){clearTimeout(retryTimer);clearTimeout(commandTimer);if(recognition){const old=recognition;recognition=null;old.onend=null;old.onresult=null;old.onerror=null;try{old.abort();}catch{}}}
@@ -181,6 +182,7 @@
   function say(text,after){
     stopSpeech();speaking=true;promptText=text;listen();const id=generation,run=speechRun;let finished=false;
     const done=()=>{if(finished||run!==speechRun)return;finished=true;clearTimeout(speechTimer);if(!active||id!==generation)return;speaking=false;promptEndedAt=Date.now();after?.();};
+    speechTimer=setTimeout(done,8000);
     const native=()=>{if(!active||run!==speechRun)return;if(!window.speechSynthesis){done();return;}const utterance=new SpeechSynthesisUtterance(text);utterance.lang='he-IL';const voice=window.speechSynthesis.getVoices().find(v=>v.lang.startsWith('he'));if(voice)utterance.voice=voice;utterance.onend=done;utterance.onerror=done;speechTimer=setTimeout(()=>{window.speechSynthesis.cancel();done();},20000);window.speechSynthesis.speak(utterance);};
     if(window.speechSynthesis?.getVoices().some(v=>v.lang.startsWith('he'))||!voiceContext){native();return;}
     voiceRequest=new AbortController();const controller=voiceRequest;const limit=setTimeout(()=>controller.abort(),8000);
@@ -191,15 +193,16 @@
     if(microphonePending){microphonePending.then(()=>{if(active)listen();});return;}
     const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!Speech){blocked=true;status.textContent='זיהוי קולי אינו זמין בדפדפן הזה. יש לפתוח את האתר בדפדפן שתומך בזיהוי קולי.';say(status.textContent);return;}
-    clearTimeout(retryTimer);if(recognition){const old=recognition;recognition=null;old.onend=null;old.onresult=null;old.onerror=null;try{old.abort();}catch{}}const rec=new Speech();recognition=rec;rec.lang='he-IL';rec.continuous=true;rec.interimResults=true;
+    if(recognition&&recognition.navigationMode===mode)return;
+    clearTimeout(retryTimer);if(recognition){const old=recognition;recognition=null;old.onend=null;old.onresult=null;old.onerror=null;try{old.abort();}catch{}}const rec=new Speech();recognition=rec;rec.navigationMode=mode;rec.lang='he-IL';rec.continuous=true;rec.interimResults=true;
     const prefix=['clarify','targets'].includes(mode)?'':field.value.trim(),heard=new Map();
     rec.onstart=()=>{if(active){mic.textContent='חדש האזנה';status.textContent=mode==='choices'?'המיקרופון פעיל ומקשיב לבחירה: 1, 2 או 3':'המיקרופון פעיל ומקשיב. בסיום אמרו ״נווט עכשיו״.';}};
     rec.onresult=e=>{
       if(!active||recognition!==rec)return;let words=[],allFinal=true;
       for(let i=e.resultIndex||0;i<e.results.length;i++){const part=e.results[i][0].transcript;if(isOutputEcho(part)){heard.delete(i);continue;}heard.set(i,part);words.push(part);if(!e.results[i].isFinal)allFinal=false;}
       const spoken=words.join(' ').trim();if(!spoken)return;reconnectAttempts=0;
-      if(mode==='navigate'){if(allFinal&&isFinishVoiceRequest(spoken))finishVoiceSession();return;}
-      if(allFinal&&handleVoiceChoice(spoken))return;
+      if(mode==='navigate'){if(!allFinal)return;if(handleVoiceChoice(spoken))return;if(hasCommand(spoken)){generation++;mode='listen';saveDraft(spoken);navigate();}return;}
+      if(allFinal&&handleVoiceChoice(spoken))return; if(allFinal&&/(?:אל|לא)\s+(?:תעבור|עבור|לך|תפתח|פתח|נווט|תנווט|להגיע|לעבור)/.test(normalize(spoken)))return;
       if(mode==='choices'&&!hasCommand(spoken)){if(allFinal)chooseSpoken(spoken);return;}
       if(spoken){saveDraft([prefix,[...heard.values()].join(' ')].filter(Boolean).join(' '));}
       clearTimeout(commandTimer);
@@ -227,6 +230,19 @@
     const resume=/(?:המשך|תמשיך|תחזור)\s+(?:את\s+)?(?:ההקראה|הקראה|לקרוא)|resume/.test(value)||(window.__portfolioNarrationPaused&&/^(?:המשך|תמשיך|קדימה)$/.test(value));
     if(!pause&&!resume)return false;window.dispatchEvent(new CustomEvent('portfolioReadPause',{detail:pause}));return true;
   }
+  function handlePageTopRequest(text){
+    const value=normalize(text);
+    if(/(?:אל|לא)\s+(?:תעבור|עבור|לך|תחזור|חזור|נווט|תגלול|גלול)/.test(value))return false;
+    const top=/(?:תחילת|התחלת|ראש|התחלה של)\s+(?:ה)?(?:עמוד|דף)|(?:עמוד|דף)\s+(?:מההתחלה|בהתחלה)|(?:גלול|תגלול)\s+(?:עד\s+)?(?:למעלה|לראש)|back to top|top of (?:the )?page/.test(value);
+    if(!top)return false;
+    const reader=document.querySelector('#pageReadButton[data-reading="1"],#englishPageReadButton[data-reading="1"]');
+    if(reader)reader.click();
+    if(active)close({keepMicrophone:true});
+    window.scrollTo({top:0,behavior:'instant'});
+    const heading=document.querySelector('main h1');if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
+    window.__portfolioReadPosition?.reset?.();
+    return true;
+  }
   function handleNarrationCommand(text){
     const reader=document.querySelector('#pageReadButton[data-reading="1"],#englishPageReadButton[data-reading="1"]');if(!reader)return false;
     const value=normalize(text).replace(/(?:^|\s)בבקשה(?:\s|$)/g,' ').trim();
@@ -239,7 +255,7 @@
     const action=/(?:^|\s)(?:עבור|תעבור|העבר|תעביר|דלג|תדלג|המשך|תמשיך|תקדם|תתקדם|לעבור|להתקדם|לחזור|קפוץ|לך|לכי|תחזור|חזור|חזרי|תחזרי|go|skip)(?:\s|$)/.test(value);
     const short=shortcutNext||shortcutPrevious||/^(?:ה?פרק|ה?נושא|ה?חלק|ה?קטע)\s+(?:ה?בא|ה?באה|ה?קודם|ה?קודמת)$/.test(value)||/^(?:קדימה|אחורה|next topic|previous topic)$/.test(value);
     if(!(subject&&(action||short))&&!(action&&/(?:קדימה|אחורה)/.test(value))&&!short)return false;
-    const now=Date.now();if(value===lastNarrationCommand&&now-lastNarrationTime<1200)return true;
+    const now=Date.now();
     const step=next?1:-1,row=document.getElementById('pageReadTopicControls');
     const button=row?.querySelector('button[data-read-step="'+step+'"]')||[...(row?.querySelectorAll('button')||[])].find(b=>!['pageReadButton','englishPageReadButton'].includes(b.id)&&(step===1?/הנושא הבא|next topic/i:/הנושא הקודם|previous topic/i).test(b.textContent));
     if(!button)return false;lastNarrationCommand=value;lastNarrationTime=now;button.click();return true;
@@ -286,7 +302,7 @@
       if(reader.dataset.reading!=='1')reader.click();
     }finally{if(request===readRequestId)readStartPending=false;startWakeListening();}
   }
-  function handleVoiceChoice(text){if(handlePauseNarration(text))return true;if(isFinishVoiceRequest(text)){finishVoiceSession();return true;}if(stopCurrentNarration(text))return true;if(handleNarrationCommand(text))return true;if(isReadPageRequest(text)){readCurrentPage();return true;}const value=normalize(text);if(/סגור(?: את)?(?: ה)?(?:ניווט|חלון)|סגור ניווט/.test(value)){spokenClose();return true;}if(/(?:תתחיל|התחל|תתחילי|להתחיל) מחדש/.test(value)){begin();return true;}const number=voiceNumber(text);if(mode==='targets'&&number>0){const target=candidates[number-1];if(target)navigate(target);else say('בחרו מספר מתוך האפשרויות שהקראתי.',listen);return true;}if(mode==='choices'&&number>0){chooseSpoken(text);return true;}return false;}
+  function handleVoiceChoice(text){if(handlePageTopRequest(text))return true;if(handlePauseNarration(text))return true;if(isFinishVoiceRequest(text)){finishVoiceSession();return true;}if(stopCurrentNarration(text))return true;if(handleNarrationCommand(text))return true;if(isReadPageRequest(text)){readCurrentPage();return true;}const value=normalize(text);if(/סגור(?: את)?(?: ה)?(?:ניווט|חלון)|סגור ניווט/.test(value)){spokenClose();return true;}if(/(?:תתחיל|התחל|תתחילי|להתחיל) מחדש/.test(value)){begin();return true;}const number=voiceNumber(text);if(mode==='targets'&&number>0){const target=candidates[number-1];if(target)navigate(target);else say('בחרו מספר מתוך האפשרויות שהקראתי.',listen);return true;}if(mode==='choices'&&number>0){chooseSpoken(text);return true;}return false;}
   function chooseSpoken(text){const value=normalize(text);if(/(?:^|\s)(1|אחת|אחד|ראשונה)(?:\s|$)/.test(value))begin();else if(/(?:^|\s)(2|שתיים|שתים|שניים|שנים|שנייה)(?:\s|$)/.test(value))navigate();else if(/(?:^|\s)(3|שלוש|שלושה|שלישית)(?:\s|$)/.test(value))spokenClose();}
   function resolve(text){
     refreshCurrentSections();
@@ -308,13 +324,15 @@
   }
   async function navigate(chosen){
     if(!active||mode==='navigate')return;clearTimeout(timer);stopSpeech();mode='navigate';options.hidden=true;if(!recognition)listen();const id=generation;
-    status.textContent='מחפש את העמוד או הנושא…';await siteMap();if(!active||id!==generation)return;
-    const targets=chosen?[chosen]:resolve(field.value);
+    status.textContent='מחפש את העמוד או הנושא…';
+    if(!entries.length){entries=baseMap();refreshCurrentSections();}
+    let targets=chosen?[chosen]:resolve(field.value);
+    if(targets.length!==1){await siteMap();if(!active||id!==generation)return;targets=chosen?[chosen]:resolve(field.value);}
     if(targets.length!==1){candidates=targets;mode=targets.length?'targets':'clarify';matches.replaceChildren();status.textContent=targets.length?'נמצאו כמה יעדים מתאימים. '+targets.map((target,index)=>(index+1)+', '+target.title).join('. ')+'. אמרו את מספר היעד, או את שמו.':'לא מצאתי לשונית או חלק שמתאימים לבקשה. הבקשה נשמרה. אמרו שוב את היעד בניסוח אחר.';say(status.textContent,listen);return;}
     const target=targets[0];status.textContent='מעביר אל '+target.title+'…';
-    try{await webhook('navigate',{transcript:field.value,target:target.path});hookStatus.textContent='Make קיבל את בקשת הניווט.';}catch{hookStatus.textContent='Make לא אישר את הבקשה. הניווט באתר יתבצע לפי היעד שנמצא.';}
+    webhook('navigate',{transcript:field.value,target:target.path}).catch(()=>{});
     if(!active||id!==generation)return;const url=new URL(target.path,location.origin);if(url.origin!==location.origin)return;
-    await new Promise(resolve=>say('מעביר כעת אל '+target.title,resolve));if(!active||id!==generation)return;saveDraft('');rememberContinuousMicrophone();close({keepMicrophone:true});if(url.pathname===location.pathname&&url.hash){location.hash=url.hash;revealHash();}else if(url.pathname===location.pathname&&!url.hash){window.scrollTo({top:0,behavior:'instant'});}else location.assign(url.href);
+    saveDraft('');rememberContinuousMicrophone();close({keepMicrophone:true});if(url.pathname===location.pathname&&url.hash){location.hash=url.hash;revealHash();}else if(url.pathname===location.pathname&&!url.hash){window.scrollTo({top:0,behavior:'instant'});}else location.assign(url.href);
   }
   function makeDialog(){
     const style=document.createElement('style');style.id='portfolioVoiceNavigationStyle';style.textContent='#portfolioVoiceNavigation{position:fixed;top:50%;left:50%;margin:0;transform:translate(-50%,-50%);z-index:99997;direction:rtl;width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;overflow:auto;padding:24px;border:1px solid #d5e0ed;border-radius:18px;background:#fff;color:#102235;box-shadow:0 16px 60px #10223540;font-family:inherit}#portfolioVoiceNavigation::backdrop{background:#10223590}#portfolioVoiceNavigation h2{margin:0 0 12px;font-size:25px}#portfolioVoiceNavigation p{line-height:1.6;margin:10px 0}#portfolioVoiceNavigation textarea{box-sizing:border-box;width:100%;min-height:85px;padding:12px;border:1px solid #bbcddd;border-radius:10px;font:inherit;resize:vertical;color:#102235;background:#fff}#portfolioVoiceNavigation .voiceActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}#portfolioVoiceNavigation button{min-height:42px;padding:10px 14px;border:1px solid #ccd9e7;border-radius:9px;font:inherit;cursor:pointer;background:#edf3ff;color:#195ed8}#portfolioVoiceNavigation button:focus-visible,#portfolioVoiceNavigation textarea:focus-visible{outline:3px solid #195ed8;outline-offset:2px}#portfolioVoiceNavigation button.voicePrimary{background:#195ed8;color:#fff}#portfolioVoiceNavigation [hidden]{display:none!important}#voiceHookStatus{font-size:13px;color:#54677a}#voiceMatches{display:flex;gap:8px;flex-wrap:wrap}';document.head.appendChild(style);
