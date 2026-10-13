@@ -1,3 +1,18 @@
+// Short opening audio and a bounded cache reduce narration startup time.
+window.__portfolioNarrationState=state=>window.dispatchEvent(new CustomEvent('portfolioNarrationState',{detail:state}));
+window.__portfolioTtsCache=new Map();
+window.__portfolioFetchNarration=async(text,language)=>{
+ let unavailableUntil=0;try{unavailableUntil=Number(sessionStorage.getItem('portfolioTtsUnavailableUntil')||0);}catch{}
+ if(Date.now()<unavailableUntil)throw Object.assign(new Error('Voice permission missing'),{code:'tts_permission_missing'});
+ const key=language+':'+text,cache=window.__portfolioTtsCache;if(cache.has(key))return cache.get(key);
+ const request=fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,language}),signal:AbortSignal.timeout(text.length<=260?6000:30000)}).then(async response=>{if(!response.ok){let data;try{data=await response.json();}catch{}if(data?.code==='tts_permission_missing')try{sessionStorage.setItem('portfolioTtsUnavailableUntil',String(Date.now()+60000));}catch{}throw Object.assign(new Error('TTS unavailable'),{code:data?.code});}return response.blob();}).catch(error=>{cache.delete(key);throw error;});
+ cache.set(key,request);while(cache.size>20)cache.delete(cache.keys().next().value);return request;
+};
+window.__portfolioShortOpening=(groups,key)=>{
+ if(!groups.length)return groups;const opening=[],remaining=[...groups[0]];let available=240;
+ while(remaining.length&&available>0){const item=remaining.shift();if(available<60&&opening.length){remaining.unshift(item);break;}const text=item[key];if(text.length<=available){opening.push(item);available-=text.length+2;continue;}let cut=text.lastIndexOf(' ',available);if(cut<40)cut=available;opening.push({...item,[key]:text.slice(0,cut),original:item.original||item});remaining.unshift({...item,[key]:text.slice(cut).trimStart(),original:item.original||item});break;}
+ if(remaining.length)groups.splice(0,1,opening,remaining);return groups;
+};
 // Track only the site's spoken text so recognition can ignore playback echoes.
 window.__portfolioSetNarrationOutput=text=>{const previous=window.__portfolioNarrationOutput;window.__portfolioNarrationOutput={text:text||previous?.text||'',playing:Boolean(text),endedAt:text?0:Date.now()};};
 // Keep narration anchored to the reader's selected text or current view.
@@ -487,24 +502,24 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   const speak=(btn,list)=>{
     const id=++run;btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';let i=0,spoken=0;
     const next=()=>{if(id!==run)return;if(i>=list.length){stop(btn);return}const x=list[i++];const position=topicList.indexOf(x.original||x);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);if(x.pause){setTimeout(next,Math.min(x.pause,250));return}
-      window.__portfolioSetNarrationOutput(x.t);const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+x.t);u.lang='he-IL';u.rate=.78;u.pitch=1;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>{window.__portfolioSetNarrationOutput('');if(id===run)setTimeout(next,Math.min(x.p||150,250))};speechSynthesis.speak(u)};
+      window.__portfolioSetNarrationOutput(x.t);const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+x.t);u.lang='he-IL';u.rate=.78;u.pitch=1;const v=voice();if(v)u.voice=v;u.onstart=()=>window.__portfolioNarrationState('playing');u.onend=()=>{window.__portfolioSetNarrationOutput('');if(id===run)setTimeout(next,Math.min(x.p||150,250))};u.onerror=event=>{window.__portfolioSetNarrationOutput('');if(event.error==='not-allowed'){stop(btn);window.__portfolioNarrationState('blocked');return;}if(id===run)setTimeout(next,Math.min(x.p||150,250))};speechSynthesis.speak(u)};
     setTimeout(next,120);
   };
   const packForAudio=(values,max)=>{const parts=[];let part='';values.forEach(value=>{if(!value)return;const next=part?part+'. '+value:value;if(next.length>max&&part){parts.push(part);part=value}else part=next});if(part)parts.push(part);return parts};
-  const fetchAudioPart=async(text,language)=>{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,language:language})});if(!response.ok)throw new Error('TTS unavailable');return response.blob()};
+  const fetchAudioPart=window.__portfolioFetchNarration;
   const speakWithEleven=async(btn,list,context)=>{
     const requestId=++run;
     const categoryAudio=location.pathname.split('/').pop()==='skills.html';
     const groups=[];let group=[];list.forEach(item=>{if(item.pause||(item.t&&item.p>=900&&group.length)){if(group.length)groups.push(group);group=[]}if(item.t)group.push(item)});if(group.length)groups.push(group);
-    const parts=groups.map(values=>values.map(x=>x.t).join('. '));
+    window.__portfolioShortOpening(groups,'t');const parts=groups.map(values=>values.map(x=>x.t).join('. '));
     if(!parts.length)throw new Error('No text');
-    btn.dataset.reading='1';btn.textContent='⏳ מכין הקראה…';
+    btn.dataset.reading='1';btn.textContent='⏳ מכין הקראה…';window.__portfolioNarrationState('preparing');
     const first=await fetchAudioPart(parts[0],'he');
     if(requestId!==run)return;
     if(!context)throw new Error('Web Audio unavailable');
-    const playPart=async(index,blob)=>{if(requestId!==run)return;const position=topicList.indexOf(groups[index][0].original||groups[index][0]);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchAudioPart(parts[index+1],'he'):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==run)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ עצור הקראה';
-      source.onended=async()=>{window.__portfolioSetNarrationOutput('');if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{if(categoryAudio)await new Promise(resolve=>setTimeout(resolve,250));if(requestId!==run)return;await playPart(index+1,await next)}catch{stop(btn)}};
-      window.__portfolioSetNarrationOutput(parts[index]);source.start(0)};
+    const playPart=async(index,blob)=>{if(requestId!==run)return;const position=topicList.indexOf(groups[index][0].original||groups[index][0]);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchAudioPart(parts[index+1],'he'):null;next?.catch(()=>{});const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==run)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ עצור הקראה';
+      source.onended=async()=>{window.__portfolioSetNarrationOutput('');if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{if(categoryAudio)await new Promise(resolve=>setTimeout(resolve,250));if(requestId!==run)return;await playPart(index+1,await next)}catch{if(requestId===run)speak(btn,groups.slice(index+1).flat())}};
+      await Promise.race([context.resume(),new Promise(resolve=>setTimeout(resolve,350))]);if(context.state&&context.state!=='running'){window.__portfolioNarrationState('blocked');throw Error('Playback blocked');}window.__portfolioSetNarrationOutput(parts[index]);source.start(0);window.__portfolioNarrationState('playing')};
     await playPart(0,first);
   };
   document.addEventListener('click',e=>{
@@ -512,7 +527,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     e.preventDefault();e.stopImmediatePropagation();
     if(!('speechSynthesis' in window))return alert('הדפדפן אינו תומך בהקראת טקסט.');
     if(btn.dataset.reading==='1'){stop(btn);return}
-    stopAudio();speechSynthesis.cancel();const all=build();rememberTopics(all);const start=window.__portfolioReadPosition.start(all,'t',map);topicIndex=Math.max(0,topicStarts.filter(index=>index<=start.index).length-1);const list=start.items;if(list.length){const context=primeAudio();speakWithEleven(btn,list,context).catch(()=>{if(btn.dataset.reading==='1'){stopAudio();btn.textContent='⏹ עצור הקראה';setTimeout(()=>speak(btn,list),180)}})};
+    stopAudio();speechSynthesis.cancel();const all=build();rememberTopics(all);const start=window.__portfolioReadPosition.start(all,'t',map);topicIndex=Math.max(0,topicStarts.filter(index=>index<=start.index).length-1);const list=start.items;if(list.length){const context=primeAudio();speakWithEleven(btn,list,context).catch(()=>{if(btn.dataset.reading==='1'){stopAudio();btn.textContent='⏹ עצור הקראה';window.__portfolioNarrationState('fallback');speak(btn,list)}})};
   },true);
 })();
 
@@ -647,30 +662,30 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       if(item.pause&&!item.text){setTimeout(next,Math.min(item.pause,250));return;}
       if(!item.text){next();return;}
       window.__portfolioSetNarrationOutput(item.text);const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+item.text);
-      u.lang='en-US';
+      u.onstart=()=>window.__portfolioNarrationState('playing');u.lang='en-US';
       u.rate=0.84;
       u.pitch=1;
       const v=pickVoice();
       if(v)u.voice=v;
       u.onend=()=>{window.__portfolioSetNarrationOutput('');setTimeout(next,Math.min(item.pause||150,250));};
-      u.onerror=()=>{window.__portfolioSetNarrationOutput('');setTimeout(next,250);};
+      u.onerror=event=>{window.__portfolioSetNarrationOutput('');if(event.error==='not-allowed'){stop(btn);window.__portfolioNarrationState('blocked');return;}setTimeout(next,250);};
       speechSynthesis.speak(u);
     };
-    setTimeout(next,550);
+    setTimeout(next,120);
   };
   const packEnglishAudio=(values,max)=>{const parts=[];let part='';values.forEach(value=>{if(!value)return;const next=part?part+'. '+value:value;if(next.length>max&&part){parts.push(part);part=value}else part=next});if(part)parts.push(part);return parts};
-  const fetchEnglishAudio=async text=>{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,language:'en'})});if(!response.ok)throw new Error('TTS unavailable');return response.blob()};
+  const fetchEnglishAudio=text=>window.__portfolioFetchNarration(text,'en');
   const speakEnglishWithEleven=async(items,btn,context)=>{
     const requestId=++runId;
-    const groups=[];let group=[];items.forEach(item=>{if((item.pause&&!item.text)||(item.text&&item.pause>=1000&&group.length)){if(group.length)groups.push(group);group=[]}if(item.text)group.push(item)});if(group.length)groups.push(group);const parts=groups.map(values=>values.map(x=>x.text).join('. '));
+    const groups=[];let group=[];items.forEach(item=>{if((item.pause&&!item.text)||(item.text&&item.pause>=1000&&group.length)){if(group.length)groups.push(group);group=[]}if(item.text)group.push(item)});if(group.length)groups.push(group);window.__portfolioShortOpening(groups,'text');const parts=groups.map(values=>values.map(x=>x.text).join('. '));
     if(!parts.length)throw new Error('No text');
-    btn.dataset.reading='1';btn.textContent='⏳ Preparing audio…';
+    btn.dataset.reading='1';btn.textContent='⏳ Preparing audio…';window.__portfolioNarrationState('preparing');
     const first=await fetchEnglishAudio(parts[0]);
     if(requestId!==runId)return;
     if(!context)throw new Error('Web Audio unavailable');
-    const playPart=async(index,blob)=>{if(requestId!==runId)return;const position=englishTopics.indexOf(groups[index][0].original||groups[index][0]);if(position>=0)englishTopicIndex=Math.max(0,englishStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchEnglishAudio(parts[index+1]):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==runId)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ Stop reading';
-      source.onended=async()=>{window.__portfolioSetNarrationOutput('');if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==runId)return;if(!next){stop(btn);return}btn.textContent='⏳ Preparing the next part…';try{await playPart(index+1,await next)}catch{stop(btn)}};
-      window.__portfolioSetNarrationOutput(parts[index]);source.start(0)};
+    const playPart=async(index,blob)=>{if(requestId!==runId)return;const position=englishTopics.indexOf(groups[index][0].original||groups[index][0]);if(position>=0)englishTopicIndex=Math.max(0,englishStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchEnglishAudio(parts[index+1]):null;next?.catch(()=>{});const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==runId)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ Stop reading';
+      source.onended=async()=>{window.__portfolioSetNarrationOutput('');if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==runId)return;if(!next){stop(btn);return}btn.textContent='⏳ Preparing the next part…';try{await playPart(index+1,await next)}catch{if(requestId===runId)speakQueue(groups.slice(index+1).flat(),btn)}};
+      await Promise.race([context.resume(),new Promise(resolve=>setTimeout(resolve,350))]);if(context.state&&context.state!=='running'){window.__portfolioNarrationState('blocked');throw Error('Playback blocked');}window.__portfolioSetNarrationOutput(parts[index]);source.start(0);window.__portfolioNarrationState('playing')};
     await playPart(0,first);
   };
 
@@ -694,7 +709,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       if(btn.dataset.reading==='1'){stop(btn);return;}
       const all=isHome?homeChunks(main):extract(document.querySelector('main')||main);
       englishTopics=all;englishStarts=all.map((item,i)=>item.text&&item.pause>=1000?i:-1).filter(i=>i>=0);if(!englishStarts.length||englishStarts[0]!==0)englishStarts.unshift(0);const start=window.__portfolioReadPosition.start(all,'text',normalize);englishTopicIndex=Math.max(0,englishStarts.filter(index=>index<=start.index).length-1);const items=start.items;
-      if(items.length){stopEnglishAudio();speechSynthesis.cancel();const context=primeEnglishAudio();speakEnglishWithEleven(items,btn,context).catch(()=>{if(btn.dataset.reading==='1'){stopEnglishAudio();btn.textContent='⏹ Stop reading';setTimeout(()=>speakQueue(items,btn),180)}});}
+      if(items.length){stopEnglishAudio();speechSynthesis.cancel();const context=primeEnglishAudio();speakEnglishWithEleven(items,btn,context).catch(()=>{if(btn.dataset.reading==='1'){stopEnglishAudio();btn.textContent='⏹ Stop reading';window.__portfolioNarrationState('fallback');speakQueue(items,btn)}});}
     });
     anchor.appendChild(btn);
 
@@ -748,7 +763,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       const voiceReady=new Promise(function(resolve,reject){
         if(window.PortfolioVoiceNavigation){resolve();return;}
         const script=document.createElement('script');
-        script.src='/assets/voice-navigation.js?v=20261013-25';
+        script.src='/assets/voice-navigation.js?v=20261013-26';
         script.onload=resolve;script.onerror=reject;
         document.head.appendChild(script);
       });
