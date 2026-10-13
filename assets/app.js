@@ -1,3 +1,5 @@
+// Track only the site's spoken text so recognition can ignore playback echoes.
+window.__portfolioSetNarrationOutput=text=>{const previous=window.__portfolioNarrationOutput;window.__portfolioNarrationOutput={text:text||previous?.text||'',playing:Boolean(text),endedAt:text?0:Date.now()};};
 // Keep narration anchored to the reader's selected text or current view.
 window.__portfolioReadPosition=(()=>{
   let clicked=null;
@@ -479,13 +481,13 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     const blocks=[main.querySelector('.rdHeroCopy'),main.querySelector('.rdStats'),main.querySelector('.lifecycleSection'),small(main,'חמישה עולמות מקצועיים שמתחברים לתמונה אחת'),small(main,'הערך שאני מביא לארגון')].filter(Boolean);
     const out=[],seen=new Set();blocks.forEach(b=>{const k=b.innerText.trim();if(!k||seen.has(k))return;seen.add(k);if(out.length)out.push({pause:1300});out.push(...chunks(b))});return out;
   };
-  const stopAudio=()=>{const source=window.__ronenPageSource;if(source){try{source.onended=null;source.stop()}catch{}window.__ronenPageSource=null}const audio=window.__ronenPageAudio;if(audio){audio.pause();if(audio.dataset&&audio.dataset.url)URL.revokeObjectURL(audio.dataset.url);window.__ronenPageAudio=null}};
+  const stopAudio=()=>{window.__portfolioSetNarrationOutput('');const source=window.__ronenPageSource;if(source){try{source.onended=null;source.stop()}catch{}window.__ronenPageSource=null}const audio=window.__ronenPageAudio;if(audio){audio.pause();if(audio.dataset&&audio.dataset.url)URL.revokeObjectURL(audio.dataset.url);window.__ronenPageAudio=null}};
   const primeAudio=()=>{const AudioContext=window.AudioContext||window.webkitAudioContext;if(!AudioContext)return null;const context=window.__ronenAudioContext||new AudioContext();window.__ronenAudioContext=context;context.resume();return context};
   const stop=btn=>{run++;stopAudio();speechSynthesis.cancel();if(btn){btn.dataset.reading='0';btn.textContent='🔊 הקרא את הדף'}};
   const speak=(btn,list)=>{
     const id=++run;btn.dataset.reading='1';btn.textContent='⏹ עצור הקראה';let i=0,spoken=0;
     const next=()=>{if(id!==run)return;if(i>=list.length){stop(btn);return}const x=list[i++];const position=topicList.indexOf(x.original||x);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);if(x.pause){setTimeout(next,Math.min(x.pause,250));return}
-      const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+x.t);u.lang='he-IL';u.rate=.78;u.pitch=1;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>{if(id===run)setTimeout(next,Math.min(x.p||150,250))};speechSynthesis.speak(u)};
+      window.__portfolioSetNarrationOutput(x.t);const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+x.t);u.lang='he-IL';u.rate=.78;u.pitch=1;const v=voice();if(v)u.voice=v;u.onend=u.onerror=()=>{window.__portfolioSetNarrationOutput('');if(id===run)setTimeout(next,Math.min(x.p||150,250))};speechSynthesis.speak(u)};
     setTimeout(next,120);
   };
   const packForAudio=(values,max)=>{const parts=[];let part='';values.forEach(value=>{if(!value)return;const next=part?part+'. '+value:value;if(next.length>max&&part){parts.push(part);part=value}else part=next});if(part)parts.push(part);return parts};
@@ -501,8 +503,8 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     if(requestId!==run)return;
     if(!context)throw new Error('Web Audio unavailable');
     const playPart=async(index,blob)=>{if(requestId!==run)return;const position=topicList.indexOf(groups[index][0].original||groups[index][0]);if(position>=0)topicIndex=Math.max(0,topicStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchAudioPart(parts[index+1],'he'):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==run)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ עצור הקראה';
-      source.onended=async()=>{if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{if(categoryAudio)await new Promise(resolve=>setTimeout(resolve,250));if(requestId!==run)return;await playPart(index+1,await next)}catch{stop(btn)}};
-      source.start(0)};
+      source.onended=async()=>{window.__portfolioSetNarrationOutput('');if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==run)return;if(!next){stop(btn);return}btn.textContent='⏳ מכין את ההמשך…';try{if(categoryAudio)await new Promise(resolve=>setTimeout(resolve,250));if(requestId!==run)return;await playPart(index+1,await next)}catch{stop(btn)}};
+      window.__portfolioSetNarrationOutput(parts[index]);source.start(0)};
     await playPart(0,first);
   };
   document.addEventListener('click',e=>{
@@ -580,7 +582,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   let runId=0;
   let englishTopics=[],englishStarts=[],englishTopicIndex=0;
   window.addEventListener('portfolioReadSkip',event=>{if(document.documentElement.lang!=='en')return;const btn=document.getElementById('englishPageReadButton');if(!btn)return;if(!englishTopics.length){englishTopics=isHome?homeChunks(document.querySelector('main')):extract(document.querySelector('main'));englishStarts=englishTopics.map((item,i)=>item.text&&item.pause>=1000?i:-1).filter(i=>i>=0);if(!englishStarts.length||englishStarts[0]!==0)englishStarts.unshift(0);}englishTopicIndex=Math.max(0,Math.min(englishStarts.length-1,englishTopicIndex+event.detail));const items=englishTopics.slice(englishStarts[englishTopicIndex]);stop(btn);const context=primeEnglishAudio();speakEnglishWithEleven(items,btn,context).catch(()=>{if(btn.dataset.reading==='1')speakQueue(items,btn)});});
-  const stopEnglishAudio=()=>{const source=window.__ronenPageSource;if(source){try{source.onended=null;source.stop()}catch{}window.__ronenPageSource=null}const audio=window.__ronenPageAudio;if(audio){audio.pause();if(audio.dataset&&audio.dataset.url)URL.revokeObjectURL(audio.dataset.url);window.__ronenPageAudio=null}};
+  const stopEnglishAudio=()=>{window.__portfolioSetNarrationOutput('');const source=window.__ronenPageSource;if(source){try{source.onended=null;source.stop()}catch{}window.__ronenPageSource=null}const audio=window.__ronenPageAudio;if(audio){audio.pause();if(audio.dataset&&audio.dataset.url)URL.revokeObjectURL(audio.dataset.url);window.__ronenPageAudio=null}};
   const primeEnglishAudio=()=>{const AudioContext=window.AudioContext||window.webkitAudioContext;if(!AudioContext)return null;const context=window.__ronenAudioContext||new AudioContext();window.__ronenAudioContext=context;context.resume();return context};
   const stop=btn=>{
     runId++;
@@ -644,14 +646,14 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       const item=items[i++];const position=englishTopics.indexOf(item.original||item);if(position>=0)englishTopicIndex=Math.max(0,englishStarts.filter(start=>start<=position).length-1);
       if(item.pause&&!item.text){setTimeout(next,Math.min(item.pause,250));return;}
       if(!item.text){next();return;}
-      const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+item.text);
+      window.__portfolioSetNarrationOutput(item.text);const u=new SpeechSynthesisUtterance((spoken++===0?'... ':'')+item.text);
       u.lang='en-US';
       u.rate=0.84;
       u.pitch=1;
       const v=pickVoice();
       if(v)u.voice=v;
-      u.onend=()=>setTimeout(next,Math.min(item.pause||150,250));
-      u.onerror=()=>setTimeout(next,250);
+      u.onend=()=>{window.__portfolioSetNarrationOutput('');setTimeout(next,Math.min(item.pause||150,250));};
+      u.onerror=()=>{window.__portfolioSetNarrationOutput('');setTimeout(next,250);};
       speechSynthesis.speak(u);
     };
     setTimeout(next,550);
@@ -667,8 +669,8 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     if(requestId!==runId)return;
     if(!context)throw new Error('Web Audio unavailable');
     const playPart=async(index,blob)=>{if(requestId!==runId)return;const position=englishTopics.indexOf(groups[index][0].original||groups[index][0]);if(position>=0)englishTopicIndex=Math.max(0,englishStarts.filter(start=>start<=position).length-1);const next=index+1<parts.length?fetchEnglishAudio(parts[index+1]):null;const buffer=await context.decodeAudioData(await blob.arrayBuffer());if(requestId!==runId)return;const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);window.__ronenPageSource=source;btn.textContent='⏹ Stop reading';
-      source.onended=async()=>{if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==runId)return;if(!next){stop(btn);return}btn.textContent='⏳ Preparing the next part…';try{await playPart(index+1,await next)}catch{stop(btn)}};
-      source.start(0)};
+      source.onended=async()=>{window.__portfolioSetNarrationOutput('');if(window.__ronenPageSource===source)window.__ronenPageSource=null;if(requestId!==runId)return;if(!next){stop(btn);return}btn.textContent='⏳ Preparing the next part…';try{await playPart(index+1,await next)}catch{stop(btn)}};
+      window.__portfolioSetNarrationOutput(parts[index]);source.start(0)};
     await playPart(0,first);
   };
 
@@ -746,7 +748,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       const voiceReady=new Promise(function(resolve,reject){
         if(window.PortfolioVoiceNavigation){resolve();return;}
         const script=document.createElement('script');
-        script.src='/assets/voice-navigation.js?v=20261009-18';
+        script.src='/assets/voice-navigation.js?v=20261009-19';
         script.onload=resolve;script.onerror=reject;
         document.head.appendChild(script);
       });
