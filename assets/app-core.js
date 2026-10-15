@@ -1,6 +1,6 @@
 (function(){
   var original=document.createElement('script');
-  original.src='assets/app-core-original.js?v=20260929-experience-nav';
+  original.src='assets/app-core-original.js?v=20261015-profession-icons';
   original.onload=function(){
     if((location.pathname.split('/').pop()||'index.html').toLowerCase()!=='experience.html')return;
     function fix(){
