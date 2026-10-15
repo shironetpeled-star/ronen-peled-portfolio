@@ -863,7 +863,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   let read=document.querySelector('#pageReadButton,#englishPageReadButton')||savedRead;
   if(!read)return;savedRead=read;const en=document.documentElement.lang==='en';
   if(!row){row=document.createElement('div');row.id='pageReadTopicControls';row.setAttribute('aria-label',en?'Page narration controls':'כפתורי הקראת הדף');
-   [[-1,en?'◀ Previous topic':'עמוד קודם ▶'],[1,en?'Next topic ▶':'◀ עמוד הבא']].forEach(([step,label])=>{const b=document.createElement('button');b.type='button';b.dataset.readStep=String(step);b.textContent=label;b.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('portfolioReadSkip',{detail:step})));row.appendChild(b)});
+   [[-1,en?'◀ Previous topic':'חלק קודם ▶'],[1,en?'Next topic ▶':'◀ חלק הבא']].forEach(([step,label])=>{const b=document.createElement('button');b.type='button';b.dataset.readStep=String(step);b.textContent=label;b.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('portfolioReadSkip',{detail:step})));row.appendChild(b)});
   }
   if(!row.isConnected)document.body.appendChild(row);
   if(read.parentElement!==row)row.insertBefore(read,row.querySelector('[data-read-step="1"]')||row.lastElementChild);
