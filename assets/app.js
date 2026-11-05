@@ -895,3 +895,27 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   }
   new MutationObserver(maintainPause).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-reading']});maintainPause();
 })();
+/* Label narration controls and reserve room before page content. */
+(()=>{
+ let queued=false;
+ const style=document.createElement('style');
+ style.textContent='#pageReadTopicControls{flex-wrap:wrap!important;max-width:calc(100vw - 24px)!important;row-gap:7px!important}#pageReadTopicControls .pageReadLabel{flex:0 0 100%;order:-1!important;font-size:14px;font-weight:900;color:#195ed8;line-height:1.3;text-align:center;margin:0 0 2px}';
+ document.head.appendChild(style);
+ function update(){
+  queued=false;
+  const row=document.getElementById('pageReadTopicControls'),main=document.querySelector('main'),header=document.querySelector('header.top');
+  if(!row||!main)return;
+  let label=row.querySelector('.pageReadLabel');
+  if(!label){label=document.createElement('span');label.className='pageReadLabel';row.prepend(label)}
+  const value=document.documentElement.lang==='en'?'Read this page':'הקרא עמוד';if(label.textContent!==value)label.textContent=value;
+  const top=Math.max(0,header?.getBoundingClientRect().bottom||0)+8;
+  row.style.setProperty('top',Math.ceil(top)+'px','important');
+  let space=document.getElementById('pageReadReservedSpace');
+  if(!space){space=document.createElement('div');space.id='pageReadReservedSpace';space.setAttribute('aria-hidden','true');main.before(space)}
+  space.style.height=Math.ceil(row.getBoundingClientRect().height+24)+'px';
+ }
+ function schedule(){if(queued)return;queued=true;requestAnimationFrame(update)}
+ new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
+ window.addEventListener('resize',schedule);window.addEventListener('load',schedule);
+ schedule();
+})();
