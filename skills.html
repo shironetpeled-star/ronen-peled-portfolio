@@ -226,7 +226,7 @@ const skillsPageLifecycleStages=new Set([
 ]);
 function skillsPageLifecycleFacts(record){
  return record.facts.filter(fact=>
-  /\b(?:end[\s\u2010-\u2015-]*to[\s\u2010-\u2015-]*end|start[\s\u2010-\u2015-]*to[\s\u2010-\u2015-]*end|hands[\s\u2010-\u2015-]*on)\b|מקצה לקצה|כל שלבי המוצר/i.test(fact)
+  /\b(?:end[\s\u2010-\u2015-]*to[\s\u2010-\u2015-]*end|start[\s\u2010-\u2015-]*to[\s\u2010-\u2015-]*(?:end|finish|finisgh)|hands?[\s\u2010-\u2015-]*on)\b|מקצה לקצה|כל שלבי המוצר/i.test(fact)
  )
 }
 const skillsPageManagementCapabilities=new Set(['Leadership Without Authority','Critical Incidents','Creativity']);
@@ -251,7 +251,15 @@ function skillsPageAdditionalMatches(records,capability){
  const entry=skillsPageAdditionalEvidence[capability];
  if(!entry)return null;
  const ids=[...entry.work,...entry.projects];
- return records.filter(record=>ids.some(id=>record.url.endsWith('#'+id))).map(record=>({...record,excerpt:'דוגמה קשורה מתוך התיעוד הקיים: '+record.facts.slice(0,2).join(' ')}));
+ return records.map(record=>{
+  const direct=ids.some(id=>record.url.endsWith('#'+id));
+  const comprehensive=skillsPageLifecycleFacts(record);
+  if(!direct&&!comprehensive.length)return null;
+  const excerpts=[];
+  if(direct)excerpts.push('דוגמה קשורה מתוך התיעוד הקיים: '+record.facts.slice(0,2).join(' '));
+  if(comprehensive.length)excerpts.push('אחריות מקיפה וביצוע מעשי (End-to-End / Hands-on / Start-to-Finish): '+comprehensive.join(' ')+' הקישור מציג אחריות מקיפה; הוא אינו מעיד לבדו על ניסיון ספציפי ביכולת '+capability+'.');
+  return {...record,excerpt:excerpts.join(' ')};
+ }).filter(Boolean);
 }
 function skillsPageMatchEvidence(records,capability){
  const additional=skillsPageAdditionalMatches(records,capability);if(additional!==null)return additional;
