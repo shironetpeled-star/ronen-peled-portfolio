@@ -411,6 +411,18 @@ function skillsPageMatchEvidence(records,capability){
  return records.filter(record=>byUrl.has(record.url)).map(record=>byUrl.get(record.url));
 }
 
+
+function skillsPageProjectContext(record,capability){
+ if(/הקשר ל/.test(record.excerpt))return record;
+ const definition=definitions[capability]||capability;
+ const audited=skillsPageAuditedEvidenceTerms[capability]||[];
+ const aliases=[...(skillsPageEvidenceAliases[capability]||[]),...(skillsPageEvidenceAliasOverrides[capability]||[])];
+ const terms=[...new Set([...audited,...aliases,capability])].filter(term=>term.length>2);
+ const matching=record.facts.filter(fact=>terms.some(term=>fact.toLowerCase().includes(term.toLowerCase())));
+ const facts=[...new Set(matching)].slice(0,3);
+ if(facts.length)return {...record,excerpt:'הקשר ליכולת '+capability+': '+definition+' בפרויקט: '+facts.join(' ')};
+ return {...record,excerpt:'היבט היכולת: '+definition+' הקשר לפרויקט לפי האחריות המתועדת: '+record.excerpt};
+}
 function skillsPageRenderEvidence(target,records,emptyText){
  target.replaceChildren();
  if(!records.length){target.textContent=emptyText;return}
@@ -434,7 +446,7 @@ function skillsPageOpenCapability(capability){
  skillsPageLoadEvidenceCorpus().then(corpus=>{
   if(request!==skillsPageEvidenceRequest)return;
   skillsPageRenderEvidence(used,skillsPageMatchEvidence(corpus.work,capability),'לא נמצאה בעמוד הניסיון דוגמה מפורשת ליכולת הזאת.');
-  skillsPageRenderEvidence(projects,skillsPageMatchEvidence(corpus.projects,capability),'לא נמצא בפרויקטים המתועדים קישור מפורש ליכולת הזאת.')
+  skillsPageRenderEvidence(projects,skillsPageMatchEvidence(corpus.projects,capability).map(record=>skillsPageProjectContext(record,capability)),'לא נמצא בפרויקטים המתועדים קישור מפורש ליכולת הזאת.')
  }).catch(error=>{
   if(request!==skillsPageEvidenceRequest)return;
   console.error('Capability evidence rendering failed',error);
