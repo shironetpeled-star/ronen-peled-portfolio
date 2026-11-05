@@ -926,3 +926,27 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
  style.textContent='#pageReadTopicControls{border:2px solid #195ed8!important;padding:18px 8px 8px!important;margin-top:13px!important;overflow:visible!important}#pageReadTopicControls .pageReadLabel{position:absolute!important;top:0!important;left:50%!important;transform:translate(-50%,-55%)!important;display:block!important;width:max-content!important;max-width:calc(100% - 24px)!important;flex:none!important;background:#fff!important;padding:0 10px!important;margin:0!important;font-size:20px!important;font-weight:900!important;line-height:1.3!important;white-space:nowrap!important;border-radius:5px}';
  document.head.appendChild(style);
 })();
+
+/* Align the Hebrew bot with the narration buttons, below the legend. */
+(()=>{
+ if(document.documentElement.lang!=='he')return;
+ const style=document.createElement('style');
+ style.textContent='html[lang="he"] #ronen-bot-launcher{top:var(--hebrew-bot-top,145px)!important;bottom:auto!important}';
+ document.head.appendChild(style);
+ let pending=false;
+ function position(){
+  pending=false;
+  const bot=document.getElementById('ronen-bot-launcher'),row=document.getElementById('pageReadTopicControls'),header=document.querySelector('header.top');
+  if(!bot||!row)return;
+  const rect=row.getBoundingClientRect(),box=bot.getBoundingClientRect();
+  const buttons=[...row.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().height);
+  let top=buttons.length?buttons[0].getBoundingClientRect().top:rect.top+18;
+  if(rect.left<box.right&&rect.right>box.left)top=rect.bottom+12;
+  top=Math.max(top,(header?.getBoundingClientRect().bottom||0)+16);
+  document.documentElement.style.setProperty('--hebrew-bot-top',Math.ceil(top)+'px');
+ }
+ function schedule(){if(!pending){pending=true;requestAnimationFrame(position)}}
+ new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
+ window.addEventListener('resize',schedule);window.addEventListener('load',schedule);
+ schedule();
+})();
