@@ -145,3 +145,33 @@ let scheduled=false;new MutationObserver(()=>{if(scheduled)return;scheduled=true
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();
 })();
+
+/* Keep the English bot launcher below the actual header at every viewport size. */
+(()=>{
+ if(document.documentElement.lang!=='en')return;
+ const style=document.createElement('style');
+ style.textContent='html[lang="en"] #ronen-bot-launcher{top:var(--english-bot-top,124px)!important;bottom:auto!important;left:20px!important;direction:ltr}@media(max-width:600px){html[lang="en"] #ronen-bot-launcher{left:12px!important}}';
+ document.head.appendChild(style);
+ let pending=false;
+ const watched=new WeakSet();
+ const observer=new ResizeObserver(schedule);
+ function position(){
+  pending=false;
+  const bot=document.getElementById('ronen-bot-launcher'),header=document.querySelector('header.top');
+  if(!bot||!header)return;
+  let top=Math.max(0,header.getBoundingClientRect().bottom)+11;
+  const controls=document.getElementById('pageReadTopicControls');
+  if(controls){
+   const r=controls.getBoundingClientRect(),b=bot.getBoundingClientRect();
+   if(r.width&&r.height&&r.right>b.left&&r.left<b.right&&r.bottom>top&&r.top<top+b.height)top=r.bottom+10;
+  }
+  document.documentElement.style.setProperty('--english-bot-top',Math.ceil(top)+'px');
+  [header,controls,bot].filter(Boolean).forEach(element=>{if(!watched.has(element)){watched.add(element);observer.observe(element)}});
+ }
+ function schedule(){if(pending)return;pending=true;requestAnimationFrame(position)}
+ new MutationObserver(schedule).observe(document.body||document.documentElement,{childList:true,subtree:true});
+ window.addEventListener('resize',schedule);
+ window.addEventListener('scroll',schedule,{passive:true});
+ window.addEventListener('load',schedule);
+ schedule();
+})();
