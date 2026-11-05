@@ -267,7 +267,7 @@ function skillsPageAdditionalMatches(records,capability){
   return {...record,excerpt:excerpts.join(' ')};
  }).filter(Boolean);
 }
-function skillsPageMatchEvidence(records,capability){
+function skillsPageMatchEvidenceBase(records,capability){
  if(capability==='עבודה בחברות גדולות')return records.filter(record=>['experience.html#shlomo','experience.html#mikud-systems','experience.html#secuitech-services'].includes(record.url)).map(record=>({...record,excerpt:record.facts.slice(0,2).join(' ')}));
  if(capability==='Regulation')return records.filter(record=>['experience.html#smarti','experience.html#sysnet-projects'].includes(record.url)).map(record=>({...record,excerpt:record.facts.filter(fact=>/רגולטור|חוקיות|דרישות חוק/.test(fact)).join(' ')}));
  if(capability==='User Stories')return records.map(record=>({...record,excerpt:record.facts.slice(0,2).join(' ')}));
@@ -292,6 +292,30 @@ function skillsPageMatchEvidence(records,capability){
   return {...record,excerpt:excerpts.join(' ')}
  }).filter(Boolean)
 }
+
+const skillsPageEvidenceExplanationRules=[[["User Stories","Requirements","Business & Functional Analysis"],"אפיון|דרישות|מסכים|שדות|משתמש","תרגום צורכי המשתמש לדרישות, מסכים ותהליכים שאפשר לפתח ולבדוק"],[["User Acceptance Testing (UAT)","Validation","QA","Testing","A/B Testing"],"בדיקות|קבלה|QA|A/B|אימות|בקרת","בדיקת התוצאה בפועל והתאמתה לדרישות ולצורכי המשתמש"],[["Adoption","Implementation","Rollout","Guidance","Customer Engagement","Customer Retention"],"הטמע|הדרכ|קליטת לקוחות|משוב|שירות|ליווי","ליווי השימוש במערכת באמצעות הטמעה, הדרכה וקשר עם המשתמשים"],[["Support","Escalations","Critical Incidents","Critical Problem Solving","Root Cause","Debugging","Remote Troubleshooting","Remote User Support"],"תקל|תמיכה|אסקל|הסלמ|בעיות|פתרונות","אבחון בעיות, טיפול בתקלות וליווי המשתמש או הלקוח עד לפתרון"],[["Product Lifecycle","End-to-End Thinking","Ownership","Delivery","Remote End-to-End Delivery"],"End.to.End|Start.to.End|מקצה לקצה|כל שלבי|מאפס|אחריות","אחריות רציפה מהבנת הצורך והאפיון ועד לביצוע ולהטמעת הפתרון"],[["Strategy","Business Strategy","GTM","Discovery","MVP","MLP","SWOT","RICE"],"מטרות|צורך|צרכי|צורכי|קהל|תחום חדש|סל שירותים|מטרת","חיבור בין צורכי הלקוח, הגדרת הפתרון והערך העסקי המבוקש"],[["Roadmap","Planning","Scope","WBS","Risk","Dependencies","MS Project","Multi-Project Prioritization","Prioritization","Program Management"],"ניהול.*פרויקט|תכנון|במקביל|תיאום|משימות|אבני דרך|דרישות","תכנון ותיאום העבודה, התכולה והמשימות לאורך ביצוע הפרויקט"],[["Stakeholders","Stakeholder Management","Cross-Functional Collaboration","Leadership Without Authority","Teamwork","Matrix Management","עבודה בחברות גדולות"],"צוות|ארגון|אנשי IT|ממשקים|ניהול|ספק|משתמשי קצה|מחלק","עבודה עם כמה גורמים מקצועיים ותיאום ביניהם לצורך קידום העבודה"],[["Workflow Optimization","Process Automation"],"שיפור|אוטומ|תהליכי עבודה|טעויות|חסך","שיפור תהליך העבודה באמצעות צמצום פעולות ידניות, טעויות או עבודה חוזרת"],[["KPIs","Metrics","Performance Tracking","Dashboards","Reporting","Data-Driven Decisions","Business Intelligence (BI)","Microsoft Excel"],"דוח|דוחות|נתונ|בקרה|בקרת|ניתוח|מדד|אקסל","ארגון והצגת נתונים לצורך ניתוח, בקרה וקבלת החלטות"],[["Feedback Analysis","User Needs","Customer Communication"],"משוב|לקוחות|משתמש|סקר|תלונות|צרכי|צורכי","הבנת צרכים ומשוב מהמשתמשים ושימוש בהם לשיפור הפתרון והשירות"],[["UX / UED","User Interface Design"],"ממשק חזותי|מסכים|חוויית|UX|מיקום|ניווט|תצוג","תכנון מסכים, תצוגה וזרימת שימוש שמסייעים למשתמש לבצע את משימותיו"],[["Information Architecture"],"ארכיטקטורת מידע|ארגון תוכן|ארכיטקטורה|ניווט|מקורות ידע","ארגון המידע והניווט כך שהמשתמש יוכל למצוא ולהבין את התוכן הרלוונטי"],[["Architecture","Data Structures","System Constraints","Live-System Re-engineering"],"מבני נתונים|מבניים|ארכיטקטורה|טבלאות|רציפות|מערכת פעילה|פיתוח מחדש","תכנון מבנה המערכת והנתונים והתאמתם לאילוצים ולפעילות הקיימת"],[["MAGIC",".NET","C/C++","HTML","AI-Assisted Development"],"פיתוח|תכנות|קוד|MAGIC|HTML|יצוא|מערכת","ביצוע מעשי של פיתוח והתאמת מערכת לצורך עסקי או תפעולי"],[["Data Migration","System Conversion","Version Upgrades"],"הסב|שדרוג|גרס|העבר.*נתונ","הסבה ושדרוג של קוד, נתונים ותהליכים תוך שמירה על פעילות המערכת"],[["ERP/SAP Integrations","API","Connectors","Make"],"ממשק|התממשק|Connectors|API|Make|חיבור","חיבור מערכות וכלים והעברת מידע ביניהם כחלק מתהליך עבודה"],[["AI Integration","AI Bots","LLM","Knowledge Sources","Natural Language Queries","Voice Interaction","Contextual Navigation"],"בוט|AI|מודלי שפה|מקורות הידע|שאלות בשפה|קול|ניווט","שילוב מידע ויכולות AI בממשק המסייע למשתמש לקבל תשובה ולפעול"],[["AI Writing","AI Story Generation","AI Presentations","AI Voice Generation","Microsoft PowerPoint"],"סיפור|מצגת|PowerPoint|מכתב|תמונות|הקראה|קול","יצירת תוכן ותוצרים המותאמים למשתמש ולמטרת התוצר"],[["Regulation"],"רגולטור|חוקיות|דרישות חוק","התאמת המערכת והתהליכים לדרישות חוקיות ורגולטוריות"],[["Vendor & Service Portfolio Management","Vendor Sourcing & Negotiation","Supply Management"],"ספק|סל שירותים|הסכמ|משא ומתן|תנאי התקשרות","ניהול ספקים ושירותים, התאמתם לצורך ומעקב אחר תנאי העבודה"],[["CRM","POS/Retail","HR/Payroll","Claims & Service Systems","SaaS","Enterprise Customers","B2B","B2C"],"מערכת|תוכנה|לקוחות|שכר|תביעות|קופות|משאבי אנוש","עבודה עם מערכות עסקיות ועם התהליכים והלקוחות שהן משרתות"],[["Digital Marketing","Social Media","WhatsApp","Facebook","Instagram","TikTok","Content Adaptation","Audience Engagement"],"שיווק|מסרים|קהל|תוכן|מכיר|לקוחות פרטיים|טלמרקטינג","התאמת תוכן ותקשורת לקהל היעד לצורך יצירת עניין וקשר עם לקוחות"],[["Creativity","Alternative Solutions","System-Wide Thinking","Open Mind"],"חלופ|פתרונות|חזותי|שיפור|מאפס|שינויים|חוצי ארגון","בחינת הצורך וההשפעה המערכתית ופיתוח פתרונות או התאמות בהתאם"]];
+function skillsPageExplainEvidence(record,capability){
+ const terms=[capability,...(skillsPageEvidenceAliases[capability]||[]),...(skillsPageEvidenceAliasOverrides[capability]||[])].map(x=>x.toLowerCase());
+ const rule=skillsPageEvidenceExplanationRules.find(row=>row[0].includes(capability));
+ const pattern=rule?new RegExp(rule[1],'i'):null;
+ const ranked=record.facts.map((fact,index)=>{
+  const lower=fact.toLowerCase();
+  const direct=terms.reduce((sum,term)=>sum+(term.length>2&&lower.includes(term)?4:0),0);
+  const related=pattern?.test(fact)?3:0;
+  return {fact,index,score:direct+related};
+ }).filter(item=>item.score>0).sort((a,b)=>b.score-a.score||a.index-b.index);
+ const facts=[...new Set(ranked.slice(0,3).map(item=>item.fact))];
+ if(!facts.length){
+  const original=record.excerpt||record.facts.slice(0,2).join(' ');
+  return {...record,excerpt:original};
+ }
+ const relation=rule&&facts.some(fact=>pattern.test(fact))?'הקשר ליכולת: '+rule[2]+'. ':'';
+ return {...record,excerpt:relation+'מה בוצע בפועל: '+facts.join(' ')};
+}
+function skillsPageMatchEvidence(records,capability){
+ return skillsPageMatchEvidenceBase(records,capability).map(record=>skillsPageExplainEvidence(record,capability));
+}
+
 function skillsPageRenderEvidence(target,records,emptyText){
  target.replaceChildren();
  if(!records.length){target.textContent=emptyText;return}
