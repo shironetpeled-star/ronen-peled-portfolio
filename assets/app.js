@@ -923,6 +923,6 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
 /* Place the narration title across the frame's upper border. */
 (()=>{
  const style=document.createElement('style');
- style.textContent='#pageReadTopicControls{border:1px solid #c9d9f5!important;padding:18px 8px 8px!important;margin-top:13px!important;overflow:visible!important}#pageReadTopicControls .pageReadLabel{position:absolute!important;top:0!important;left:50%!important;transform:translate(-50%,-55%)!important;display:block!important;width:max-content!important;max-width:calc(100% - 24px)!important;flex:none!important;background:#fff!important;padding:0 10px!important;margin:0!important;font-size:20px!important;font-weight:900!important;line-height:1.3!important;white-space:nowrap!important;border-radius:5px}';
+ style.textContent='#pageReadTopicControls{border:2px solid #195ed8!important;padding:18px 8px 8px!important;margin-top:13px!important;overflow:visible!important}#pageReadTopicControls .pageReadLabel{position:absolute!important;top:0!important;left:50%!important;transform:translate(-50%,-55%)!important;display:block!important;width:max-content!important;max-width:calc(100% - 24px)!important;flex:none!important;background:#fff!important;padding:0 10px!important;margin:0!important;font-size:20px!important;font-weight:900!important;line-height:1.3!important;white-space:nowrap!important;border-radius:5px}';
  document.head.appendChild(style);
 })();
