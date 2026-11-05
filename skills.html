@@ -13,7 +13,7 @@ const definitions={
 "Event Planning":"תכנון אירועים, תיאום משתתפים וספקים וניהול משימות ולוחות זמנים.",
 "Microsoft Excel":"עבודה עם גיליונות אלקטרוניים לארגון נתונים, עיבוד מידע, דוחות וניתוח.",
 "Microsoft PowerPoint":"ארגון תוכן ובניית מצגות להצגת מידע, רעיונות ותוצרים.",
-"Cyber / Cybersecurity":"אבטחת מידע בהקשר של מערכות עסקיות: הבנה היכן הנתונים נשמרים, הפרדת מידע בין חברות ולקוחות, והגדרת הרשאות גישה לכל משתמש לפי תפקידו — לאילו נתונים, מסכים ופעולות הוא רשאי לגשת ומה הוא רשאי לצפות, ליצור או לשנות.",
+"Cyber / Cybersecurity":"אבטחת מידע בהקשר של מערכות עסקיות: הבנה היכן הנתונים נשמרים, הפרדת מידע בין חברות ולקוחות ובין חברת אם לחברות בת, והגדרת הרשאות גישה לכל משתמש לפי תפקידו — לאילו נתונים, מסכים ופעולות הוא רשאי לגשת ומה הוא רשאי לצפות, ליצור או לשנות.",
 "Network Security":"הגנה על רשתות תקשורת, חיבורים וגישה למשאבי המערכת.",
 "Privacy Laws":"היכרות עם עקרונות וחובות הנוגעים לפרטיות, מידע אישי ושימוש בו בהתאם לדין.",
 "Customer Retention":"שימור הקשר עם לקוחות ועידוד המשך שימוש באמצעות מתן ערך, שירות ומענה לצרכים.",
@@ -333,7 +333,7 @@ const skillsPageAudienceEngagementEvidence={"experience.html#smarti":{"reason":"
 function skillsPageMatchEvidence(records,capability){
  if(capability==='Cyber / Cybersecurity')return skillsPageMatchEvidenceConfigured(records,capability).map(record=>{
   const selected=record.facts.filter(fact=>/נתונ|לקוחות|חברות|משתמש|שכר|תביעות|מידע|ספק|מקורות הידע/.test(fact));
-  return {...record,excerpt:'הקשר ליכולת: מיקום ושמירת הנתונים, הפרדת מידע בין חברות או לקוחות, ובחינת הרשאות הגישה של כל משתמש לפי תפקידו במערכת. ההקשר במערכת המתוארת: '+[...new Set(selected.length?selected:record.facts)].slice(0,3).join(' ')};
+  return {...record,excerpt:'הקשר ליכולת: מיקום ושמירת הנתונים, הפרדת מידע בין חברות או לקוחות ובין חברת אם לחברות בת, ובחינת הרשאות הגישה של כל משתמש לפי תפקידו במערכת. ההקשר במערכת המתוארת: '+[...new Set(selected.length?selected:record.facts)].slice(0,3).join(' ')};
  });
 
  if(capability==='MAGIC'&&records===skillsPageEvidenceCorpus.work){
