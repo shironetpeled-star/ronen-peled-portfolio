@@ -314,6 +314,13 @@ function skillsPageExplainEvidence(record,capability){
 }
 const skillsPageBusinessAudienceEvidence={"B2B":{"smarti":"פיתוח והטמעת פתרונות תוכנה לניהול עובדים ומשאבי אנוש עבור לקוחות עסקיים וחברות שמירה וניקיון.","beta-soft":"מערכות תוכנה ותמיכה שוטפת לעשרות בתי עסק בתחומי הנופש, התיירות והפנאי.","verifone":"פיתוח והטמעת מערכות קופות וניהול עבור בתי אופנה ולקוחות עסקיים.","anirim":"פיתוח והטמעת מערכות חשבונאות וקופות המשרתות פעילות עסקית ותהליכי סליקה.","sysnet-projects":"פיתוח מערכות עבור לקוחות מוסדיים, ובהם המרכז הארצי לגזזת והמרכז הארצי לבחינות בגרות.","mikud-systems":"עבודה על מערכות CRM וניהול פעילות בתחומי השמירה, האבטחה והניקיון בסביבה ארגונית.","shlomo":"פיתוח מערכת תפעולית בקבוצת שירותי רכב העוסקת גם בליסינג ובמתן פתרונות רכב לעסקים."},"B2C":{"magnolia":"פיתוח מערכת Back Office ברשת קמעונאית למכירת תכשיטים לצרכנים פרטיים.","shlomo":"פיתוח מערכת לניהול מגרש רכבים בקבוצה המספקת גם שירותי השכרה ומכירת רכב ללקוחות פרטיים.","secuitech-services":"התאמת סל שירותים ללקוחות פרטיים ולאוכלוסיית הגיל השלישי, כולל שירותי מוקד ומכירת שירות חירום ללקוחות פרטיים."}};
 function skillsPageMatchEvidence(records,capability){
+ if(capability==='Roadmap'&&records===skillsPageEvidenceCorpus.work){
+  const matches=skillsPageMatchEvidenceBase(records,capability);
+  const ids=['anirim','mikud-systems','secuitech-services'];
+  records.forEach(record=>{if(ids.some(id=>record.url==='experience.html#'+id)&&!matches.some(item=>item.url===record.url))matches.push({...record,excerpt:record.facts.slice(0,2).join(' ')});});
+  return matches.map(record=>skillsPageExplainEvidence(record,capability));
+ }
+
  const companyMatches=skillsPageBusinessAudienceEvidence[capability];
  if(companyMatches&&records===skillsPageEvidenceCorpus.work)return records.filter(record=>Object.prototype.hasOwnProperty.call(companyMatches,record.url.split('#')[1])).map(record=>({...record,excerpt:'הקשר ל־'+capability+': '+companyMatches[record.url.split('#')[1]]+' מה בוצע בפועל: '+record.facts.slice(0,2).join(' ')}));
 
