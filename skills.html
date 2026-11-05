@@ -257,7 +257,7 @@ function skillsPageAdditionalMatches(records,capability){
   if(!direct&&!comprehensive.length)return null;
   const excerpts=[];
   if(direct)excerpts.push('דוגמה קשורה מתוך התיעוד הקיים: '+record.facts.slice(0,2).join(' '));
-  if(comprehensive.length)excerpts.push('אחריות מקיפה וביצוע מעשי (End-to-End / Hands-on / Start-to-Finish): '+comprehensive.join(' ')+' הקישור מציג אחריות מקיפה; הוא אינו מעיד לבדו על ניסיון ספציפי ביכולת '+capability+'.');
+  if(comprehensive.length)excerpts.push('אחריות מקיפה וביצוע מעשי (End-to-End / Hands-on / Start-to-Finish): '+comprehensive.join(' '));
   return {...record,excerpt:excerpts.join(' ')};
  }).filter(Boolean);
 }
