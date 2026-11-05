@@ -496,6 +496,18 @@ function skillsPageMatchEvidenceBeforeOperations(records,capability){
 
 const skillsPageLifecycleAndOperationsEvidence={"Software Development Life Cycle (SDLC)":{"pattern":"אפיון|פיתוח|בדיקות|תחזוק|הטמע|שדרוג","minimum":2},"System & Operational Requirements":{"pattern":"אפיון|דרישות|תפעול|מסכים|שדות|ממשק|פרמטרים","minimum":2},"Acceptance Testing":{"pattern":"בדיקות קבלה|בדיקת התוצאה|לוודא שהסעיף|לוודא שהסעיפים","minimum":1},"Optimization":{"pattern":"שיפור|חסך שעות|הפחתה של|טעויות|אוטומצי","minimum":1},"Rapid Learning":{"pattern":"תכנות שונה|למתודולוגיית הפיתוח החדשות|Claude Work|Base44|Lovable","minimum":1,"partial":true},"Oral Communication":{"pattern":"הדרכ|משא ומתן|בקשר ישיר עם הלקוח|עבודה ישירה מול לקוחות|תיאום בין גורמים","minimum":1}};
 function skillsPageMatchEvidence(records,capability){
+ if(capability==='AI Voice Generation'&&records===skillsPageEvidenceCorpus.projects){
+  const existing=skillsPageMatchEvidenceBeforeOperations(records,capability);
+  const current=skillsPageMatchEvidenceBeforeMethodologies(records,capability);
+  const byUrl=new Map([...existing,...current].map(record=>[record.url,record]));
+  const details={
+   'projects.html#portfolio-site':'הקשר ליכולת: יצירת הקראה קולית של תוכן האתר ותשובות הבוט באמצעות שירות יצירת קול מבוסס AI.',
+   'projects.html#social-story-ai':'הקשר ליכולת: יצירת הקראה קולית לסיפור החברתי באמצעות AI ושימוש בקולות מוכרים כאשר הם זמינים.'
+  };
+  records.forEach(record=>{if(details[record.url]&&!byUrl.has(record.url))byUrl.set(record.url,{...record,excerpt:details[record.url]+' הפרויקט: '+record.facts.slice(0,2).join(' ')});});
+  return records.filter(record=>byUrl.has(record.url)).map(record=>byUrl.get(record.url));
+ }
+
  if(capability==='Aviation')return [];
  const rule=skillsPageLifecycleAndOperationsEvidence[capability];
  if(!rule)return skillsPageMatchEvidenceBeforeOperations(records,capability);
