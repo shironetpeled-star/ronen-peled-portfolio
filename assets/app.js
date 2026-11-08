@@ -1,4 +1,15 @@
 
+window.__portfolioHebrewSpeechDiction=value=>String(value||'')
+ .replace(/(?:MAGIC|מג[׳'’״"]?יק|מגי[׳'’״"]?ק)/gi,"מֶגִ׳יק")
+ .replace(/(^|[^\u0590-\u05ff])מתכנת(?=$|[^\u0590-\u05ff])/g,'$1מְתַכְנֵת')
+ .replace(/(^|[^\u0590-\u05ff])מנתח(?=$|[^\u0590-\u05ff])/g,'$1מְנַתֵּחַ')
+ .replace(/(^|[^\u0590-\u05ff])מנהל(?=$|[^\u0590-\u05ff])/g,'$1מְנַהֵל')
+ .replace(/(^|[^\u0590-\u05ff])מוצר(?=$|[^\u0590-\u05ff])/g,'$1מוּצָר')
+ .replace(/(^|[^\u0590-\u05ff])אפיון(?=$|[^\u0590-\u05ff])/g,'$1אִפְיוּן')
+ .replace(/(^|[^\u0590-\u05ff])הטמעה(?=$|[^\u0590-\u05ff])/g,'$1הַטְמָעָה')
+ .replace(/(^|[^\u0590-\u05ff])הסבה(?=$|[^\u0590-\u05ff])/g,'$1הֲסָבָה')
+ .replace(/\.{2,}/g,'.');
+
 window.__portfolioEnglishProfessionalPronunciation=value=>{
  const glossary={"SDLC":"S D L C","UAT":"U A T","FRS":"F R S","PRD":"pee are dee","QA":"Q A","UX":"U X","UED":"U E D","UI":"U I","KPIs":"K P eyes","KPI":"K P I","API":"A P I","AI":"A I","CRM":"see are em","ERP":"E R P","BI":"B I","MVP":"M V P","MLP":"M L P","WBS":"W B S","HTML":"H T M L","CSS":"C S S","SQL":"ess cue ell","BDO":"B D O","ISC2":"I S C two","HR":"aitch are","IT":"eye tee","EI":"E I","SMS":"S M S","MS-SQL":"Microsoft S Q L","SaaS":"sass","B2B":"B to B","B2C":"B to C"};
  return String(value||'').replace(/\b(?:MS-SQL|SDLC|KPIs|ISC2|B2B|B2C|SaaS|UAT|FRS|PRD|UED|CRM|ERP|MVP|MLP|WBS|HTML|CSS|SQL|BDO|API|KPI|QA|UX|UI|AI|BI|HR|IT|EI|SMS)\b/g,name=>glossary[name]||name);
@@ -16,6 +27,7 @@ window.__portfolioProfessionalPronunciation=(value)=>{
 window.__portfolioNarrationState=state=>window.dispatchEvent(new CustomEvent('portfolioNarrationState',{detail:state}));
 window.__portfolioTtsCache=new Map();
 window.__portfolioFetchNarration=async(text,language)=>{
+ if(language==='he')text=window.__portfolioHebrewSpeechDiction(text);
  let unavailableUntil=0;try{unavailableUntil=Number(sessionStorage.getItem('portfolioTtsUnavailableUntil')||0);}catch{}
  if(Date.now()<unavailableUntil)throw Object.assign(new Error('Voice permission missing'),{code:'tts_permission_missing'});
  const key=language+':'+text,cache=window.__portfolioTtsCache;if(cache.has(key))return cache.get(key);
@@ -392,7 +404,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
 (function(){
   if(window.__ronenReadEnhanced)return;window.__ronenReadEnhanced=true;
   const acronymLetters={"A":"איי","B":"בי","C":"סי","D":"די","E":"אי","F":"אף","G":"ג׳י","H":"אייץ׳","I":"איי","J":"ג׳יי","K":"קיי","L":"אל","M":"אם","N":"אן","O":"או","P":"פי","Q":"קיו","R":"אר","S":"אס","T":"טי","U":"יו","V":"וי","W":"דבליו","X":"אקס","Y":"וואי","Z":"זי"};
-  const map=t=>window.__portfolioProfessionalPronunciation((t||'').replace(/\s+/g,' ').trim()).replace(/\b[A-Z]{3}\b/g,word=>[...word].map(letter=>acronymLetters[letter]).join('. '))
+  const mapBase=t=>window.__portfolioProfessionalPronunciation((t||'').replace(/\s+/g,' ').trim()).replace(/\b[A-Z]{3}\b/g,word=>[...word].map(letter=>acronymLetters[letter]).join('. '))
     .replace(/\s*[|•·]\s*/g,'. ')
     .replace(/\s*&\s*/g,' וגם ')
     .replace(/\bWHAT I BRING\b/gi,'מה אני מביא')
@@ -460,6 +472,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
     .replace(/\bTraining\b/gi,'טריינינג')
     .replace(/\bTechnical Support\b/gi,'טקניקל ספורט')
     .replace(/\bCustomer Service\b/gi,'קאסטומר סרוויס');
+  const map=t=>window.__portfolioHebrewSpeechDiction(mapBase(t));
   const voice=()=>{
     const he=speechSynthesis.getVoices().filter(v=>/^he(?:-|_)/i.test(v.lang));
     return he.find(v=>/Natural|Online|Google|Microsoft/i.test(v.name))||he[0]||null;
