@@ -375,6 +375,11 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   close.type='button';close.textContent='×';
   close.setAttribute('aria-label',isEnglish?'Close bot':'סגירת הבוט');
   bar.append(title,close);panel.appendChild(bar);
+  var external=document.createElement('a');
+  external.href=launcher.href;external.target='_blank';external.rel='noopener noreferrer';
+  external.textContent=isEnglish?'Open bot in a separate window':'פתיחת הבוט בחלון נפרד';
+  external.style.cssText='display:block;padding:10px 16px;text-align:center;background:#edf3ff;color:#195ed8;font:700 14px Arial';
+  panel.appendChild(external);
   var frame=document.createElement('iframe');
   frame.id='ronen-bot-iframe';
   frame.title=isEnglish?'Smart recruiter bot':'הבוט החכם למגייסים';
