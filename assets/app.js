@@ -348,8 +348,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   if(current()==='experience.html'){const obs=new MutationObserver(()=>ensureExperienceSkills());obs.observe(document.documentElement,{subtree:true,childList:true});setTimeout(()=>obs.disconnect(),5000)}
 })();
 
-// Recruiter assistant: the localized Hebrew/English launcher opens the Base44 bot as a
-// left-side slide while leaving the rest of the site visible.
+// Recruiter assistant: the localized Hebrew/English launcher links to the smart bot.
 (function(){
   if(document.getElementById('ronen-bot-launcher'))return;
   var isEnglish=document.documentElement.lang.toLowerCase().startsWith('en');
@@ -357,46 +356,12 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   style.textContent='#ronen-bot-launcher{position:fixed;left:20px;top:29px;bottom:auto;z-index:99998;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:999px;background:#0d2946;color:#fff;border:2px solid #74e8dd;cursor:pointer;font-family:inherit;font-weight:900;font-size:15px;box-shadow:0 10px 28px rgba(0,0,0,.28);direction:rtl;transition:transform .2s ease,box-shadow .2s ease}#ronen-bot-launcher:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.34)}#ronen-bot-launcher:focus-visible{outline:3px solid #195ed8;outline-offset:3px}.ronenBotIcon{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#74e8dd;color:#0d2946;font-size:20px}@media(max-width:1599px) and (min-width:601px){#ronen-bot-launcher{top:124px}}@media(max-width:600px){#ronen-bot-launcher{left:12px;top:auto;bottom:12px;padding:10px 12px;font-size:14px}.ronenBotIcon{width:32px;height:32px}}';
   document.head.appendChild(style);
 
-  var iframe=document.createElement('iframe');
-  iframe.src='https://ronan-hire-flow.base44.app/bot-embed';
-  iframe.style.position='fixed';
-  iframe.style.bottom='0';
-  iframe.style.left='0';
-  iframe.style.width='0px';
-  iframe.style.height='0px';
-  iframe.style.border='none';
-  iframe.style.zIndex='99999';
-  iframe.style.background='transparent';
-  iframe.style.pointerEvents='none';
-  iframe.style.transition='width .28s ease';
-  iframe.setAttribute('allow','microphone; autoplay');
-  iframe.setAttribute('scrolling','no');
-  iframe.setAttribute('title',isEnglish?'Smart recruiter bot':'הבוט החכם למגייסים');
-  iframe.id='ronen-bot-iframe';
-  document.body.appendChild(iframe);
-
-  function isMobile(){return window.innerWidth<640}
-  function setBotOpen(open){
-    iframe.style.width=open?(isMobile()?'100%':'420px'):'0px';
-    iframe.style.height=open?'100vh':'0px';
-    iframe.style.pointerEvents=open?'auto':'none';
-  }
-
-  window.addEventListener('message',function(e){
-    if(e.data&&e.data.type==='ronen-bot-state')setBotOpen(Boolean(e.data.open));
-  });
-  window.addEventListener('resize',function(){
-    if(iframe.style.height==='100vh')iframe.style.width=isMobile()?'100%':'420px';
-  });
-
-  var launcher=document.createElement('button');
-  launcher.type='button';
+  var launcher=document.createElement('a');
+  launcher.href='https://natural-hire-smart-link.base44.app/';
   launcher.id='ronen-bot-launcher';
+  launcher.style.textDecoration='none';
   launcher.setAttribute('aria-label',isEnglish?'Open the smart recruiter bot':'פתיחת הבוט החכם למגייסים');
   launcher.innerHTML='<span>'+(isEnglish?'Ask the Smart Bot':'שאל והבוט החכם יענה')+'</span><span class="ronenBotIcon" aria-hidden="true">🤖</span>';
-  launcher.addEventListener('click',function(){
-    iframe.contentWindow.postMessage({type:'open-ronen-bot'},'*');
-  });
   document.body.appendChild(launcher);
 })();
 
