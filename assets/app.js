@@ -363,6 +363,30 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   launcher.setAttribute('aria-label',isEnglish?'Open the smart recruiter bot':'פתיחת הבוט החכם למגייסים');
   launcher.innerHTML='<span>'+(isEnglish?'Ask the Smart Bot':'שאל והבוט החכם יענה')+'</span><span class="ronenBotIcon" aria-hidden="true">🤖</span>';
   document.body.appendChild(launcher);
+  style.textContent+='#ronen-bot-panel{position:fixed;inset:0 auto 0 0;width:min(460px,100vw);height:100dvh;z-index:100000;background:white;box-shadow:8px 0 35px #0005;display:flex;flex-direction:column}#ronen-bot-panel[hidden]{display:none}#ronen-bot-panel header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#0d2946;color:white;font:700 16px Arial;direction:rtl}#ronen-bot-panel button{background:transparent;color:white;border:0;font-size:28px;cursor:pointer}#ronen-bot-iframe{width:100%;flex:1;border:0;min-height:0}';
+  var panel=document.createElement('aside');
+  panel.id='ronen-bot-panel';
+  panel.hidden=true;
+  panel.setAttribute('aria-label',isEnglish?'Smart Bot':'בוט חכם');
+  var bar=document.createElement('header');
+  var title=document.createElement('span');
+  title.textContent=isEnglish?'Smart Bot':'בוט חכם';
+  var close=document.createElement('button');
+  close.type='button';close.textContent='×';
+  close.setAttribute('aria-label',isEnglish?'Close bot':'סגירת הבוט');
+  bar.append(title,close);panel.appendChild(bar);
+  var frame=document.createElement('iframe');
+  frame.id='ronen-bot-iframe';
+  frame.title=isEnglish?'Smart recruiter bot':'הבוט החכם למגייסים';
+  frame.setAttribute('allow','microphone; autoplay');
+  panel.appendChild(frame);document.body.appendChild(panel);
+  launcher.setAttribute('aria-controls',panel.id);
+  launcher.setAttribute('aria-expanded','false');
+  function toggleBot(open){panel.hidden=!open;launcher.setAttribute('aria-expanded',String(open));if(open){if(!frame.src)frame.src=launcher.href;close.focus()}else launcher.focus()}
+  launcher.addEventListener('click',function(event){event.preventDefault();toggleBot(panel.hidden)});
+  close.addEventListener('click',function(){toggleBot(false)});
+  document.addEventListener('keydown',function(event){if(event.key==='Escape'&&!panel.hidden)toggleBot(false)});
+
 })();
 
 // Enhanced read-aloud pacing and pronunciation.
