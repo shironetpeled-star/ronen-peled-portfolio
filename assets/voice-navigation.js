@@ -15,8 +15,14 @@
     ['military.html','שירות צבאי',['צבא','הצבא','צבאי','צבאית','שרות צבאי','צה ל','צהל','שירות ביטחון']],
     ['skills.html','יכולות',['כישורים','יכולות וכישורים']],
     ['advantages.html','היתרונות שלי',['יתרונות']],
-    ['contact.html','צור איתי קשר',['יצירת קשר','צור קשר','קשר']]
+    ['contact.html','צור איתי קשר',['יצירת קשר','צור קשר','קשר']],
+    ['personal.html','פרטים אישיים',['מידע אישי','קצת על רונן','פרטים איישיים']],
+    ['employment.html','העדפות תעסוקה',['העדפות עבודה','העדפות משרה','פרטי חיפוש עבודה','חיפוש עבודה','משרה מבוקשת']]
   ];
+  const pagePairs=[["index.html","index-en.html","Home"],["product.html","product-en.html","Product Manager"],["project.html","project-en.html","Project Manager"],["system.html","system-en.html","System Analyst"],["magic.html","en-05.html","MAGIC Developer"],["customer.html","en-06.html","Customer Success"],["experience.html","history-en.html","Experience"],["projects.html","role-magic-en.html","Work & Projects"],["work-environments.html","work-environments-en.html","System Types"],["education.html","role-customer-en.html","Education"],["military.html","service-page-en.html","Military Service"],["skills.html","skills-en.html","Skills"],["advantages.html","advantages-en.html","My Advantages"],["contact.html","contact-en.html","Contact Me"],["personal.html","personal-en.html","Personal Details"],["employment.html","employment-en.html","Employment Preferences"]];
+  const englishPaths=new Set(pagePairs.map(pair=>pair[1]));
+  const canonicalPath=path=>pagePairs.find(pair=>pair[1]===path)?.[0]||path;
+  pages.push(...pagePairs.map(([he,en,title])=>{const source=pages.find(page=>page[0]===he);return [en,title,[source[1],...source[2],...(he==='employment.html'?['Job Preferences','Job Search Details']:[])]];}));
   const normalize=s=>String(s||'').toLowerCase().replace(/[\u0591-\u05c7]/g,'').replace(/[^a-z0-9\u05d0-\u05ea ]/g,' ').replace(/מ(?:א)?ג\s*י?\s*ק/g,'magic').replace(/פרוייקט/g,'פרויקט').replace(/נסיון/g,'ניסיון').replace(/בקבילה/g,'בקהילה').replace(/(?:^|\s)(?:עסור|אבור)(?=\s|$)/g,' עבור').replace(/\s+/g,' ').trim();
   const intentions={
     'index.html':['עמוד ראשי','התחלה','חזור לבית','תחזור לבית','מסך ראשי','ראשי'],
@@ -222,7 +228,7 @@
   function saveDraft(value){draft=String(value||'').slice(0,1500);if(field)field.value=draft;try{sessionStorage.setItem('portfolioVoiceDraft',draft);}catch{}}
   const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const currentPage=()=>location.pathname.split('/').pop()||'index.html';
-  const mapVersion=5;
+  const mapVersion=6;
   function sectionAliases(title){
     const text=normalize(title),aliases=[];
     const groups=[
@@ -239,9 +245,35 @@
     entries=entries.filter(entry=>entry.kind!=='section'||entry.path.split('#')[0]!==currentPage());
     markSections(document).forEach(h=>{if(h.title)entries.push({path:currentPage()+'#'+h.id,title:h.title,kind:'section',aliases:sectionAliases(h.title)});});
   }
-  function markSections(root){return [...root.querySelectorAll('main h1,main h2,main h3,main h4,main .rdSystemCards article>span')].map((h,i)=>{if(!h.id)h.id='voice-section-'+i;return {title:h.textContent.trim().slice(0,160),id:h.id}});}
-  function revealHash(){if(!location.hash)return;markSections(document);let sectionId;try{sectionId=decodeURIComponent(location.hash.slice(1));}catch{return;}const target=document.getElementById(sectionId);if(!target||!target.closest('main'))return;for(let p=target.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;const offset=Math.max(0,...[...document.querySelectorAll('.top,#pageReadTopicControls')].map(el=>getComputedStyle(el).position==='fixed'?el.getBoundingClientRect().bottom:0));window.scrollTo({top:scrollY+target.getBoundingClientRect().top-offset-20,behavior:'instant'});target.setAttribute('tabindex','-1');target.focus({preventScroll:true});}
+  function markSections(root){
+    const counts=new Map();
+    return [...root.querySelectorAll('main h1,main h2,main h3,main h4,main .rdSystemCards article>span,main .professionSkillsHeading,main .skillsHeaderTitle')].filter(h=>!h.closest('nav,#sharedBottomNavigation,#englishSharedBottom,#roleProfessionNavigation,.professionBottomNav,.enRoleNavigation,#centralMilitaryQuickNav')).map(h=>{
+      const copy=h.cloneNode(true);copy.querySelectorAll('[aria-hidden="true"],img').forEach(el=>el.remove());
+      let title=copy.textContent.replace(/\s+/g,' ').trim().slice(0,160);if(h.closest('.soft')&&['יכולות','יכולות וכישורים'].includes(title))title='יכולות וכישורים';const key=normalize(title);
+      let hash=2166136261;for(const char of key){hash^=char.charCodeAt(0);hash=Math.imul(hash,16777619);}
+      const ordinal=(counts.get(key)||0)+1;counts.set(key,ordinal);
+      if(!h.id||/^voice-section-\d+$/.test(h.id))h.id='voice-topic-'+(hash>>>0).toString(36)+(ordinal>1?'-'+ordinal:'');
+      return {title,id:h.id};
+    });
+  }
+  function revealHash(){
+    if(!location.hash)return;markSections(document);let sectionId;
+    try{sectionId=decodeURIComponent(location.hash.slice(1));}catch{return;}
+    let target=document.getElementById(sectionId);if(!target||!target.closest('main'))return;
+    for(let parent=target;parent&&parent.tagName!=='MAIN';parent=parent.parentElement){
+      if(parent.tagName==='DETAILS')parent.open=true;
+      if(parent.hidden){parent.hidden=false;if(parent.id)document.querySelectorAll('[aria-controls]').forEach(button=>{if(button.getAttribute('aria-controls')===parent.id)button.setAttribute('aria-expanded','true');});}
+    }
+    if(!target.getClientRects().length){
+      const title=normalize(target.textContent);
+      target=[...document.querySelectorAll('main h1,main h2,main h3,main h4,main .professionSkillsHeading,main .skillsHeaderTitle')].find(el=>el.getClientRects().length&&normalize(el.textContent)===title)||target;
+    }
+    const offset=Math.max(0,...[...document.querySelectorAll('.top,#pageReadTopicControls')].map(el=>['fixed','sticky'].includes(getComputedStyle(el).position)?el.getBoundingClientRect().bottom:0));
+    window.scrollTo({top:scrollY+target.getBoundingClientRect().top-offset-20,behavior:'instant'});
+    target.setAttribute('tabindex','-1');target.focus({preventScroll:true});
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(revealHash,700));else setTimeout(revealHash,700);
+  window.addEventListener('hashchange',()=>requestAnimationFrame(revealHash));
   function baseMap(){return pages.map(([path,title,aliases])=>({path,title,aliases,kind:'page'}));}
   async function siteMap(){
     const date=day();if(mapPromise&&mapDate===date)return mapPromise;
@@ -429,10 +461,20 @@
     if(!entries.length){try{const cached=JSON.parse(localStorage.getItem('portfolioVoiceMap')||'null');if(cached?.version===mapVersion&&Array.isArray(cached.entries))entries=cached.entries;}catch{}if(!entries.length)entries=baseMap();}
     refreshCurrentSections();
     command.lastIndex=0;const query=normalize(text).replace(command,' ').replace(/(?:^|\s)(?:נו{1,3}ט|תעבור|עבור|לעבור|בבקשה|אל)(?=\s|$)/g,' ').replace(/\s+/g,' ').trim();
-    if(/(?:^|\s)(?:ל?עמוד הבית|ל?דף הבית|ל?בית)(?:\s|$)/.test(query))return [{path:document.documentElement.lang==='en'?'index-en.html':'index.html',title:'עמוד הבית'}];
+    if(/(?:^|\s)(?:ל?עמוד הבית|ל?דף הבית)(?:\s|$)/.test(query)||/^(?:ל?בית)$/.test(query))return [{path:document.documentElement.lang==='en'?'index-en.html':'index.html',title:'עמוד הבית'}];
     if(!query)return [];
     const queryTokens=tokens(query),explicitPage=/(?:לשונית|טאב|עמוד|דף)\s/.test(query),sectionHints=queryTokens.filter(w=>['קורס','קורסים','השכלה','שכלה','ניסיון','כישורים','כישרורים','יכולות','הכשרה','יתרונות','השירות','השגים'].includes(w));
-    const ranked=entries.filter(entry=>!explicitPage||entry.kind==='page').map(entry=>{let score=0;const labels=[entry.title,...(entry.aliases||[]),...(entry.kind==='page'?intentions[entry.path]||[]:[])];for(const label of labels){const name=normalize(label);if(!name)continue;if(query===name||query==='ל'+name)score=Math.max(score,100+(entry.kind==='page'?10:0));else if(name.length>=3&&query.includes(name))score=Math.max(score,65+Math.min(name.length,25));else{const wanted=tokens(name);if(!wanted.length)continue;let hits=0;for(const word of wanted){if(queryTokens.some(q=>q===word))hits+=1;else if(word.length>=4&&queryTokens.some(q=>q.length>=4&&distance(q,word)<= (Math.max(q.length,word.length)>=7?2:1)))hits+=0.8;else if(word.length>=3&&queryTokens.some(q=>q.length>=3&&sound(q).length>=2&&sound(q)===sound(word)))hits+=0.75;}if(hits===wanted.length)score=Math.max(score,58+Math.min(wanted.length*6,24));else if(hits>=0.75&&hits/wanted.length>=0.65)score=Math.max(score,45+hits*6);}}if(score>0&&pages.some(([path])=>path===entry.path.split('#')[0]))score+=10;if(score>0&&entry.kind==='section'){const heading=tokens(entry.title);if(sectionHints.some(h=>heading.includes(h)))score+=25;if(entry.path.split('#')[0]===currentPage())score+=8;}return {entry,score};}).filter(x=>x.score>=45).sort((a,b)=>b.score-a.score);
+    const sectionRequest=/(?:^|\s)(?:ל?חלק|ל?נושא|ל?קטע|section|topic)(?:\s|$)/.test(query);
+    if(!sectionRequest){
+      const bareQuery=tokens(query).join(' ');
+      const pageExact=pages.filter(([path])=>englishPaths.has(path)===englishPaths.has(currentPage())).filter(([,title,aliases])=>[title,...aliases].some(label=>tokens(label).join(' ')===bareQuery));
+      if(pageExact.length===1)return [{path:pageExact[0][0],title:pageExact[0][1],kind:'page'}];
+    }
+    if(explicitPage){
+      const exactPages=pages.filter(([path])=>englishPaths.has(path)===englishPaths.has(currentPage())).flatMap(([path,title,aliases])=>[title,...aliases].map(label=>({path,title,length:normalize(label).length,label:normalize(label)}))).filter(item=>query===item.label||query.endsWith(' '+item.label)).sort((a,b)=>b.length-a.length);
+      if(exactPages.length&&(!exactPages[1]||exactPages[0].length>exactPages[1].length||exactPages[0].path===exactPages[1].path))return [{path:exactPages[0].path,title:exactPages[0].title,kind:'page'}];
+    }
+    const ranked=entries.filter(entry=>englishPaths.has(entry.path.split('#')[0])===englishPaths.has(currentPage())).filter(entry=>!explicitPage||entry.kind==='page').map(entry=>{let score=0;const labels=[entry.title,...(entry.aliases||[]),...(entry.kind==='page'?intentions[canonicalPath(entry.path)]||[]:[])];for(const label of labels){const name=normalize(label);if(!name)continue;if(query===name||query==='ל'+name)score=Math.max(score,100+(entry.kind==='page'?10:0));else if(name.length>=3&&query.includes(name))score=Math.max(score,65+Math.min(name.length,25));else{const wanted=tokens(name);if(!wanted.length)continue;let hits=0;for(const word of wanted){if(queryTokens.some(q=>q===word))hits+=1;else if(word.length>=4&&queryTokens.some(q=>q.length>=4&&distance(q,word)<= (Math.max(q.length,word.length)>=7?2:1)))hits+=0.8;else if(word.length>=3&&queryTokens.some(q=>q.length>=3&&sound(q).length>=2&&sound(q)===sound(word)))hits+=0.75;}if(hits===wanted.length)score=Math.max(score,58+Math.min(wanted.length*6,24));else if(hits>=0.75&&hits/wanted.length>=0.65)score=Math.max(score,45+hits*6);}}if(score>0&&pages.some(([path])=>path===entry.path.split('#')[0]))score+=10;if(score>0&&entry.kind==='section'){const heading=tokens(entry.title);if(sectionHints.some(h=>heading.includes(h)))score+=25;if(entry.path.split('#')[0]===currentPage())score+=8;}return {entry,score};}).filter(x=>x.score>=45).sort((a,b)=>b.score-a.score);
     if(!ranked.length)return [];
     const bare=tokens(query).join(' ');
     const exactSections=!explicitPage?ranked.filter(item=>item.entry.kind==='section'&&[item.entry.title,...(item.entry.aliases||[])].some(label=>tokens(label).join(' ')===bare)):[];
