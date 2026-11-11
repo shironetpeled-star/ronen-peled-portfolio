@@ -98,7 +98,7 @@ window.__portfolioReadPosition=(()=>{
 
 (function(){
   const current=()=>location.pathname.split('/').pop()||'index.html';
-  const unifiedHeNav=[['personal.html#personal-details','פרטים אישיים'],['personal.html#job-search','הגדרת משרה'],['index.html','בית'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html',"מתכנת מג'יק"],['customer.html','Customer Success'],['experience.html','ניסיון'],['projects.html','עבודות ופרויקטים'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['military.html','שירות צבאי'],['skills.html','יכולות'],['advantages.html','היתרונות שלי'],['contact.html','צור איתי קשר'],['index-en.html','EN']];
+  const unifiedHeNav=[['personal.html#personal-details','פרטים אישיים'],['personal.html#job-search','העדפות תעסוקה'],['index.html','בית'],['product.html','מנהל מוצר'],['project.html','מנהל פרויקט'],['system.html','מנתח מערכות'],['magic.html',"מתכנת מג'יק"],['customer.html','Customer Success'],['experience.html','ניסיון'],['projects.html','עבודות ופרויקטים'],['work-environments.html','סוגי מערכות'],['education.html','השכלה'],['military.html','שירות צבאי'],['skills.html','יכולות'],['advantages.html','היתרונות שלי'],['contact.html','צור איתי קשר'],['index-en.html','EN']];
   function normalizeHebrewTopbar(){
     if(document.documentElement.lang!=='he')return;
     if(current()==='advantages.html')document.body.classList.add('advantages-page');
