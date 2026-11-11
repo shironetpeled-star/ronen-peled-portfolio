@@ -48,6 +48,7 @@
   const moveRequest=/(?:^|\s)(?:נו{1,3}ט|תנווט|עבור|תעבור|לך|לכי|קח|העבר|תעביר|פתח|תפתח|הצג|תציג|תראה|להגיע|לעבור|להיכנס|לחזור|חזור|תחזור|תלך|ללכת|כנס|תיכנס|תגיע)\s/;
   let dialog,field,status,hookStatus,options,matches,mic,recognition=null,timer,retryTimer,speechTimer,commandTimer;
   let active=false,mode='listen',speaking=false,blocked=false,session='',generation=0,mapPromise,mapDate='',entries=[],lastFocus;
+  let microphoneEpoch=0,microphonePermission='unknown',microphoneFailure='';
   let microphoneStream=null,microphonePending=null,voiceContext=null,voiceSource=null,voiceRequest=null,speechRun=0;
   let candidates=[];
   let commandFeedback=null,feedbackTimer=null,feedbackSequence=0;
@@ -121,8 +122,8 @@
       await microphonePending;if(!valid())return;
       if(!microphoneStream?.getTracks().some(track=>track.kind!=='video'&&track.readyState!=='ended')){
         const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-        if(!valid()){stream.getTracks().forEach(track=>track.stop());return;}
-        microphoneStream=stream;wakePermission=true;
+        if(!valid()){if(continuousMicrophone&&!voiceSessionEnded)adoptMicrophoneStream(stream);else stream.getTracks().forEach(track=>track.stop());return;}
+        adoptMicrophoneStream(stream);
       }
       const track=microphoneStream.getAudioTracks?.()[0]||microphoneStream.getTracks()[0];if(track&&track.enabled===false)track.enabled=true;
       monitorMicrophone();
@@ -168,20 +169,19 @@
   try{continuousMicrophone=sessionStorage.getItem('portfolioContinuousMicrophone')==='1';}catch{}
   function rememberContinuousMicrophone(){voiceSessionEnded=false;continuousMicrophone=true;try{sessionStorage.setItem('portfolioContinuousMicrophone','1');sessionStorage.removeItem('portfolioVoiceSessionEnded');}catch{}syncToggle();}
   function resumeContinuousMicrophone(){
-    if(!continuousMicrophone||!wakePermission||microphoneStream||microphonePending||document.visibilityState==='hidden'||!navigator.mediaDevices?.getUserMedia)return microphonePending||Promise.resolve();
-    microphonePending=navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(stream=>{if(!continuousMicrophone||voiceSessionEnded||document.visibilityState==='hidden'){stream.getTracks().forEach(track=>track.stop());return;}microphoneStream=stream;primeSharedAudio();monitorMicrophone();}).catch(()=>{}).finally(()=>{microphonePending=null;});
-    return microphonePending;
+    if(!continuousMicrophone||voiceSessionEnded||microphonePermission==='denied')return Promise.resolve();
+    return requestMicrophone();
   }
   let wakeRecognition=null,wakeTimer=null,wakeCommandTimer=null,wakePermission=false;
   function stopWakeListening(){clearTimeout(wakeTimer);clearTimeout(wakeCommandTimer);if(wakeRecognition){const rec=wakeRecognition;wakeRecognition=null;rec.onend=null;rec.onresult=null;rec.onerror=null;try{rec.abort();}catch{}}}
   function startRecognition(rec){trackRecognition(rec);if('processLocally' in rec)rec.processLocally=false;rec.start();}
   function startWakeListening(){
     syncToggle();
-    if(active||voiceSessionEnded||!wakePermission||document.visibilityState==='hidden'||wakeRecognition)return;
+    if(active||voiceSessionEnded||!continuousMicrophone||!wakePermission||wakeRecognition)return;
     const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;if(!Speech)return;
     const rec=new Speech();wakeRecognition=rec;rec.lang='he-IL';rec.continuous=true;rec.interimResults=true;
     rec.onresult=event=>{
-      if(active||wakeRecognition!==rec||document.visibilityState==='hidden' )return;
+      if(active||wakeRecognition!==rec)return;
       const reading=document.querySelector('#pageReadButton[data-reading="1"],#englishPageReadButton[data-reading="1"]');
       for(let i=event.resultIndex||0;i<event.results.length;i++){
         clearTimeout(wakeCommandTimer);
@@ -192,7 +192,7 @@
           }
           continue;
         }if(isOutputEcho(text))continue;captureState.resultReceived=true;captureState.error='';
-        if(isFinishVoiceRequest(text)){finishVoiceSession();return;}
+        if(isFinishVoiceRequest(text)){showCommandFeedback('לסיום ההאזנה יש ללחוץ על סיים ניווט קולי',false);return;}
         if(handleBackRequest(text))return; if(handlePageTopRequest(text))return;
         reconnectAttempts=0;
         if(handlePauseNarration(text))return;
@@ -208,20 +208,20 @@
     };
     rec.onstart=()=>{captureState.recognition='started';if(commandFeedback?.dataset.state==='processing'&&commandFeedback?.dataset.kind==='navigation'&&!active)readyForCommand();};
     rec.onend=()=>{if(wakeRecognition===rec){wakeRecognition=null;if(!active&&wakePermission)wakeTimer=setTimeout(startWakeListening,200);}};
-    rec.onerror=event=>{if(wakeRecognition!==rec)return;captureState.error=event.error;captureState.recognition='error';stopWakeListening();if(['not-allowed','service-not-allowed','language-not-supported','language-unavailable'].includes(event.error)){wakePermission=false;return;}if(!voiceSessionEnded&&wakePermission){const delay=Math.min(10000,700*Math.pow(2,Math.min(reconnectAttempts++,4)));wakeTimer=setTimeout(()=>active?listen():startWakeListening(),delay);}};
+    rec.onerror=event=>{if(wakeRecognition!==rec)return;captureState.error=event.error;captureState.recognition='error';stopWakeListening();if(['not-allowed','service-not-allowed','language-not-supported','language-unavailable'].includes(event.error)){wakePermission=false;showCommandFeedback(captureFailureMessage(),false);if(!['language-not-supported','language-unavailable'].includes(event.error)&&microphonePermission!=='denied'&&!voiceSessionEnded)wakeTimer=setTimeout(checkWakePermission,2000);return;}if(!voiceSessionEnded&&wakePermission){const delay=Math.min(10000,700*Math.pow(2,Math.min(reconnectAttempts++,4)));wakeTimer=setTimeout(()=>active?listen():startWakeListening(),delay);}};
     try{startRecognition(rec);const button=document.getElementById('site_voice_nevegation');if(button)button.title='המיקרופון מאזין לפקודות קוליות עד לסיום מפורש';}catch(error){stopWakeListening();if(!voiceSessionEnded&&wakePermission)wakeTimer=setTimeout(startWakeListening,error.name==='InvalidStateError'?250:1000);}
   }
   async function checkWakePermission(){
-    if(voiceSessionEnded)return;
+    if(voiceSessionEnded||!continuousMicrophone)return;
     const restore=async()=>{await resumeContinuousMicrophone();if(!voiceSessionEnded)startWakeListening();};
     try{
       if(!navigator.permissions?.query)throw new Error('Microphone permission query unavailable');
       const permission=await navigator.permissions.query({name:'microphone'});
-      wakePermission=permission.state==='granted';if(wakePermission)await restore();
-      permission.onchange=()=>{wakePermission=permission.state==='granted';if(wakePermission)restore();else stopWakeListening();};
+      microphonePermission=permission.state;wakePermission=permission.state==='granted';if(wakePermission)await restore();
+      permission.onchange=()=>{microphonePermission=permission.state;wakePermission=permission.state==='granted';if(wakePermission){blocked=false;captureState.error='';restore().then(()=>{if(active)listen();});}else{stopListening();stopWakeListening();if(permission.state==='denied')microphoneProblem({name:'NotAllowedError'});}};
     }catch{if(continuousMicrophone&&!voiceSessionEnded){wakePermission=true;await restore();}}
   }
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')stopWakeListening();else if(!active)checkWakePermission();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!voiceSessionEnded&&continuousMicrophone)checkWakePermission().then(()=>{if(active&&!blocked)listen();});});
   window.addEventListener('pagehide',stopWakeListening);
   window.addEventListener('pageshow',()=>{if(!voiceSessionEnded)checkWakePermission();});
   checkWakePermission();
@@ -302,10 +302,44 @@
   function stopListening(){clearTimeout(retryTimer);clearTimeout(commandTimer);if(recognition){const old=recognition;recognition=null;old.onend=null;old.onresult=null;old.onerror=null;try{old.abort();}catch{}}}
   function hasCommand(text){const value=normalize(text);if(/(?:אל|לא)\s+(?:תעבור|עבור|לך|תפתח|פתח|נווט|תנווט|להגיע|לעבור)/.test(value))return false;command.lastIndex=0;if(command.test(value))return true;return moveRequest.test(value)&&tokens(value).some(word=>!['לך','לכי','קח','אותי','תעביר','העבר','פתח','תפתח','הצג','תציג','תראה','להגיע','לעבור','להיכנס','לחזור'].includes(word));}
   function stopSpeech(){speechRun++;clearTimeout(speechTimer);voiceRequest?.abort();voiceRequest=null;if(voiceSource){voiceSource.onended=null;try{voiceSource.stop();}catch{}voiceSource=null;}window.speechSynthesis?.cancel();speaking=false;}
+  function hasLiveMicrophone(){return Boolean(microphoneStream?.getAudioTracks().some(track=>track.readyState==='live'));}
+  function adoptMicrophoneStream(stream){
+    microphoneStream=stream;microphonePermission='granted';microphoneFailure='';wakePermission=true;blocked=false;captureState.error='';
+    for(const track of stream.getAudioTracks()){
+      track.addEventListener('ended',()=>{if(microphoneStream===stream&&!voiceSessionEnded&&continuousMicrophone){microphoneStream=null;stopMicrophoneMonitor();captureState.error='audio-capture';captureState.recognition='reconnecting';setTimeout(()=>resumeContinuousMicrophone().then(()=>active?listen():startWakeListening()),700);}});
+    }
+    monitorMicrophone();if(mic)mic.textContent='חדש האזנה';checkWakePermission().catch(()=>{});
+  }
+  function microphoneProblem(error){
+    const name=error?.name||'UnknownError';
+    const message=name==='NotAllowedError'||name==='SecurityError'
+      ?'הגישה למיקרופון נחסמה. יש לאפשר מיקרופון בהרשאות האתר. ההפעלה נשמרה ותתחדש לאחר מתן הרשאה.'
+      :name==='NotFoundError'||name==='DevicesNotFoundError'
+      ?'לא נמצא מיקרופון מחובר. חברו מיקרופון ולחצו על חדש האזנה.'
+      :name==='NotReadableError'||name==='TrackStartError'
+      ?'לא ניתן לפתוח את המיקרופון. בדקו שהוא מחובר ואינו בשימוש בלעדי של יישום אחר.'
+      :name==='UnsupportedError'
+      ?'גישה למיקרופון אינה זמינה בדפדפן הזה. פתחו את האתר בחיבור HTTPS ובדפדפן נתמך.'
+      :'פתיחת המיקרופון נכשלה זמנית. ניתן לנסות שוב באמצעות חדש האזנה.';
+    microphoneFailure=message;captureState.error=['NotAllowedError','SecurityError'].includes(name)?'not-allowed':'audio-capture';captureState.recognition='error';blocked=true;
+    if(['NotAllowedError','SecurityError'].includes(name)){microphonePermission='denied';wakePermission=false;}
+    if(status)status.textContent=message;showCommandFeedback(message,false);
+    if(dialog&&active)showMicrophoneHelp(message,['NotAllowedError','SecurityError'].includes(name)?permissionHelp:soundHelp);
+  }
   function requestMicrophone(){
-    if(microphoneStream||microphonePending||!navigator.mediaDevices?.getUserMedia)return;
-    const token=session;
-    microphonePending=navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(stream=>{if(!active||session!==token){stream.getTracks().forEach(track=>track.stop());return;}microphoneStream=stream;monitorMicrophone();wakePermission=true;mic.textContent='חדש האזנה';}).catch(()=>{if(active&&session===token){blocked=true;status.textContent='יש לאשר גישה למיקרופון כדי לנווט בקול.';say(status.textContent);}}).finally(()=>{microphonePending=null;});
+    if(voiceSessionEnded||!continuousMicrophone)return Promise.resolve();
+    if(hasLiveMicrophone())return Promise.resolve(microphoneStream);
+    if(microphonePending)return microphonePending;
+    if(!navigator.mediaDevices?.getUserMedia){microphoneProblem({name:'UnsupportedError'});return Promise.resolve();}
+    const epoch=microphoneEpoch;
+    captureState.recognition='requesting-microphone';
+    microphonePending=navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})
+      .then(stream=>{
+        if(voiceSessionEnded||!continuousMicrophone||epoch!==microphoneEpoch){stream.getTracks().forEach(track=>track.stop());return;}
+        adoptMicrophoneStream(stream);return stream;
+      }).catch(error=>{if(!voiceSessionEnded&&continuousMicrophone&&epoch===microphoneEpoch){microphoneProblem(error);checkWakePermission().catch(()=>{});}})
+      .finally(()=>{microphonePending=null;if(!voiceSessionEnded&&continuousMicrophone&&hasLiveMicrophone()){if(active)listen();else startWakeListening();}});
+    return microphonePending;
   }
   function syncToggle(){const button=document.getElementById('site_voice_nevegation');if(button){const he=document.documentElement.lang!=='en';const running=active||continuousMicrophone;button.textContent=running?(he?'סיים ניווט קולי':'End voice navigation'):(he?'ניווט קולי':'Voice navigation');button.setAttribute('aria-pressed',String(running));}}
   function close({keepMicrophone=true}={}){diagnosticRun++;diagnosticBusy=false;dialog?.querySelectorAll('#voiceCheckMic,#voiceCheckLevel').forEach(button=>button.disabled=false);generation++;active=false;clearTimeout(timer);stopListening();stopSpeech();if(!keepMicrophone){microphoneStream?.getTracks().forEach(track=>track.stop());microphoneStream=null;}if(dialog?.open)dialog.close();syncToggle();lastFocus?.focus();startWakeListening();}
@@ -315,7 +349,7 @@
     return /(?:סיים|סימי|תסיים|תסיימי|סיום|לסיים|סגור|תסגור|הפסק|תפסיק|עצור|תעצור|כבה)\s+(?:את\s+)?(?:ה)?ניווט(?:\s+(?:ה)?קולי)?(?:$|\s)|כבה(?: את)?(?: ה)?מיקרופון|(?:הפסק|תפסיק|עצור|תעצור)\s+(?:להאזין|להקשיב)|(?:סיים|תסיים)\s+(?:את\s+)?(?:ה)?האזנה/.test(value);
   }
   function finishVoiceSession(){
-    voiceSessionEnded=true;continuousMicrophone=false;wakePermission=false;hideCommandFeedback();try{sessionStorage.removeItem('portfolioVoiceTransition');}catch{}stopMicrophoneMonitor();captureState.recognition='ended';
+    voiceSessionEnded=true;continuousMicrophone=false;wakePermission=false;microphoneEpoch++;hideCommandFeedback();try{sessionStorage.removeItem('portfolioVoiceTransition');}catch{}stopMicrophoneMonitor();captureState.recognition='ended';
     try{sessionStorage.setItem('portfolioContinuousMicrophone','0');sessionStorage.setItem('portfolioVoiceSessionEnded','1');}catch{}
     readRequestId++;readStartPending=false;saveDraft('');stopWakeListening();
     const reader=document.querySelector('#pageReadButton[data-reading="1"],#englishPageReadButton[data-reading="1"]');if(reader)reader.click();
@@ -355,7 +389,7 @@
         commandTimer=setTimeout(()=>{if(active&&id===generation&&field.value===captured&&hasCommand(captured)&&resolve(captured).length===1)navigate();},450);
       }
     };
-    rec.onerror=e=>{if(!active||recognition!==rec)return;captureState.error=e.error;captureState.recognition='error';stopListening();if(['not-allowed','service-not-allowed','language-not-supported','language-unavailable'].includes(e.error)){blocked=true;clearTimeout(timer);status.textContent=captureFailureMessage();say(status.textContent);}else if(!voiceSessionEnded){blocked=false;const delay=Math.min(10000,700*Math.pow(2,Math.min(reconnectAttempts++,4)));retryTimer=setTimeout(listen,delay);}};
+    rec.onerror=e=>{if(!active||recognition!==rec)return;captureState.error=e.error;captureState.recognition='error';stopListening();if(['not-allowed','service-not-allowed','language-not-supported','language-unavailable'].includes(e.error)){blocked=true;clearTimeout(timer);status.textContent=captureFailureMessage();say(status.textContent);if(!['language-not-supported','language-unavailable'].includes(e.error)&&microphonePermission!=='denied'&&!voiceSessionEnded)retryTimer=setTimeout(()=>checkWakePermission().then(()=>{if(active&&!voiceSessionEnded&&microphonePermission==='granted'){blocked=false;listen();}}),2000);}else if(!voiceSessionEnded){blocked=false;const delay=Math.min(10000,700*Math.pow(2,Math.min(reconnectAttempts++,4)));retryTimer=setTimeout(listen,delay);}};
     rec.onend=()=>{if(recognition===rec){recognition=null;if(active&&!speaking&&mode==='listen'&&hasCommand(field.value)){navigate();return;}if(active&&!blocked)retryTimer=setTimeout(listen,150);}};
     try{startRecognition(rec);}catch(error){recognition=null;if(['NotAllowedError','NotSupportedError'].includes(error.name)){blocked=true;status.textContent='לא ניתן להתחיל האזנה. אשרו מיקרופון ונסו שוב.';say(status.textContent);}else if(active&&!voiceSessionEnded)retryTimer=setTimeout(listen,error.name==='InvalidStateError'?250:1000);}
   }
@@ -455,7 +489,7 @@
       if(reader.dataset.reading!=='1')reader.click();showCommandFeedback('הבקשה התקבלה. מכין את הקראת הדף…');const feedback=feedbackSequence;const checkPlayback=setInterval(()=>{if(feedback!==feedbackSequence||voiceSessionEnded){clearInterval(checkPlayback);return;}if((window.__ronenPageSource&&window.__ronenAudioContext?.state==='running')||window.__ronenPageAudio||window.speechSynthesis?.speaking){clearInterval(checkPlayback);readyForCommand();}else if(reader.dataset.reading!=='1'){clearInterval(checkPlayback);showCommandFeedback('ההקראה נעצרה. מקשיב לפקודה הבאה',false);}},100);
     }finally{if(request===readRequestId)readStartPending=false;startWakeListening();}
   }
-  function handleVoiceChoice(text){if(handleBackRequest(text))return true;if(handlePageTopRequest(text))return true;if(handlePauseNarration(text))return true;if(isFinishVoiceRequest(text)){finishVoiceSession();return true;}if(stopCurrentNarration(text))return true;if(handleNarrationCommand(text))return true;if(isReadPageRequest(text)){readCurrentPage();return true;}const value=normalize(text);if(/סגור(?: את)?(?: ה)?(?:ניווט|חלון)|סגור ניווט/.test(value)){spokenClose();return true;}if(/(?:תתחיל|התחל|תתחילי|להתחיל) מחדש/.test(value)){begin();return true;}const number=voiceNumber(text);if(mode==='targets'&&number>0){const target=candidates[number-1];if(target)navigate(target);else say('בחרו מספר מתוך האפשרויות שהקראתי.',listen);return true;}if(mode==='choices'&&number>0){chooseSpoken(text);return true;}return false;}
+  function handleVoiceChoice(text){if(handleBackRequest(text))return true;if(handlePageTopRequest(text))return true;if(handlePauseNarration(text))return true;if(isFinishVoiceRequest(text)){showCommandFeedback('לסיום ההאזנה יש ללחוץ על סיים ניווט קולי',false);return true;}if(stopCurrentNarration(text))return true;if(handleNarrationCommand(text))return true;if(isReadPageRequest(text)){readCurrentPage();return true;}const value=normalize(text);if(/סגור(?: את)?(?: ה)?(?:ניווט|חלון)|סגור ניווט/.test(value)){spokenClose();return true;}if(/(?:תתחיל|התחל|תתחילי|להתחיל) מחדש/.test(value)){begin();return true;}const number=voiceNumber(text);if(mode==='targets'&&number>0){const target=candidates[number-1];if(target)navigate(target);else say('בחרו מספר מתוך האפשרויות שהקראתי.',listen);return true;}if(mode==='choices'&&number>0){chooseSpoken(text);return true;}return false;}
   function chooseSpoken(text){const value=normalize(text);if(/(?:^|\s)(1|אחת|אחד|ראשונה)(?:\s|$)/.test(value))begin();else if(/(?:^|\s)(2|שתיים|שתים|שניים|שנים|שנייה)(?:\s|$)/.test(value))navigate();else if(/(?:^|\s)(3|שלוש|שלושה|שלישית)(?:\s|$)/.test(value))spokenClose();}
   function resolve(text){
     if(!entries.length){try{const cached=JSON.parse(localStorage.getItem('portfolioVoiceMap')||'null');if(cached?.version===mapVersion&&Array.isArray(cached.entries))entries=cached.entries;}catch{}if(!entries.length)entries=baseMap();}
@@ -523,5 +557,11 @@
     siteMap().then(async mapping=>{let notified=false;try{notified=localStorage.getItem('portfolioVoiceMakeMapDate')===mapping.date;}catch{}const remap=mapping.remap||!notified;const response=await webhook('open',{remap,site_map:remap?mapping.entries:[],date:mapping.date});try{localStorage.setItem('portfolioVoiceMakeMapDate',mapping.date);}catch{}return response;}).then(()=>{if(active&&id===generation)hookStatus.textContent='Make קיבל את הלחיצה. הניווט מוכן.';}).catch(()=>{if(active&&id===generation)hookStatus.textContent='Make לא אישר את הלחיצה. אפשר עדיין לנווט באתר.';});
   }
   try{const transition=JSON.parse(sessionStorage.getItem('portfolioVoiceTransition')||'null');sessionStorage.removeItem('portfolioVoiceTransition');if(transition&&Date.now()-transition.at<10000&&continuousMicrophone&&!voiceSessionEnded){showCommandFeedback('העמוד נפתח. מחדש האזנה…');commandFeedback.dataset.kind='navigation';}}catch{}
-  window.PortfolioVoiceNavigation={open,close:finishVoiceSession,finish:finishVoiceSession,isActive:()=>active||continuousMicrophone,getDiagnostics:()=>({...captureState,microphoneOpen:Boolean(microphoneStream?.getTracks().some(track=>track.readyState!=='ended')),speechRecognitionSupported:Boolean(window.SpeechRecognition||window.webkitSpeechRecognition),sessionActive:active||continuousMicrophone})};
+  setInterval(()=>{
+    if(voiceSessionEnded||!continuousMicrophone||microphonePending||microphonePermission==='denied')return;
+    if(!hasLiveMicrophone()){if(microphonePermission==='granted')resumeContinuousMicrophone();return;}
+    if(active){if(!recognition&&!blocked)listen();}else if(!wakeRecognition&&wakePermission)startWakeListening();
+  },1500);
+  navigator.mediaDevices?.addEventListener?.('devicechange',()=>{if(continuousMicrophone&&!voiceSessionEnded&&!hasLiveMicrophone()&&microphonePermission!=='denied'){blocked=false;resumeContinuousMicrophone();}});
+  window.PortfolioVoiceNavigation={open,close:finishVoiceSession,finish:finishVoiceSession,isActive:()=>active||continuousMicrophone,getDiagnostics:()=>({...captureState,microphoneOpen:hasLiveMicrophone(),permission:microphonePermission,microphoneError:microphoneFailure,continuousRequested:continuousMicrophone,sessionEnded:voiceSessionEnded,recognitionRunning:Boolean(recognition||wakeRecognition),speechRecognitionSupported:Boolean(window.SpeechRecognition||window.webkitSpeechRecognition),sessionActive:active||continuousMicrophone})};
 })();
