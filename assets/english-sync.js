@@ -6,7 +6,7 @@ const enNav=[
 ];
 const rolePages=['product-en.html','project-en.html','system-en.html','en-05.html','en-06.html'];
 const roleQuick=[['history-en.html','Experience Details'],['role-magic-en.html','Project List'],['work-environments-en.html','System Types'],['role-customer-en.html','Education']];
-const roleNav=[['index-en.html','Home · 360° View'],['product-en.html','Product Manager'],['project-en.html','Project Manager'],['system-en.html','System Analyst'],['en-05.html','MAGIC Developer'],['en-06.html','Customer Success']];
+const roleNav=[['index-en.html','Home · 360° View'],['product-en.html','Product Manager'],['project-en.html','Project Manager'],['system-en.html','System Analyst'],['en-05.html','MAGIC Developer'],['en-06.html','Customer Success'],['employment-en.html','Employment Preferences']];
 const buttonCss='display:inline-flex;align-items:center;justify-content:center;min-height:44px;box-sizing:border-box;padding:10px 14px;border-radius:11px;background:#edf3ff;border:1px solid #c9d9f5;color:#0f4fbf;text-decoration:none;font-weight:900;font-size:13px;line-height:1.2;white-space:nowrap';
 function ensureStyles(){if(document.getElementById('englishSiteSyncStyles'))return;const s=document.createElement('style');s.id='englishSiteSyncStyles';s.textContent=`
 html[lang="en"] .top{background:#0d2946!important;border-bottom:1px solid #143c64!important}
