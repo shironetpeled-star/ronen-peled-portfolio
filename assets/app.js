@@ -40,7 +40,7 @@ window.__portfolioShortOpening=(groups,key)=>{
  if(remaining.length)groups.splice(0,1,opening,remaining);return groups;
 };
 // Track only the site's spoken text so recognition can ignore playback echoes.
-window.__portfolioSetNarrationOutput=text=>{const previous=window.__portfolioNarrationOutput;window.__portfolioNarrationOutput={text:text||previous?.text||'',playing:Boolean(text),endedAt:text?0:Date.now()};};
+window.__portfolioSetNarrationOutput=text=>{const previous=window.__portfolioNarrationOutput,now=Date.now();const history=(window.__portfolioNarrationHistory||[]).filter(item=>now-item.at<10000);if(text&&history.at(-1)?.text!==text)history.push({text,at:now});window.__portfolioNarrationHistory=history.slice(-8);window.__portfolioNarrationOutput={text:text||previous?.text||'',playing:Boolean(text),endedAt:text?0:now};};
 // Keep narration anchored to the reader's selected text or current view.
 window.__portfolioReadPosition=(()=>{
   let clicked=null;
@@ -785,7 +785,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
       const voiceReady=new Promise(function(resolve,reject){
         if(window.PortfolioVoiceNavigation){resolve();return;}
         const script=document.createElement('script');
-        script.src='/assets/voice-navigation.js?v=20261112-allway-matching-10';
+        script.src='/assets/voice-navigation.js?v=20261112-reading-controls-11';
         script.onload=resolve;script.onerror=reject;
         document.head.appendChild(script);
       });
