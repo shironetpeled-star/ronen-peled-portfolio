@@ -156,7 +156,7 @@
   let promptText='',promptEndedAt=0;
   function isOutputEcho(text){
     const value=normalize(text);if(!value)return false;
-    if(mode==='targets'&&!speaking&&Date.now()-promptEndedAt>100){const number=voiceNumber(value);if((number>0&&number<=candidates.length)||chooseNamedCandidate(value))return false;}
+    if(mode==='targets'&&!speaking&&Date.now()-promptEndedAt>100){const number=voiceNumber(value);if((number>0&&number<=candidates.length)||matchingCandidates(value).length>0)return false;}
     const output=window.__portfolioNarrationOutput;
     const sources=[];
     if(promptText&&(speaking||Date.now()-promptEndedAt<1200))sources.push(promptText);
@@ -403,7 +403,8 @@
   function voiceNumber(text){
     let value=normalize(text).replace(/^(?:(?:בחר|בחרי|תבחר|תבחרי|בחירה|אני בוחר|אני בוחרת)\s+)?(?:ב?אפשרות\s+)?(?:מספר\s+)?/,'').replace(/\s+בבקשה$/,'').trim();
     value=value.replace(/^(?:(?:choose|select)\s+)?(?:option\s+)?(?:number\s+)?/,'').trim();
-    const names=[['1','אחת','אחד','ראשונה','ראשון','one','first'],['2','שתיים','שתים','שניים','שנים','שנייה','שניה','שני','two','second'],['3','שלוש','שלושה','שלישית','שלישי','three','third'],['4','ארבע','ארבעה','רביעית','four'],['5','חמש','חמישה','חמישית','five'],['6','שש','שישה','שישית','six'],['7','שבע','שבעה','שביעית','seven'],['8','שמונה','שמינית','eight'],['9','תשע','תשעה','תשיעית','nine'],['10','עשר','עשרה','עשירית','ten']];
+    if(/^\d{1,2}$/.test(value))return Number(value);
+    const names=[['1','אחת','אחד','ראשונה','ראשון','one','first'],['2','שתיים','שתים','שניים','שנים','שנייה','שניה','שני','two','second'],['3','שלוש','שלושה','שלישית','שלישי','three','third'],['4','ארבע','ארבעה','רביעית','four'],['5','חמש','חמישה','חמישית','five'],['6','שש','שישה','שישית','six'],['7','שבע','שבעה','שביעית','seven'],['8','שמונה','שמינית','eight'],['9','תשע','תשעה','תשיעית','nine'],['10','עשר','עשרה','עשירית','ten'],['אחת עשרה','אחד עשר','eleven'],['שתים עשרה','שתיים עשרה','שנים עשר','twelve'],['שלוש עשרה','שלושה עשר','thirteen'],['ארבע עשרה','ארבעה עשר','fourteen'],['חמש עשרה','חמישה עשר','fifteen'],['שש עשרה','שישה עשר','sixteen']];
     return names.findIndex(group=>group.includes(value))+1;
   }
   function targetPage(target){return pages.find(page=>page[0]===target.path.split('#')[0]);}
@@ -411,18 +412,27 @@
     const page=targetPage(target),title=page?.[1]||target.path.split('#')[0],english=document.documentElement.lang==='en';
     return target.kind==='page'||!target.path.includes('#')?(english?title+' tab':'לשונית '+title):(english?target.title+' on the '+title+' page':target.title+' בדף '+title);
   }
-  function chooseNamedCandidate(text,list=candidates){
+  function matchingCandidates(text,list=candidates){
     const clean=value=>tokens(normalize(value).replace(/(?:^|\s)(?:בדף|בעמוד|בלשונית|ללשונית|לשונית|דף|עמוד|החלק|חלק|נושא|אפשרות|מספר|בחר|בחרי|תבחר|תבחרי|page|tab|section|on|in|the|option|choose|select|to)(?=\s|$)/g,' ')).join(' ');
-    const query=clean(text);if(!query)return null;
+    const query=clean(text);if(!query)return [];
     const tabRequest=/(?:^|\s)(?:ל?לשונית|טאב|tab)(?:\s|$)/.test(normalize(text));
     const ranked=list.filter(target=>!tabRequest||target.kind==='page'||!target.path.includes('#')).map(target=>{
       const page=targetPage(target),parentNames=page?[page[1],...page[2]]:[],names=[targetLabel(target)];
       if(target.kind==='page'||!target.path.includes('#'))names.push(target.title,...(target.aliases||[]));
       else{for(const title of [target.title,...(target.aliases||[])])for(const parent of parentNames)names.push(title+' '+parent);names.push(target.title,...(target.aliases||[]),...parentNames);}
-      const score=Math.max(0,...names.map(name=>{const key=clean(name);if(!key)return 0;if(query===key)return 100+key.split(' ').length;return 0;}));
+      const score=Math.max(0,...names.map(name=>{const key=clean(name);if(!key)return 0;if(query===key)return 100+key.split(' ').length;const wanted=query.split(' '),available=key.split(' ');if(wanted.some(word=>word.length>=3)&&wanted.every(word=>available.some(part=>part===word||(word.length>=4&&part.startsWith(word)))))return 60+wanted.length*5;return 0;}));
       return {target,score};
     }).filter(item=>item.score>0).sort((a,b)=>b.score-a.score);
-    return ranked.length&&(!ranked[1]||ranked[0].score>ranked[1].score)?ranked[0].target:null;
+    if(!ranked.length)return [];return ranked.filter(item=>item.score===ranked[0].score).map(item=>item.target);
+  }
+  function chooseNamedCandidate(text,list=candidates){const choices=matchingCandidates(text,list);return choices.length===1?choices[0]:null;}
+  function presentTargetChoices(targets,prefix='נמצאו כמה יעדים מתאימים. '){
+    if(!targets.length){targets=baseMap().filter(target=>englishPaths.has(target.path)===englishPaths.has(currentPage()));prefix='לא נמצא יעד מתאים לבקשה. אפשר לבחור לשונית מתוך: ';}
+    candidates=[...new Map(targets.map(target=>[target.path,target])).values()].slice(0,16);
+    mode=candidates.length?'targets':'clarify';matches.replaceChildren();matches.hidden=!candidates.length;
+    candidates.forEach((target,index)=>{const button=document.createElement('button');button.type='button';button.textContent=(index+1)+'. '+targetLabel(target);button.addEventListener('click',()=>navigate(target));matches.appendChild(button);});
+    status.textContent=candidates.length?prefix+candidates.map((target,index)=>(index+1)+'. '+targetLabel(target)).join('. ')+'. אמרו מספר אפשרות או שם מקום. אפשר גם שם חלקי שמזהה אפשרות אחת.':'לא נמצא יעד מתאים. אמרו שוב את שם הדף או החלק שאליו תרצו לעבור.';
+    showCommandFeedback(status.textContent,false);say(status.textContent,listen);
   }
   let lastNarrationCommand='',lastNarrationTime=0;
   function handlePauseNarration(text){
@@ -514,7 +524,16 @@
       if(reader.dataset.reading!=='1')reader.click();showCommandFeedback('הבקשה התקבלה. מכין את הקראת הדף…');const feedback=feedbackSequence;const checkPlayback=setInterval(()=>{if(feedback!==feedbackSequence||voiceSessionEnded){clearInterval(checkPlayback);return;}if((window.__ronenPageSource&&window.__ronenAudioContext?.state==='running')||window.__ronenPageAudio||window.speechSynthesis?.speaking){clearInterval(checkPlayback);readyForCommand();}else if(reader.dataset.reading!=='1'){clearInterval(checkPlayback);showCommandFeedback('ההקראה נעצרה. מקשיב לפקודה הבאה',false);}},100);
     }finally{if(request===readRequestId)readStartPending=false;startWakeListening();}
   }
-  function handleVoiceChoice(text){if(handleBackRequest(text))return true;if(handlePageTopRequest(text))return true;if(handlePauseNarration(text))return true;if(isFinishVoiceRequest(text)){showCommandFeedback('לסיום ההאזנה יש ללחוץ על סיים ניווט קולי',false);return true;}if(stopCurrentNarration(text))return true;if(handleNarrationCommand(text))return true;if(isReadPageRequest(text)){readCurrentPage();return true;}const value=normalize(text);if(/סגור(?: את)?(?: ה)?(?:ניווט|חלון)|סגור ניווט/.test(value)){spokenClose();return true;}if(/(?:תתחיל|התחל|תתחילי|להתחיל) מחדש/.test(value)){begin();return true;}const number=voiceNumber(text);if(mode==='targets'){if(number>0){const target=candidates[number-1];if(target)navigate(target);else say('בחרו מספר מתוך האפשרויות שהקראתי.',listen);return true;}const selected=chooseNamedCandidate(text);if(selected){navigate(selected);return true;}if(!hasCommand(text)){say('אמרו את מספר האפשרות, או את שם החלק ושם הדף שלה.',listen);return true;}}if(mode==='choices'&&number>0){chooseSpoken(text);return true;}return false;}
+  function handleVoiceChoice(text){if(handleBackRequest(text))return true;if(handlePageTopRequest(text))return true;if(handlePauseNarration(text))return true;if(isFinishVoiceRequest(text)){showCommandFeedback('לסיום ההאזנה יש ללחוץ על סיים ניווט קולי',false);return true;}if(stopCurrentNarration(text))return true;if(handleNarrationCommand(text))return true;if(isReadPageRequest(text)){readCurrentPage();return true;}const value=normalize(text);if(/סגור(?: את)?(?: ה)?(?:ניווט|חלון)|סגור ניווט/.test(value)){spokenClose();return true;}if(/(?:תתחיל|התחל|תתחילי|להתחיל) מחדש/.test(value)){begin();return true;}const number=voiceNumber(text);if(mode==='targets'){
+      if(number>0){const target=candidates[number-1];if(target)navigate(target);else presentTargetChoices(candidates,'המספר אינו ברשימה. האפשרויות הן: ');return true;}
+      const narrowed=matchingCandidates(text);
+      if(narrowed.length===1){navigate(narrowed[0]);return true;}
+      if(narrowed.length>1){presentTargetChoices(narrowed,'השם מתאים לכמה אפשרויות. ');return true;}
+      const newTargets=resolve(text);
+      if(newTargets.length===1){navigate(newTargets[0]);return true;}
+      if(newTargets.length>1){presentTargetChoices(newTargets);return true;}
+      presentTargetChoices(candidates,'לא זוהתה אפשרות אחת. אפשר לבחור מתוך: ');return true;
+    }if(mode==='choices'&&number>0){chooseSpoken(text);return true;}return false;}
   function chooseSpoken(text){const value=normalize(text);if(/(?:^|\s)(1|אחת|אחד|ראשונה)(?:\s|$)/.test(value))begin();else if(/(?:^|\s)(2|שתיים|שתים|שניים|שנים|שנייה)(?:\s|$)/.test(value))navigate();else if(/(?:^|\s)(3|שלוש|שלושה|שלישית)(?:\s|$)/.test(value))spokenClose();}
   function resolve(text){
     if(!entries.length){try{const cached=JSON.parse(localStorage.getItem('portfolioVoiceMap')||'null');if(cached?.version===mapVersion&&Array.isArray(cached.entries))entries=cached.entries;}catch{}if(!entries.length)entries=baseMap();}
@@ -566,7 +585,7 @@
       });
       if(!active||id!==generation)return;targets=chosen?[chosen]:resolve(field.value);
     }
-    if(targets.length!==1){candidates=targets;mode=targets.length?'targets':'clarify';matches.replaceChildren();matches.hidden=!targets.length;targets.forEach((target,index)=>{const button=document.createElement('button');button.type='button';button.textContent=(index+1)+'. '+targetLabel(target);button.addEventListener('click',()=>navigate(target));matches.appendChild(button);});status.textContent=targets.length?'נמצאו כמה יעדים מתאימים. '+targets.map((target,index)=>(index+1)+'. '+targetLabel(target)).join('. ')+'. אפשר לומר את מספר האפשרות, או את שם החלק ושם הדף שלה.':'לא מצאתי לשונית או חלק שמתאימים לבקשה. הבקשה נשמרה. אמרו שוב את היעד בניסוח אחר.';showCommandFeedback(status.textContent,false);say(status.textContent,listen);return;}
+    if(targets.length!==1){presentTargetChoices(targets);return;}
     const target=targets[0];showCommandFeedback('הבקשה התקבלה. מעביר אל '+target.title+'…');
     webhook('navigate',{transcript:field.value,target:target.path}).catch(()=>{});
     if(!active||id!==generation)return;const url=new URL(target.path,location.origin);if(url.origin!==location.origin)return;
