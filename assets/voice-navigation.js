@@ -3,21 +3,21 @@
   if(window.PortfolioVoiceNavigation)return;
   const pages=[
     ['index.html','עמוד הבית',['בית','דף הבית','עמוד הבית']],
-    ['product.html','מנהל מוצר',['ניהול מוצר','מוצר']],
-    ['project.html','מנהל פרויקט',['ניהול פרויקטים','מנהל פרויקטים']],
-    ['system.html','מנתח מערכות',['ניתוח מערכות']],
+    ['product.html','מנהל מוצר',['ניהול מוצר','מוצר','פרודקט','product management','product','PM']],
+    ['project.html','מנהל פרויקט',['ניהול פרויקטים','מנהל פרויקטים','ניהול פרויקט','project management','project manager','PM']],
+    ['system.html','מנתח מערכות',['ניתוח מערכות','אפיון מערכות','מנתח','systems analysis','system analysis']],
     ['magic.html','מתכנת MAGIC',['מגיק','מג יק','מג׳יק','magic']],
-    ['customer.html','Customer Success',['לקוחות','קסטומר סקסס']],
+    ['customer.html','Customer Success',['לקוחות','קסטומר סקסס','קאסטומר סקסס','הצלחת לקוחות','customer success']],
     ['experience.html','ניסיון',['נסיון','ניסיון תעסוקתי']],
     ['projects.html','עבודות ופרויקטים',['פרויקטים','עבודות']],
     ['work-environments.html','סוגי מערכות',['סביבות עבודה']],
-    ['education.html','השכלה',['לימודים']],
+    ['education.html','השכלה',['לימודים','קורסים','הכשרות','education','training']],
     ['military.html','שירות צבאי',['צבא','הצבא','צבאי','צבאית','שרות צבאי','צה ל','צהל','שירות ביטחון']],
     ['skills.html','יכולות',['כישורים','יכולות וכישורים']],
     ['advantages.html','היתרונות שלי',['יתרונות']],
     ['contact.html','צור איתי קשר',['יצירת קשר','צור קשר','קשר']],
     ['personal.html','פרטים אישיים',['מידע אישי','קצת על רונן','פרטים איישיים']],
-    ['employment.html','העדפות תעסוקה',['העדפות עבודה','העדפות משרה','פרטי חיפוש עבודה','חיפוש עבודה','משרה מבוקשת']]
+    ['employment.html','העדפות תעסוקה',['העדפות עבודה','העדפות משרה','פרטי חיפוש עבודה','חיפוש עבודה','משרה מבוקשת','תנאי עבודה','job preferences','employment preferences']]
   ];
   const pagePairs=[["index.html","index-en.html","Home"],["product.html","product-en.html","Product Manager"],["project.html","project-en.html","Project Manager"],["system.html","system-en.html","System Analyst"],["magic.html","en-05.html","MAGIC Developer"],["customer.html","en-06.html","Customer Success"],["experience.html","history-en.html","Experience"],["projects.html","role-magic-en.html","Work & Projects"],["work-environments.html","work-environments-en.html","System Types"],["education.html","role-customer-en.html","Education"],["military.html","service-page-en.html","Military Service"],["skills.html","skills-en.html","Skills"],["advantages.html","advantages-en.html","My Advantages"],["contact.html","contact-en.html","Contact Me"],["personal.html","personal-en.html","Personal Details"],["employment.html","employment-en.html","Employment Preferences"]];
   const englishPaths=new Set(pagePairs.map(pair=>pair[1]));
@@ -45,7 +45,7 @@
   function distance(a,b){const row=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){let prev=row[0];row[0]=i;for(let j=1;j<=b.length;j++){const before=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=before;}}return row[b.length];}
   function sound(word){return word.replace(/[כקח]/g,'ק').replace(/[טת]/g,'ת').replace(/[סש]/g,'ס').replace(/[אעהוי]/g,'').replace(/(.)\1+/g,'$1');}
   const command=/(?:נו{1,3}ט|תנווט|עבור|תעבור|לך|לכי|קח אותי|העבר אותי|תעביר אותי)\s+(?:עכשיו|לשם|למקום הזה)|(?:פתח|תפתח)\s+(?:את זה|את המקום הזה)/g;
-  const moveRequest=/(?:^|\s)(?:נו{1,3}ט|תנווט|עבור|תעבור|לך|לכי|קח|העבר|תעביר|פתח|תפתח|הצג|תציג|תראה|להגיע|לעבור|להיכנס|לחזור|חזור|תחזור|תלך|ללכת|כנס|תיכנס|תגיע)\s/;
+  const moveRequest=/(?:^|\s)(?:go|open|navigate|show|נו{1,3}ט|תנווט|עבור|תעבור|לך|לכי|קח|העבר|תעביר|פתח|תפתח|הצג|תציג|תראה|להגיע|לעבור|להיכנס|לחזור|חזור|תחזור|תלך|ללכת|כנס|תיכנס|תגיע)\s/;
   let dialog,field,status,hookStatus,options,matches,mic,recognition=null,timer,retryTimer,speechTimer,commandTimer;
   let active=false,mode='listen',speaking=false,blocked=false,session='',generation=0,mapPromise,mapDate='',entries=[],lastFocus;
   let microphoneEpoch=0,microphonePermission='unknown',microphoneFailure='';
@@ -229,10 +229,21 @@
   function saveDraft(value){draft=String(value||'').slice(0,1500);if(field)field.value=draft;try{sessionStorage.setItem('portfolioVoiceDraft',draft);}catch{}}
   const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const currentPage=()=>location.pathname.split('/').pop()||'index.html';
-  const mapVersion=7;
+  const mapVersion=8;
   function sectionAliases(title){
     const text=normalize(title),aliases=[];
     const groups=[
+      [/אזורי עבודה|preferred work locations/i,['מיקום עבודה','מיקום משרה','אזור עבודה','מקומות עבודה מועדפים','איפה לעבוד','work locations','location preferences']],
+      [/מתכונת עבודה|work arrangement/i,['עבודה מהבית','עבודה מרחוק','היברידי','היברידית','משרד','hybrid','remote work','office work']],
+      [/תחומים מבוקשים|desired roles/i,['תפקידים מבוקשים','סוגי משרות','תחומי תפקיד','desired positions']],
+      [/^זמינות$|^availability$/i,['מועד התחלה','התחלת עבודה','זמין','מתי אפשר להתחיל','start date','availability']],
+      [/^שפות$|^languages$/i,['ידיעת שפות','רמות שפות','שפות מדוברות','language skills']],
+      [/תחביבים|outside work|hobbies/i,['פנאי','תחומי עניין','תחביב','hobbies','interests']],
+      [/תאריך לידה|date of birth/i,['יום הולדת','תאריך הלידה','birth date','birthday']],
+      [/אימייל|^email$/i,['מייל','דואר אלקטרוני','כתובת מייל','email address']],
+      [/טלפון|^phone$/i,['נייד','מספר נייד','מספר טלפון','mobile number']],
+      [/מיקוד|postal code/i,['מספר מיקוד','postcode','zip code']],
+
       [/השכלה|הכשרות|הסמכות|education|training|certifications/,['השכלה','לימודים','הכשרות','education','training']],
       [/חמישה עולמות|5 עולמות/,['חמישה עולמות שמתחברים','חמש עולמות שמתחברים','5 עולמות שמתחברים','חמישה עולמות','חמשת העולמות','עולמות שמתחברים','העולמות המקצועיים','חמישה תחומים שמתחברים']],
       [/^התנדבות(?: בקהילה)?$/,['התנדבות','התנדבות בקהילה','תרומה לקהילה','פעילות קהילתית','עזרה לנזקקים','סיוע לקהילה']],
@@ -382,6 +393,7 @@
       const spoken=words.join(' ').trim();if(!spoken)return;if(!allFinal&&isReadPageRequest(spoken)){captureState.resultReceived=true;captureState.error='';clearTimeout(commandTimer);commandTimer=setTimeout(()=>{if(active&&recognition===rec&&!voiceSessionEnded)readCurrentPage();},300);return;}captureState.resultReceived=true;captureState.error='';reconnectAttempts=0;
       if(mode==='navigate'){if(!allFinal)return;if(handleVoiceChoice(spoken))return;if(hasCommand(spoken)){generation++;mode='listen';saveDraft(spoken);navigate();}return;}
       if(allFinal&&handleVoiceChoice(spoken))return; if(allFinal&&/(?:אל|לא)\s+(?:תעבור|עבור|לך|תפתח|פתח|נווט|תנווט|להגיע|לעבור)/.test(normalize(spoken)))return;
+      if(allFinal&&mode==='listen'&&spoken){saveDraft(spoken);navigate();return;}
       if(mode==='choices'&&!hasCommand(spoken)){if(allFinal)chooseSpoken(spoken);return;}
       if(spoken){saveDraft([prefix,[...heard.values()].join(' ')].filter(Boolean).join(' '));}
       clearTimeout(commandTimer);
@@ -412,15 +424,24 @@
     const page=targetPage(target),title=page?.[1]||target.path.split('#')[0],english=document.documentElement.lang==='en';
     return target.kind==='page'||!target.path.includes('#')?(english?title+' tab':'לשונית '+title):(english?target.title+' on the '+title+' page':target.title+' בדף '+title);
   }
+  function navigationPhrase(value){
+    return tokens(normalize(value).replace(/(?:^|\s)(?:בדף|בעמוד|בלשונית|ללשונית|לשונית|ל?דף|ל?עמוד|ל?חלק|ל?נושא|ל?קטע|החלק|חלק|נושא|אפשרות|מספר|בחר|בחרי|תבחר|תבחרי|פתח|תפתח|תציג|הצג|תראה|קח|אותי|page|tab|section|on|in|the|option|choose|select|open|show|go|navigate|to)(?=\s|$)/g,' ')).join(' ');
+  }
+  function navigationNameScore(text,name){
+    const query=navigationPhrase(text),key=navigationPhrase(name);if(!query||!key)return 0;
+    if(query===key)return 100+key.split(' ').length;
+    const wanted=query.split(' '),available=key.split(' ');if(!wanted.some(word=>word.length>=3))return 0;
+    let penalty=0;for(const word of wanted){if(available.includes(word))continue;if(word.length>=3&&available.some(part=>part.startsWith(word)))continue;if(word.length>=4&&available.some(part=>part.length>=4&&distance(word,part)<=1)){penalty+=8;continue;}return 0;}
+    return 60+wanted.length*5-penalty;
+  }
   function matchingCandidates(text,list=candidates){
-    const clean=value=>tokens(normalize(value).replace(/(?:^|\s)(?:בדף|בעמוד|בלשונית|ללשונית|לשונית|דף|עמוד|החלק|חלק|נושא|אפשרות|מספר|בחר|בחרי|תבחר|תבחרי|page|tab|section|on|in|the|option|choose|select|to)(?=\s|$)/g,' ')).join(' ');
-    const query=clean(text);if(!query)return [];
+    const query=navigationPhrase(text);if(!query)return [];
     const tabRequest=/(?:^|\s)(?:ל?לשונית|טאב|tab)(?:\s|$)/.test(normalize(text));
     const ranked=list.filter(target=>!tabRequest||target.kind==='page'||!target.path.includes('#')).map(target=>{
-      const page=targetPage(target),parentNames=page?[page[1],...page[2]]:[],names=[targetLabel(target)];
-      if(target.kind==='page'||!target.path.includes('#'))names.push(target.title,...(target.aliases||[]));
+      const page=targetPage(target),parentNames=page?[page[1],...page[2],...(intentions[canonicalPath(page[0])]||[])]:[],names=[targetLabel(target)];
+      if(target.kind==='page'||!target.path.includes('#'))names.push(target.title,...(target.aliases||[]),...(intentions[canonicalPath(target.path.split('#')[0])]||[]));
       else{for(const title of [target.title,...(target.aliases||[])])for(const parent of parentNames)names.push(title+' '+parent);names.push(target.title,...(target.aliases||[]),...parentNames);}
-      const score=Math.max(0,...names.map(name=>{const key=clean(name);if(!key)return 0;if(query===key)return 100+key.split(' ').length;const wanted=query.split(' '),available=key.split(' ');if(wanted.some(word=>word.length>=3)&&wanted.every(word=>available.some(part=>part===word||(word.length>=4&&part.startsWith(word)))))return 60+wanted.length*5;return 0;}));
+      const score=Math.max(0,...names.map(name=>navigationNameScore(text,name)));
       return {target,score};
     }).filter(item=>item.score>0).sort((a,b)=>b.score-a.score);
     if(!ranked.length)return [];return ranked.filter(item=>item.score===ranked[0].score).map(item=>item.target);
@@ -541,15 +562,18 @@
     command.lastIndex=0;const query=normalize(text).replace(command,' ').replace(/(?:^|\s)(?:נו{1,3}ט|תעבור|עבור|לעבור|בבקשה|אל)(?=\s|$)/g,' ').replace(/\s+/g,' ').trim();
     if(/(?:^|\s)(?:ל?עמוד הבית|ל?דף הבית)(?:\s|$)/.test(query)||/^(?:ל?בית)$/.test(query))return [{path:document.documentElement.lang==='en'?'index-en.html':'index.html',title:'עמוד הבית'}];
     if(!query)return [];
-    const queryTokens=tokens(query),explicitPage=/(?:לשונית|טאב|עמוד|דף)\s/.test(query),sectionHints=queryTokens.filter(w=>['קורס','קורסים','השכלה','שכלה','ניסיון','כישורים','כישרורים','יכולות','הכשרה','יתרונות','השירות','השגים'].includes(w));
+    const queryTokens=tokens(query),explicitPage=/(?:^|\s)(?:ל?לשונית|טאב|ל?עמוד|ל?דף|page|tab)\s/.test(query),sectionHints=queryTokens.filter(w=>['קורס','קורסים','השכלה','שכלה','ניסיון','כישורים','כישרורים','יכולות','הכשרה','יתרונות','השירות','השגים'].includes(w));
     const sectionRequest=/(?:^|\s)(?:ל?חלק|ל?נושא|ל?קטע|section|topic)(?:\s|$)/.test(query);
-    if(!explicitPage&&!sectionRequest&&['השכלה','שכלה','לימודים','ימודים','education','training'].includes(queryTokens.join(' '))){
+    if(!explicitPage&&!sectionRequest&&['השכלה','שכלה','לימודים','ימודים','הכשרות','כשרות','הסמכות','סמכות','קורסים','קורס','education','training','courses','certifications'].includes(queryTokens.join(' '))){
       const page=pages.find(([path])=>canonicalPath(path)==='education.html'&&englishPaths.has(path)===englishPaths.has(currentPage()));
       const sections=entries.filter(entry=>entry.kind==='section'&&['product.html','project.html','system.html','magic.html','customer.html'].includes(canonicalPath(entry.path.split('#')[0]))&&englishPaths.has(entry.path.split('#')[0])===englishPaths.has(currentPage())&&/השכלה|הכשרות|הסמכות|education|training|certifications/i.test(entry.title));
       sections.sort((a,b)=>pages.findIndex(page=>page[0]===a.path.split('#')[0])-pages.findIndex(page=>page[0]===b.path.split('#')[0]));
       const choices=[...(page?[{path:page[0],title:page[1],aliases:page[2],kind:'page'}]:[]),...sections];
       if(choices.length>1)return [...new Map(choices.map(target=>[target.path,target])).values()].slice(0,10);
     }
+    const contextRequest=/(?:^|\s)(?:בדף|בעמוד|in the|on the)(?:\s|$)/.test(query);
+    const languageEntries=entries.filter(entry=>englishPaths.has(entry.path.split('#')[0])===englishPaths.has(currentPage()));
+    if(contextRequest){const contextual=matchingCandidates(text,languageEntries);if(contextual.length)return contextual;}
     if(!sectionRequest){
       const bareQuery=tokens(query).join(' ');
       const pageExact=pages.filter(([path])=>englishPaths.has(path)===englishPaths.has(currentPage())).filter(([,title,aliases])=>[title,...aliases].some(label=>tokens(label).join(' ')===bareQuery));
@@ -559,7 +583,11 @@
       const exactPages=pages.filter(([path])=>englishPaths.has(path)===englishPaths.has(currentPage())).flatMap(([path,title,aliases])=>[title,...aliases].map(label=>({path,title,length:normalize(label).length,label:normalize(label)}))).filter(item=>query===item.label||query.endsWith(' '+item.label)).sort((a,b)=>b.length-a.length);
       if(exactPages.length&&(!exactPages[1]||exactPages[0].length>exactPages[1].length||exactPages[0].path===exactPages[1].path))return [{path:exactPages[0].path,title:exactPages[0].title,kind:'page'}];
     }
-    const ranked=entries.filter(entry=>englishPaths.has(entry.path.split('#')[0])===englishPaths.has(currentPage())).filter(entry=>!explicitPage||entry.kind==='page').map(entry=>{let score=0;const labels=[entry.title,...(entry.aliases||[]),...(entry.kind==='page'?intentions[canonicalPath(entry.path)]||[]:[])];for(const label of labels){const name=normalize(label);if(!name)continue;if(query===name||query==='ל'+name)score=Math.max(score,100+(entry.kind==='page'?10:0));else if(name.length>=3&&query.includes(name))score=Math.max(score,65+Math.min(name.length,25));else{const wanted=tokens(name);if(!wanted.length)continue;let hits=0;for(const word of wanted){if(queryTokens.some(q=>q===word))hits+=1;else if(word.length>=4&&queryTokens.some(q=>q.length>=4&&distance(q,word)<= (Math.max(q.length,word.length)>=7?2:1)))hits+=0.8;else if(word.length>=3&&queryTokens.some(q=>q.length>=3&&sound(q).length>=2&&sound(q)===sound(word)))hits+=0.75;}if(hits===wanted.length)score=Math.max(score,58+Math.min(wanted.length*6,24));else if(hits>=0.75&&hits/wanted.length>=0.65)score=Math.max(score,45+hits*6);}}if(score>0&&pages.some(([path])=>path===entry.path.split('#')[0]))score+=10;if(score>0&&entry.kind==='section'){const heading=tokens(entry.title);if(sectionHints.some(h=>heading.includes(h)))score+=25;if(entry.path.split('#')[0]===currentPage())score+=8;}return {entry,score};}).filter(x=>x.score>=45).sort((a,b)=>b.score-a.score);
+    if(!sectionRequest&&!contextRequest){
+      const partialPages=matchingCandidates(text,baseMap().filter(target=>englishPaths.has(target.path)===englishPaths.has(currentPage()))).filter(target=>[target.title,...(target.aliases||[]),...(intentions[canonicalPath(target.path)]||[])].some(label=>navigationNameScore(text,label)>=65));
+      if(partialPages.length)return partialPages;
+    }
+    const ranked=entries.filter(entry=>englishPaths.has(entry.path.split('#')[0])===englishPaths.has(currentPage())).filter(entry=>!explicitPage||entry.kind==='page').map(entry=>{let score=0;const labels=[entry.title,...(entry.aliases||[]),...(entry.kind==='page'?intentions[canonicalPath(entry.path)]||[]:[])];for(const label of labels)score=Math.max(score,navigationNameScore(text,label));for(const label of labels){const name=normalize(label);if(!name)continue;if(query===name||query==='ל'+name)score=Math.max(score,100+(entry.kind==='page'?10:0));else if(name.length>=3&&query.includes(name))score=Math.max(score,65+Math.min(name.length,25));else{const wanted=tokens(name);if(!wanted.length)continue;let hits=0;for(const word of wanted){if(queryTokens.some(q=>q===word))hits+=1;else if(word.length>=4&&queryTokens.some(q=>q.length>=4&&distance(q,word)<= (Math.max(q.length,word.length)>=7?2:1)))hits+=0.8;else if(word.length>=3&&queryTokens.some(q=>q.length>=3&&sound(q).length>=2&&sound(q)===sound(word)))hits+=0.75;}if(hits===wanted.length)score=Math.max(score,58+Math.min(wanted.length*6,24));else if(hits>=0.75&&hits/wanted.length>=0.65)score=Math.max(score,45+hits*6);}}if(score>0&&pages.some(([path])=>path===entry.path.split('#')[0]))score+=10;if(score>0&&entry.kind==='section'){const heading=tokens(entry.title);if(sectionHints.some(h=>heading.includes(h)))score+=25;if(entry.path.split('#')[0]===currentPage())score+=8;}return {entry,score};}).filter(x=>x.score>=45).sort((a,b)=>b.score-a.score);
     if(!ranked.length)return [];
     const bare=tokens(query).join(' ');
     const exactSections=!explicitPage?ranked.filter(item=>item.entry.kind==='section'&&[item.entry.title,...(item.entry.aliases||[])].some(label=>tokens(label).join(' ')===bare)):[];
@@ -576,7 +604,7 @@
     status.textContent='מעבד את בקשתך… מחפש את העמוד או הנושא';
     if(!entries.length){entries=baseMap();refreshCurrentSections();}
     let targets=chosen?[chosen]:resolve(field.value);
-    const needContextMap=!chosen&&/(?:^|\s)(?:ל?השכלה|ל?לימודים|education|training)(?:\s|$)/.test(normalize(field.value))&&!/(?:לשונית|טאב|עמוד|דף|tab|page)/.test(normalize(field.value));
+    const needContextMap=!chosen&&(/(?:^|\s)(?:בדף|בעמוד|on the|in the)(?:\s|$)/.test(normalize(field.value))||(/(?:^|\s)(?:ל?השכלה|ל?לימודים|ל?הכשרות|ל?הסמכות|ל?קורסים|education|training|courses|certifications)(?:\s|$)/.test(normalize(field.value))&&!/(?:לשונית|טאב|עמוד|דף|tab|page)/.test(normalize(field.value))));
     if(targets.length!==1||needContextMap){
       await new Promise(done=>{
         let finished=false;const complete=()=>{if(finished)return;finished=true;clearInterval(interval);done();};
