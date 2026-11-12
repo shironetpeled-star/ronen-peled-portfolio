@@ -34,6 +34,8 @@ window.__portfolioProfessionalPronunciation=(value)=>{
  Object.assign(glossary,{"SAP":"אֶס אֵיי פִּי","ERP/SAP Integrations":"אִי אָר פִּי אֶס אֵיי פִּי אִינְטֶגְרֵיישֶׁנְס","KPIs":"קֵיי פִּי אַייז","CSS":"סִי אֶס אֶס","GTM":"גִ׳י טִי אֶם"});
  // Keep spoken letter names together instead of splitting them into sentences.
  for(const name of ['KPIs','HR','IT','SQL','MS-SQL','CRM','ERP','API','BI','BDO','PRD','SDLC','UAT','FRS','LLM','ISC2','HTML','GTM','EI','SMS'])if(glossary[name])glossary[name]=glossary[name].replace(/\.\s*/g,' ');
+ // Company and product pronunciations confirmed by the site owner.
+ Object.assign(glossary,{"Secuitech":"סְקְיוּטֶק","SMARTi":"סְמַארְטִי","uniPaaS":"יוּנִיפַאס","UNIPASS":"יוּנִיפַאס","Btrieve":"בִּיטְרִיב","סקיוטק":"סְקְיוּטֶק","סמארטי":"סְמַארְטִי","יוניפאס":"יוּנִיפַאס","ביטריב":"בִּיטְרִיב"});
  const escape=value=>value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
  const names=Object.keys(glossary).sort((a,b)=>b.length-a.length);
  const pattern=new RegExp('(^|[^A-Za-z0-9])('+names.map(escape).join('|')+')(?=$|[^A-Za-z0-9])','gi');
