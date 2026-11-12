@@ -52,6 +52,8 @@ module.exports = async function handler(req, res) {
         model_id: 'eleven_v3',
         language_code: language,
         seed: 360,
+        // Stable narration reduces variation in technical terms and headings.
+        voice_settings: { stability: 1, similarity_boost: 0.75, style: 0, speed: 0.9 },
         apply_text_normalization: 'auto'
       })
     });
