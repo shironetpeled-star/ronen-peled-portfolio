@@ -156,6 +156,7 @@
   let promptText='',promptEndedAt=0;
   function isOutputEcho(text){
     const value=normalize(text);if(!value)return false;
+    if(mode==='targets'&&!speaking&&Date.now()-promptEndedAt>100){const number=voiceNumber(value);if((number>0&&number<=candidates.length)||chooseNamedCandidate(value))return false;}
     const output=window.__portfolioNarrationOutput;
     const sources=[];
     if(promptText&&(speaking||Date.now()-promptEndedAt<1200))sources.push(promptText);
