@@ -556,10 +556,11 @@
     status.textContent='מעבד את בקשתך… מחפש את העמוד או הנושא';
     if(!entries.length){entries=baseMap();refreshCurrentSections();}
     let targets=chosen?[chosen]:resolve(field.value);
-    if(targets.length!==1){
+    const needContextMap=!chosen&&/(?:^|\s)(?:ל?השכלה|ל?לימודים|education|training)(?:\s|$)/.test(normalize(field.value))&&!/(?:לשונית|טאב|עמוד|דף|tab|page)/.test(normalize(field.value));
+    if(targets.length!==1||needContextMap){
       await new Promise(done=>{
         let finished=false;const complete=()=>{if(finished)return;finished=true;clearInterval(interval);done();};
-        const interval=setInterval(()=>{if(!active||id!==generation||resolve(field.value).length===1)complete();},50);
+        const interval=setInterval(()=>{if(!active||id!==generation||(!needContextMap&&resolve(field.value).length===1))complete();},50);
         siteMap().then(complete,complete);
       });
       if(!active||id!==generation)return;targets=chosen?[chosen]:resolve(field.value);
