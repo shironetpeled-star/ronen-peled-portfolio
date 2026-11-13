@@ -249,7 +249,7 @@ async function search(event){
  queryInput.setCustomValidity('');const id=++run;lastFocus=document.activeElement;bar.setAttribute('aria-busy','true');searchButton.disabled=true;
  resultList.replaceChildren();choiceInput.value='';resultStatus.textContent=words.loading;dialog.querySelector('.siteSearchChoice').hidden=true;
  if(!dialog.open)dialog.showModal();
- try{await siteMap();if(id!==run)return;const results=resolve(text);render(results.length?results:baseMap().filter(t=>englishPaths.has(t.path)===englishPaths.has(currentPage())),results.length?words.found:words.none);}
+ try{await siteMap();if(id!==run)return;const results=resolve(text);if(results.length===1){go(results[0]);return;}render(results.length?results:baseMap().filter(t=>englishPaths.has(t.path)===englishPaths.has(currentPage())),results.length?words.found:words.none);}
  catch{if(id===run)resultStatus.textContent=words.error;}
  finally{if(id===run){searchButton.disabled=false;bar.removeAttribute('aria-busy');}}
 }
