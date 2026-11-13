@@ -277,6 +277,8 @@ function makeUI(){
 }
 function align(){
  const header=document.querySelector('header.top');if(!header||!bar)return;
+ const wrapContainer=header.querySelector('.navwrap');
+ if(innerWidth>950&&wrapContainer){if(bar.parentElement!==wrapContainer)wrapContainer.appendChild(bar);bar.style.width='100%';bar.style.marginLeft='0';bar.style.marginRight='0';bar.style.setProperty('--site-search-label',getComputedStyle(header.querySelector('.brand b')||header).color);return;}
  if(bar.parentElement!==header)header.appendChild(bar);
  const nav=header.querySelector('nav'),wrap=header.querySelector('.navwrap'),rect=(nav?.getClientRects().length?nav:wrap)?.getBoundingClientRect();
  if(!rect)return;
