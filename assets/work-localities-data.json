@@ -1683,7 +1683,7 @@
       "en": "Ashkelon",
       "station": "אשקלון",
       "journeyMinutes": 30,
-      "maxWalkingMinutes": 20,
+      "maxWalkingMinutes": 15,
       "from": "ראשון לציון–משה דיין"
     },
     {
@@ -1691,8 +1691,18 @@
       "en": "Sderot",
       "station": "שדרות",
       "journeyMinutes": 42,
-      "maxWalkingMinutes": 20,
+      "maxWalkingMinutes": 15,
       "from": "ראשון לציון–משה דיין"
+    },
+    {
+      "name": "כפר סילבר",
+      "en": "Kfar Silver",
+      "station": "אשקלון",
+      "journeyMinutes": 30,
+      "maxWalkingMinutes": 15,
+      "from": "ראשון לציון–משה דיין",
+      "walkingEvidence": "Moovit: 650 m / 9 minutes from Ashkelon station to the locality approach; locality-centre foot routing differs.",
+      "source": "https://moovitapp.com/index/he/dir/%D7%9B%D7%A4%D7%A8_%D7%A1%D7%99%D7%9C%D7%91%D7%A8-stop_3963506-city_114016-1"
     }
   ]
 }
