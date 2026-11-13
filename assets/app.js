@@ -1043,3 +1043,23 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
 
 // Frame the navigation buttons separately from the search row.
 (function(){const style=document.createElement('style');style.id='navigation-buttons-frame';style.textContent="\nhtml body header.top .navwrap>nav{outline:2px solid #74e8dd!important;outline-offset:7px!important;border-radius:12px!important}\n@media(min-width:951px){html body header.top .navwrap{row-gap:24px!important}}\n@media(max-width:950px){\n html body header.top .navwrap{flex-wrap:wrap!important}\n html body header.top .navwrap>nav.open{position:static!important;inset:auto!important;transform:none!important;flex:0 0 100%!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:none!important;grid-auto-rows:minmax(42px,auto)!important;gap:8px!important;margin:10px 0 8px!important;padding:4px!important;max-height:min(360px,45dvh)!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain}\n html body header.top .navwrap>nav.open>a{grid-column:auto!important;grid-row:auto!important;position:static!important;inset:auto!important;transform:none!important;width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important;min-height:42px!important;font-size:12px!important;white-space:normal!important;line-height:1.3!important;padding:8px!important}\n}\n\n@media(max-width:950px){html body header.top .navwrap{column-gap:20px!important;row-gap:12px!important}html body header.top .navwrap>.brandBlock{flex:1 1 calc(100% - 64px)!important;max-width:calc(100% - 64px)!important}html body header.top .navwrap>.menu{flex:0 0 38px!important;width:38px!important;box-sizing:border-box!important}}\n";document.head.appendChild(style);})();
+
+(function(){
+ const style=document.createElement('style');style.id='navigation-frame-title-style';style.textContent="html body header.top .navwrap{position:relative!important}#navigationFrameTitle{position:absolute;z-index:3;box-sizing:border-box;padding:0 10px;font-family:inherit;font-size:15px;font-weight:800;line-height:22px;white-space:nowrap;pointer-events:none;border-radius:3px}#navigationFrameTitle[hidden]{display:none!important}@media(min-width:951px){html body header.top .navwrap{padding-top:26px!important}}";document.head.appendChild(style);
+ let label,queued=false;
+ function apply(){
+  queued=false;const header=document.querySelector('header.top'),wrap=header?.querySelector('.navwrap'),nav=wrap?.querySelector('nav');if(!nav)return;
+  if(!label){label=document.createElement('span');label.id='navigationFrameTitle';}
+  if(label.parentElement!==wrap)wrap.appendChild(label);
+  const en=document.documentElement.lang==='en',text=en?'Navigation buttons':'כפתורי ניווט';if(label.textContent!==text)label.textContent=text;
+  nav.setAttribute('aria-labelledby','navigationFrameTitle');
+  if(!nav.getClientRects().length){label.hidden=true;return;}
+  label.hidden=false;const r=nav.getBoundingClientRect(),w=wrap.getBoundingClientRect();
+  label.style.top=(r.top-w.top-20)+'px';label.style.left=en?Math.max(0,r.left-w.left+16)+'px':'auto';label.style.right=en?'auto':Math.max(0,w.right-r.right+16)+'px';
+  const bg=getComputedStyle(header).backgroundColor;label.style.backgroundColor=bg==='rgba(0, 0, 0, 0)'?'#0d2946':bg;label.style.color=getComputedStyle(header.querySelector('.brand b')||header).color;
+ }
+ function schedule(){if(queued)return;queued=true;requestAnimationFrame(apply);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
+ new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+ addEventListener('resize',schedule);addEventListener('load',schedule);setTimeout(schedule,900);
+})();
