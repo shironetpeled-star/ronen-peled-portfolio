@@ -415,7 +415,59 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
   panel.appendChild(frame);document.body.appendChild(panel);
   launcher.setAttribute('aria-controls',panel.id);
   launcher.setAttribute('aria-expanded','false');
-  function toggleBot(open){panel.hidden=!open;launcher.setAttribute('aria-expanded',String(open));if(open){if(!frame.src)frame.src=launcher.href;close.focus()}else launcher.focus()}
+  function toggleBot(open){if(!open&&typeof requests!=='undefined'){requests.forEach(function(request,id){finishRequest(id,new Error('Bot panel closed'));});if(handoffStatus)handoffStatus.hidden=true;}panel.hidden=!open;launcher.setAttribute('aria-expanded',String(open));if(open){if(!frame.src)frame.src=launcher.href;close.focus()}else launcher.focus()}
+
+  // Search-to-assistant handoff: only this embedded bot can acknowledge a question.
+  var botOrigin=new URL(launcher.href).origin,requests=new Map(),lastPayload=null,currentRequestId='';
+  var handoffStatus=document.createElement('div');
+  handoffStatus.id='ronen-bot-handoff-status';handoffStatus.hidden=true;
+  handoffStatus.style.cssText='padding:10px 16px;background:#f0f8ff;color:#10284a;font:14px/1.5 Arial;direction:'+(isEnglish?'ltr':'rtl');
+  var handoffText=document.createElement('p');handoffText.setAttribute('role','status');handoffText.setAttribute('aria-live','polite');handoffText.style.margin='0';
+  var retry=document.createElement('button');retry.type='button';retry.hidden=true;
+  retry.textContent=isEnglish?'Retry sending':'שליחה מחדש';retry.style.cssText='margin-top:8px;padding:6px 12px;border:1px solid #a9c8e8;border-radius:8px;background:white;color:#195ed8;font:700 14px Arial;cursor:pointer';
+  handoffStatus.append(handoffText,retry);panel.insertBefore(handoffStatus,external);
+  function handoffNote(message,payload,canRetry){handoffStatus.hidden=false;handoffText.textContent=message+(payload?'\n'+payload.question:'');retry.hidden=!canRetry;}
+  function finishRequest(id,error){
+    var request=requests.get(id);if(!request)return;
+    clearInterval(request.timer);requests.delete(id);
+    if(error)request.reject(error);else request.resolve({requestId:id,accepted:true});
+  }
+  function deliver(request){if(!panel.hidden&&frame.contentWindow)frame.contentWindow.postMessage(request.payload,botOrigin);}
+  function queueQuestion(payload){
+    toggleBot(true);lastPayload=payload;currentRequestId=payload.requestId;
+    handoffNote(isEnglish?'No site destination matched. Sending your question to the assistant…':'לא נמצא יעד באתר. מעביר את השאלה לעוזר…',payload,false);
+    if(requests.has(payload.requestId))return requests.get(payload.requestId).promise;
+    var resolve,reject,promise=new Promise(function(ok,fail){resolve=ok;reject=fail;});
+    var request={payload:payload,promise:promise,resolve:resolve,reject:reject,started:Date.now(),timer:null};
+    requests.set(payload.requestId,request);
+    request.timer=setInterval(function(){
+      if(Date.now()-request.started>25000){finishRequest(payload.requestId,new Error('Bot handoff timed out'));if(currentRequestId===payload.requestId)handoffNote(isEnglish?'The question has not been confirmed yet. Try sending again.':'טרם התקבל אישור למסירת השאלה. אפשר לנסות לשלוח שוב.',payload,true);return;}
+      deliver(request);
+    },800);
+    deliver(request);return promise;
+  }
+  retry.addEventListener('click',function(){if(lastPayload)queueQuestion(lastPayload).catch(function(){});});
+  frame.addEventListener('load',function(){requests.forEach(deliver);});
+  window.addEventListener('message',function(event){
+    if(event.origin!==botOrigin||event.source!==frame.contentWindow||!event.data||typeof event.data!=='object')return;
+    var data=event.data;
+    if(data.type==='ronen-bot-ready'){requests.forEach(deliver);return;}
+    if(typeof data.requestId!=='string')return;
+    if(data.type==='ronen-search-accepted'){
+      if(!requests.has(data.requestId))return;
+      finishRequest(data.requestId);
+      if(currentRequestId===data.requestId)handoffNote(isEnglish?'Your question was received. The assistant is preparing an answer.':'השאלה התקבלה. העוזר מכין תשובה.',lastPayload,false);
+    }else if(data.type==='ronen-search-complete'&&data.requestId===currentRequestId){
+      finishRequest(data.requestId);handoffStatus.hidden=true;
+    }
+  });
+  window.PortfolioSmartBot={
+    ask:function(question,language){
+      if(typeof question!=='string'||!question.trim()||question.length>2000)return Promise.reject(new Error('Invalid bot question'));
+      return queueQuestion({type:'ronen-search-question',requestId:crypto.randomUUID(),question:question,language:language==='en'?'en':'he',sourcePage:location.pathname});
+    }
+  };
+
   launcher.addEventListener('click',function(event){event.preventDefault();toggleBot(panel.hidden)});
   close.addEventListener('click',function(){toggleBot(false)});
   document.addEventListener('keydown',function(event){if(event.key==='Escape'&&!panel.hidden)toggleBot(false)});
@@ -1034,7 +1086,7 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
 (function(){function apply(){document.querySelectorAll('header.top nav>a').forEach(a=>{const label=a.textContent.trim();if(label!=='EN'&&label!=='HE')return;const target=window.__portfolioLanguageTarget();a.dataset.languageSwitch=label==='EN'?'en':'he';if(a.getAttribute('href')!==target)a.setAttribute('href',target);a.setAttribute('hreflang',label.toLowerCase());});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();new MutationObserver(apply).observe(document.documentElement,{childList:true,subtree:true});})();
 
 // Load independent written site search on every page.
-(function(){if(document.querySelector('script[data-portfolio-site-search]'))return;const script=document.createElement('script');script.src='/assets/site-search.js?v=20261113-search-3';script.dataset.portfolioSiteSearch='true';document.head.appendChild(script);})();
+(function(){if(document.querySelector('script[data-portfolio-site-search]'))return;const script=document.createElement('script');script.src='/assets/site-search.js?v=20261113-search-4';script.dataset.portfolioSiteSearch='true';document.head.appendChild(script);})();
 
 // Spread the brand name, role headings and phone over the complete desktop navigation area.
 (function(){const style=document.createElement('style');style.id='brand-full-height-spacing';style.textContent="\nhtml body header.top .navwrap .brandBlock{gap:8px!important}\nhtml body header.top .navwrap .brandBlock .brand{display:flex!important;flex-direction:column!important;gap:10px!important}\nhtml body header.top .navwrap .brandBlock .brand b{font-size:30px!important;line-height:1.15!important;letter-spacing:0!important}\nhtml body header.top .navwrap .brandBlock .brandPhone{font-size:17px!important;line-height:1.3!important}\nhtml[lang=\"en\"] body header.top .navwrap .brandBlock .brand small{font-size:16px!important;line-height:1.45!important;white-space:normal!important}\nhtml[lang=\"he\"] body header.top .navwrap .brandBlock .brand small::after{font-size:17px!important;line-height:1.45!important}\n@media(min-width:951px){\n html body header.top .navwrap{grid-template-rows:auto auto!important;row-gap:12px!important;align-items:stretch!important;padding-top:12px!important;padding-bottom:12px!important;min-height:0!important}\n html body header.top .navwrap>.brandBlock{grid-column:1!important;grid-row:1/span 2!important;align-self:stretch!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;min-height:154px!important}\n html body header.top .navwrap .brandBlock>.brand{flex:1!important;justify-content:space-between!important;padding-bottom:10px!important}\n html body header.top .navwrap>nav{grid-column:2!important;grid-row:1!important;align-self:center!important}\n html body header.top .navwrap>#siteSearchBar{grid-column:2!important;grid-row:2!important;align-self:end!important;width:100%!important;margin:0!important;padding:0!important}\n}\n@media(min-width:951px) and (max-width:1150px){\n html[lang=\"en\"] body header.top .navwrap{grid-template-columns:220px minmax(0,1fr)!important}\n html[lang=\"en\"] body header.top .navwrap>.brandBlock{min-width:220px!important}\n html[lang=\"en\"] body header.top .navwrap .brandBlock .brand b{font-size:28px!important}\n}\n@media(max-width:950px){\n html body header.top .navwrap{padding-top:10px!important;padding-bottom:10px!important}\n html body header.top .navwrap>.brandBlock{flex:1 1 auto!important;min-width:0!important;gap:6px!important}\n html body header.top .navwrap .brandBlock .brand{gap:6px!important}\n html body header.top .navwrap .brandBlock .brand b{font-size:26px!important;line-height:1.2!important}\n html body header.top .navwrap .brandBlock .brandPhone{font-size:16px!important;line-height:1.3!important}\n html[lang=\"en\"] body header.top .navwrap .brandBlock .brand small{font-size:14.5px!important;line-height:1.45!important}\n html[lang=\"he\"] body header.top .navwrap .brandBlock .brand small::after{font-size:15.5px!important;line-height:1.45!important}\n}\n@media(min-width:1151px){\n html[lang=\"he\"] body header.top .navwrap{grid-template-columns:300px minmax(0,900px)!important}\n html[lang=\"en\"] body header.top .navwrap .brandBlock .brand b{font-size:27px!important;white-space:nowrap!important}\n}\n@media(min-width:951px) and (max-width:1150px){\n html[lang=\"he\"] body header.top .navwrap .brandBlock .brand small::after{font-size:16px!important}\n html[lang=\"en\"] body header.top .navwrap .brandBlock .brand b{font-size:27px!important;white-space:nowrap!important}\n}\n\n@media(min-width:951px){\n html body header.top .navwrap>.brandBlock{width:100%!important;max-width:none!important}\n html[lang=\"he\"] body header.top .navwrap .brandBlock .brand small{font-size:17px!important;line-height:1.45!important}\n}\nhtml body header.top .navwrap .brandBlock .brand small .brandRoleTitle{white-space:nowrap!important}\nhtml[lang=\"he\"] body header.top .navwrap .brandBlock .brand small::after{content:none!important;display:none!important}\n@media(min-width:951px) and (max-width:1150px){html[lang=\"he\"] body header.top .navwrap .brandBlock .brand small{font-size:16px!important}}\n@media(max-width:950px){html[lang=\"he\"] body header.top .navwrap .brandBlock .brand small{font-size:15.5px!important;line-height:1.45!important}}\n\nhtml body header.top .navwrap .brandBlock .brand small{color:#dce9f7!important}\n\nhtml body header.top .navwrap .brandBlock .brand small{white-space:normal!important;overflow-wrap:normal!important}\n";document.head.appendChild(style);})();
