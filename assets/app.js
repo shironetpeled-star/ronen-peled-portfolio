@@ -1063,3 +1063,6 @@ const layout=document.createElement('style');layout.textContent='#sharedBottomNa
  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
  addEventListener('resize',schedule);addEventListener('load',schedule);setTimeout(schedule,900);
 })();
+
+// Move spacing from between navigation rows to the frame's inner margins.
+(function(){const style=document.createElement('style');style.id='navigation-frame-inner-spacing';style.textContent="\n@media(min-width:951px){\n html[lang] body header.top .navwrap>nav:nth-child(n):nth-child(n):nth-child(n){row-gap:10px!important;padding:8px 10px!important;box-sizing:border-box!important;height:auto!important}\n}\n@media(max-width:950px){\n html[lang] body header.top .navwrap>nav.open:nth-child(n):nth-child(n):nth-child(n){row-gap:6px!important;padding:10px!important}\n}\n";document.head.appendChild(style);})();
