@@ -240,12 +240,18 @@
   function saveDraft(value){draft=String(value||'').slice(0,1500);if(field)field.value=draft;try{sessionStorage.setItem('portfolioVoiceDraft',draft);}catch{}}
   const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const currentPage=()=>location.pathname.split('/').pop()||'index.html';
-  const mapVersion=8;
+  const mapVersion=9;
   function sectionAliases(title){
     const text=normalize(title),aliases=[];
     const groups=[
       [/אזורי עבודה|preferred work locations/i,['מיקום עבודה','מיקום משרה','אזור עבודה','מקומות עבודה מועדפים','איפה לעבוד','work locations','location preferences']],
-      [/מתכונת עבודה|work arrangement/i,['עבודה מהבית','עבודה מרחוק','היברידי','היברידית','משרד','hybrid','remote work','office work']],
+      [/מתכונת עבודה|work arrangement/i,['עבודה מהבית','עבודה מרחוק','היברידי','היברידית','משרד','מיקור חוץ','אאוטסורסינג','אוטסורסינג','outsourcing','hybrid','remote work','office work']],
+      [/דרגת תפקיד|role level/i,['דרגות תפקיד','דרגת משרה','רמת תפקיד','ג׳וניור','גוניור','מיד לבל','סניור','ראש צוות','hands on','הנדס און','seniority','junior','mid level','senior','team lead']],
+      [/היקף משרה|employment scope/i,['משרה מלאה','משרה זמנית','לפי שעות','היקף עבודה','full time','temporary','hourly']],
+      [/פרטי חיפוש עבודה|job search details/i,['חיפוש משרה','פרטי משרה','job search']],
+      [/טווח אזורי עבודה|regional work range/i,['אשדוד גדרה','תל אביב פתח תקווה','טווח יישובים','יישובים באוטובוס','רשימת יישובים','רשימת ישובים','locality list','ashdod gedera']],
+      [/עבודה בירושלים|work in jerusalem/i,['ירושלים','הר חוצבים','ממילא','תחנה מרכזית ירושלים','jerusalem','har hotzvim','mamilla']],
+      [/יישובים בקרבת רכבת|localities near railway stations/i,['קרוב לרכבת','ליד רכבת','יישובים ברכבת','ישובים ליד רכבת','הרצליה','אשקלון','שדרות','כפר סילבר','herzliya','ashkelon','sderot','kfar silver','railway locations']],
       [/תחומים מבוקשים|desired roles/i,['תפקידים מבוקשים','סוגי משרות','תחומי תפקיד','desired positions']],
       [/^זמינות$|^availability$/i,['מועד התחלה','התחלת עבודה','זמין','מתי אפשר להתחיל','start date','availability']],
       [/^שפות$|^languages$/i,['ידיעת שפות','רמות שפות','שפות מדוברות','language skills']],
@@ -271,9 +277,9 @@
   }
   function markSections(root){
     const counts=new Map();
-    return [...root.querySelectorAll('main h1,main h2,main h3,main h4,main .rdSystemCards article>span,main .professionSkillsHeading,main .skillsHeaderTitle')].filter(h=>!h.closest('nav,#sharedBottomNavigation,#englishSharedBottom,#roleProfessionNavigation,.professionBottomNav,.enRoleNavigation,#centralMilitaryQuickNav')).map(h=>{
+    return [...root.querySelectorAll('main h1,main h2,main h3,main h4,main .rdSystemCards article>span,main .professionSkillsHeading,main .skillsHeaderTitle,main [data-voice-title]')].filter(h=>!h.closest('nav,#sharedBottomNavigation,#englishSharedBottom,#roleProfessionNavigation,.professionBottomNav,.enRoleNavigation,#centralMilitaryQuickNav')).map(h=>{
       const copy=h.cloneNode(true);copy.querySelectorAll('[aria-hidden="true"],img').forEach(el=>el.remove());
-      let title=copy.textContent.replace(/\s+/g,' ').trim().slice(0,160);if(h.closest('.soft')&&['יכולות','יכולות וכישורים'].includes(title))title='יכולות וכישורים';const key=normalize(title);
+      let title=(h.getAttribute('data-voice-title')||copy.textContent).replace(/\s+/g,' ').trim().slice(0,160);if(h.closest('.soft')&&['יכולות','יכולות וכישורים'].includes(title))title='יכולות וכישורים';const key=normalize(title);
       let hash=2166136261;for(const char of key){hash^=char.charCodeAt(0);hash=Math.imul(hash,16777619);}
       const ordinal=(counts.get(key)||0)+1;counts.set(key,ordinal);
       if(!h.id||/^voice-section-\d+$/.test(h.id))h.id='voice-topic-'+(hash>>>0).toString(36)+(ordinal>1?'-'+ordinal:'');
