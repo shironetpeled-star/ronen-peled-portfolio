@@ -923,6 +923,27 @@
       ]
     },
     {
+      "name": "פלמחים",
+      "en": "Palmahim",
+      "lat": 31.934645825332343,
+      "lon": 34.710848797461374,
+      "bus": true,
+      "rail": false,
+      "lines": [
+        "12",
+        "112"
+      ],
+      "stations": [
+        "קבוץ פלמחים מרכז"
+      ],
+      "walk": {
+        "minutes": 9,
+        "stop": "קבוץ פלמחים מרכז",
+        "lat": 31.932938,
+        "lon": 34.706454
+      }
+    },
+    {
       "name": "פארק תעשיות פלמחים",
       "en": "Palmachim Industrial Park",
       "lat": 31.933511,
@@ -1143,6 +1164,31 @@
       ]
     },
     {
+      "name": "אזור התעשייה הצפוני — יבנה",
+      "en": "Yavne Northern Industrial Area",
+      "lat": 31.890228,
+      "lon": 34.731686,
+      "bus": true,
+      "rail": false,
+      "area": true,
+      "gateway": true,
+      "locationReference": "access stop",
+      "lines": [
+        "181",
+        "182",
+        "315",
+        "330",
+        "351",
+        "355",
+        "369"
+      ],
+      "stations": [
+        "ת. מרכזית יבנה"
+      ],
+      "accessNote": "מקומות עבודה בחלק של אזור התעשייה הסמוך לתחנות המפורטות, עד 15 דקות הליכה בלבד.",
+      "accessNoteEn": "Workplaces in the part of the industrial area near the listed stops, within a 15-minute walk."
+    },
+    {
       "name": "גיבתון",
       "en": "Gibbeton",
       "lat": 31.888731,
@@ -1234,6 +1280,419 @@
         "כביש 42/כפר הנגיד",
         "כפר הנגיד/כביש 42"
       ]
+    },
+    {
+      "name": "יבנה",
+      "en": "Yavne",
+      "lat": 31.880337,
+      "lon": 34.735421,
+      "bus": true,
+      "rail": true,
+      "gateway": false,
+      "lines": [
+        "181",
+        "182",
+        "313",
+        "315",
+        "330",
+        "351",
+        "353",
+        "355",
+        "369"
+      ],
+      "stations": [
+        "שד. ז'בוטינסקי/התאנה",
+        "ז'בוטינסקי/נורית",
+        "ז'בוטינסקי/הזית",
+        "שדרות ירושלים/אגוז",
+        "שדרות ירושלים/רותם"
+      ],
+      "railStations": [
+        "יבנה מערב"
+      ],
+      "walk": {
+        "minutes": 6,
+        "stop": "שד. ז'בוטינסקי/התאנה",
+        "lat": 31.878711,
+        "lon": 34.737355
+      }
+    },
+    {
+      "name": "גבעת ברנר",
+      "en": "Giv'At Brenner",
+      "lat": 31.867696,
+      "lon": 34.800936,
+      "bus": true,
+      "rail": false,
+      "gateway": true,
+      "lines": [
+        "226",
+        "274",
+        "301",
+        "367",
+        "371"
+      ],
+      "stations": [
+        "גבעת ברנר/כביש 40",
+        "צומת ברנר",
+        "צומת מחנה תל נוף"
+      ],
+      "accessNote": "מקומות עבודה בסביבת התחנות המפורטות, עד 15 דקות הליכה מהתחנה.",
+      "accessNoteEn": "Workplaces near the listed stops, within a 15-minute walk."
+    },
+    {
+      "name": "אזור התעשייה הדרומי — יבנה",
+      "en": "Yavne Southern Industrial Area",
+      "lat": 31.8655901,
+      "lon": 34.7428133,
+      "bus": true,
+      "rail": false,
+      "area": true,
+      "lines": [
+        "182"
+      ],
+      "stations": [
+        "גיבורי החיל/הנמל"
+      ],
+      "walk": {
+        "minutes": 5,
+        "stop": "גיבורי החיל/הנמל",
+        "lat": 31.864034,
+        "lon": 34.740997
+      }
+    },
+    {
+      "name": "קרית עקרון",
+      "en": "Qiryat Eqron",
+      "lat": 31.861877,
+      "lon": 34.821034,
+      "bus": true,
+      "rail": false,
+      "gateway": false,
+      "lines": [
+        "274"
+      ],
+      "stations": [
+        "המלך חסן השני/בוסי סנט ג'ורג",
+        "המלך חסן השני/כביש 40"
+      ],
+      "walk": {
+        "minutes": 14,
+        "stop": "המלך חסן השני/בוסי סנט ג'ורג",
+        "lat": 31.859601,
+        "lon": 34.81354
+      }
+    },
+    {
+      "name": "בן זכאי",
+      "en": "Ben Zakkay",
+      "lat": 31.856334214971557,
+      "lon": 34.72804740171318,
+      "bus": true,
+      "rail": false,
+      "lines": [
+        "353"
+      ],
+      "stations": [
+        "מושב בן זכאי"
+      ],
+      "walk": {
+        "minutes": 11,
+        "stop": "מושב בן זכאי",
+        "lat": 31.849891,
+        "lon": 34.728563
+      }
+    },
+    {
+      "name": "בית אלעזרי",
+      "en": "Bet El'Azari",
+      "lat": 31.844554,
+      "lon": 34.803273,
+      "bus": true,
+      "rail": false,
+      "gateway": true,
+      "lines": [
+        "226",
+        "301",
+        "367",
+        "371"
+      ],
+      "stations": [
+        "מחנה בית אלעזרי",
+        "מחנה תל נוף"
+      ],
+      "accessNote": "מקומות עבודה בסביבת התחנות המפורטות, עד 15 דקות הליכה מהתחנה.",
+      "accessNoteEn": "Workplaces near the listed stops, within a 15-minute walk."
+    },
+    {
+      "name": "אזור התעשייה הצפוני — אשדוד",
+      "en": "Ashdod Northern Industrial Area",
+      "lat": 31.828763,
+      "lon": 34.685773,
+      "bus": true,
+      "rail": false,
+      "area": true,
+      "gateway": true,
+      "locationReference": "access stop",
+      "lines": [
+        "284",
+        "313",
+        "315",
+        "330",
+        "351"
+      ],
+      "stations": [
+        "צומת ניר גלים"
+      ],
+      "accessNote": "מקומות עבודה בחלק של אזור התעשייה הסמוך לתחנות המפורטות, עד 15 דקות הליכה בלבד.",
+      "accessNoteEn": "Workplaces in the part of the industrial area near the listed stops, within a 15-minute walk."
+    },
+    {
+      "name": "ניר גלים",
+      "en": "Nir Gallim",
+      "lat": 31.82582708300714,
+      "lon": 34.68408817079449,
+      "bus": true,
+      "rail": false,
+      "lines": [
+        "284",
+        "313",
+        "315",
+        "330",
+        "351"
+      ],
+      "stations": [
+        "צומת ניר גלים"
+      ],
+      "walk": {
+        "minutes": 6,
+        "stop": "צומת ניר גלים",
+        "lat": 31.828763,
+        "lon": 34.685773
+      }
+    },
+    {
+      "name": "בני דרום",
+      "en": "Bene Darom",
+      "lat": 31.820253526886255,
+      "lon": 34.692271211681245,
+      "bus": true,
+      "rail": false,
+      "lines": [
+        "353"
+      ],
+      "stations": [
+        "צומת גן דרום/כביש 42"
+      ],
+      "walk": {
+        "minutes": 15,
+        "stop": "צומת גן דרום/כביש 42",
+        "lat": 31.816496,
+        "lon": 34.699722
+      }
+    },
+    {
+      "name": "בית רבן",
+      "en": "Bet Rabban",
+      "lat": 31.817231545938572,
+      "lon": 34.72940390377071,
+      "bus": true,
+      "rail": false,
+      "lines": [
+        "369"
+      ],
+      "stations": [
+        "מחלף בית רבן למזרח"
+      ],
+      "walk": {
+        "minutes": 9,
+        "stop": "מחלף בית רבן למזרח",
+        "lat": 31.819528,
+        "lon": 34.730697
+      }
+    },
+    {
+      "name": "אשדוד",
+      "en": "Ashdod",
+      "lat": 31.812662,
+      "lon": 34.656597,
+      "bus": true,
+      "rail": true,
+      "gateway": false,
+      "lines": [
+        "284",
+        "313",
+        "315",
+        "330",
+        "351"
+      ],
+      "stations": [
+        "בני ברית/האורגים",
+        "בני ברית/מורדי הגיטאות",
+        "שדרות הפלמח/חטיבת כרמלי",
+        "בני ברית/הבושם",
+        "הפלמ''ח/גשר עד הלום"
+      ],
+      "railStations": [
+        "אשדוד עד הלום- מטרופול"
+      ],
+      "walk": {
+        "minutes": 12,
+        "stop": "בני ברית/האורגים",
+        "lat": 31.809569,
+        "lon": 34.664104
+      }
+    },
+    {
+      "name": "גדרה",
+      "en": "Gedera",
+      "lat": 31.811159,
+      "lon": 34.77948,
+      "bus": true,
+      "rail": false,
+      "gateway": true,
+      "lines": [
+        "301",
+        "367",
+        "369",
+        "371"
+      ],
+      "stations": [
+        "תחנה מרכזית גדרה",
+        "הרצל/ויצמן",
+        "הרצל/כביש 40",
+        "הרצל/שדרות בן גוריון",
+        "מחלף גדרה/נתיב תחבורה ציבורית"
+      ],
+      "accessNote": "מקומות עבודה בסביבת התחנות המפורטות, עד 15 דקות הליכה מהתחנה.",
+      "accessNoteEn": "Workplaces near the listed stops, within a 15-minute walk."
+    },
+    {
+      "name": "אזור התעשייה הקלה — אשדוד",
+      "en": "Ashdod Light Industrial Area",
+      "lat": 31.8100561,
+      "lon": 34.6641744,
+      "bus": true,
+      "rail": false,
+      "area": true,
+      "lines": [
+        "284",
+        "313",
+        "315",
+        "330",
+        "351"
+      ],
+      "stations": [
+        "בני ברית/האורגים"
+      ],
+      "walk": {
+        "minutes": 1,
+        "stop": "בני ברית/האורגים",
+        "lat": 31.809569,
+        "lon": 34.664104
+      }
+    },
+    {
+      "name": "גן יבנה",
+      "en": "Gan Yavne",
+      "lat": 31.792518,
+      "lon": 34.716003,
+      "bus": true,
+      "rail": false,
+      "gateway": true,
+      "lines": [
+        "353",
+        "355"
+      ],
+      "stations": [
+        "מסעף גן יבנה"
+      ],
+      "accessNote": "מקומות עבודה בסביבת התחנות המפורטות, עד 15 דקות הליכה מהתחנה.",
+      "accessNoteEn": "Workplaces near the listed stops, within a 15-minute walk."
+    },
+    {
+      "name": "בית חלקיה",
+      "en": "Bet Hilqiyya",
+      "lat": 31.791934688360143,
+      "lon": 34.811811303725136,
+      "bus": true,
+      "rail": false,
+      "lines": [
+        "372"
+      ],
+      "stations": [
+        "צומת בית חלקיה לדרום "
+      ],
+      "walk": {
+        "minutes": 15,
+        "stop": "צומת בית חלקיה לדרום ",
+        "lat": 31.787083,
+        "lon": 34.818734
+      }
+    },
+    {
+      "name": "בני עי\"ש",
+      "en": "Bene Ayish",
+      "lat": 31.789204,
+      "lon": 34.760509,
+      "bus": true,
+      "rail": false,
+      "gateway": true,
+      "lines": [
+        "301",
+        "367",
+        "369",
+        "371"
+      ],
+      "stations": [
+        "צומת חפץ חיים לדרום",
+        "צומת בני עי''ש לדרום"
+      ],
+      "accessNote": "מקומות עבודה בסביבת התחנות המפורטות, עד 15 דקות הליכה מהתחנה.",
+      "accessNoteEn": "Workplaces near the listed stops, within a 15-minute walk."
+    },
+    {
+      "name": "חצב",
+      "en": "Hazav",
+      "lat": 31.780489583154264,
+      "lon": 34.76996250074536,
+      "bus": true,
+      "rail": false,
+      "lines": [
+        "301",
+        "369"
+      ],
+      "stations": [
+        "צומת חצב"
+      ],
+      "walk": {
+        "minutes": 13,
+        "stop": "צומת חצב",
+        "lat": 31.780911,
+        "lon": 34.776571
+      }
+    }
+  ],
+  "busWalkingLimitMinutes": 15,
+  "railWalkingLimitMinutes": 20,
+  "maxRailJourneyMinutes": 45,
+  "railOrigin": "ראשון לציון–משה דיין",
+  "additionalRailExamples": [
+    {
+      "name": "אשקלון",
+      "en": "Ashkelon",
+      "station": "אשקלון",
+      "journeyMinutes": 30,
+      "maxWalkingMinutes": 20,
+      "from": "ראשון לציון–משה דיין"
+    },
+    {
+      "name": "שדרות",
+      "en": "Sderot",
+      "station": "שדרות",
+      "journeyMinutes": 42,
+      "maxWalkingMinutes": 20,
+      "from": "ראשון לציון–משה דיין"
     }
   ]
 }
