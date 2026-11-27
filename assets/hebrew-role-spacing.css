@@ -41,7 +41,7 @@ html[lang="he"] body .adv .advAllButton{
 /* Give profession experience panels the same width and column gap. */
 main > .innerHero + .two:has(> .highlight),
 main > .magicOverview:has(> .highlight) {
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   column-gap: 24px;
 }
 
@@ -65,5 +65,13 @@ main > .magicOverview:has(> .highlight) {
 
   main > .magicOverview > :is(.trainingPanel, .highlight) {
     height: auto;
+  }
+
+  main > .innerHero + .section.two .educationBlock {
+    margin-block-start: 32px;
+  }
+
+  main > .magicOverview .trainingGrid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 145px), 1fr));
   }
 }
