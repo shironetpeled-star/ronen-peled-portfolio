@@ -51,3 +51,19 @@ main > .magicOverview:has(> .highlight) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Align the experience card with the adjacent introduction or training column. */
+@media (width > 900px) {
+  main > .innerHero + .two:has(> .highlight) > *,
+  main > .magicOverview:has(> .highlight) > * {
+    align-self: stretch;
+  }
+
+  main > .innerHero + .two > .highlight {
+    margin-block-start: 0;
+  }
+
+  main > .magicOverview > :is(.trainingPanel, .highlight) {
+    height: auto;
+  }
+}
