@@ -37,3 +37,17 @@ html[lang="he"] body .adv .advAllButton{
     margin:8px 0 14px!important;
   }
 }
+
+/* Give profession experience panels the same width and column gap. */
+main > .innerHero + .two:has(> .highlight),
+main > .magicOverview:has(> .highlight) {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  column-gap: 24px;
+}
+
+@media (max-width: 900px) {
+  main > .innerHero + .two:has(> .highlight),
+  main > .magicOverview:has(> .highlight) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
