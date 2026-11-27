@@ -59,7 +59,7 @@ main > .magicOverview:has(> .highlight) {
     align-self: stretch;
   }
 
-  main > .innerHero + .two > .highlight {
+  main > .innerHero + .section.two > .highlight {
     margin-block-start: 0;
   }
 
